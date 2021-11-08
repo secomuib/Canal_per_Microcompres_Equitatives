@@ -1,0 +1,68 @@
+{
+  "name": "micropayments-channel",
+  "version": "1.0.0",
+  "description": "Protocol basat en Blockchain per la Gestió de Canals per microcompres Equitatives",
+  "homepage": "https://secomuib.github.io/EthereumReactJSTemplate/",
+  "main": "start.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+    "ethereum_compile": "node compile.js",
+    "ethereum_deploy": "node deploy.js",
+    "ethereum_test": "mocha",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/secomuib/EthereumReactJSTemplate.git"
+  },
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "blockchain",
+    "nodejs",
+    "docker"
+  ],
+  "author": "Seguretat i comerç electrònic (SECOM)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/secomuib/EthereumReactJSTemplate/issues"
+  },
+  "private": true,
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.2.1",
+    "fs-extra": "^9.1.0",
+    "ganache-cli": "^6.12.2",
+    "gh-pages": "^2.2.0",
+    "js-sha256": "^0.9.0",
+    "mocha": "^8.2.1",
+    "pify": "^5.0.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "^3.4.1",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^0.88.2",
+    "solc": "^0.8.7",
+    "web3": "^1.3.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
