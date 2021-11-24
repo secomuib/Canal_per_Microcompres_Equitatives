@@ -6,7 +6,7 @@ import channel from '../ethereum/channel';
 import variables from '../ethereum/variables';
 import web3 from '../ethereum/web3';
 import DeliveryRow from '../components/DeliveryRow';
-import services from '../services.json';
+import db from '../db.json';
 
 var sha256 = require('js-sha256');
 
@@ -148,7 +148,7 @@ class Home extends Component {
         // Done
         return (
             <div>
-                {(services[this.state.accounts[0]])?( 
+                {(db.services[this.state.accounts[0]])?( 
                 <div>
                     <h3>Search channel</h3>
                 </div>

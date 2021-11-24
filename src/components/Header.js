@@ -6,11 +6,11 @@ export default () => {
     return (
         <Menu stackable style={{ marginTop: '10px' }}>
             <Menu.Item as={Link} to='/'>
-                eDelivery with Ethereum
+                Micropayment Channel with Ethereum
             </Menu.Item>
             <Menu.Menu position="right">
                 <Menu.Item as={Link} to='/'>
-                    Deliveries
+                    Channels
                 </Menu.Item>
                 <Menu.Item as={Link} to='/deliveries/new'>
                     +
