@@ -37,6 +37,11 @@ To start React JS development server:
 npm run start
 ```
 
+To start the json-server database: 
+```
+npm run json-server
+```
+
 ## Execution with Docker
 
 ### Requirements for Docker execution

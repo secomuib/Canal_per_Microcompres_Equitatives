@@ -15,6 +15,7 @@ class Home extends Component {
     state = {
         channel:'',
         k:'',
+        user_db:'',
         loadingPage: true,
         loading: false,
         errorMessage: '',
@@ -32,6 +33,24 @@ class Home extends Component {
                     return factory.methods.getChannels(index).call();
                 })
             );
+
+            fetch('http://localhost:8000/'+accounts[0], {
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res =>{
+                //console.log('response ',res);
+                return res.json();
+            }).then(data =>{
+                console.log('data', data);
+                this.setState({
+                    user_db: data
+                })
+            })
+
+
             this.setState({
                 openChannels: openChannels
             })
@@ -94,7 +113,7 @@ class Home extends Component {
             await channelContract.methods.transferDeposit("0x"+W_kM, "0x"+W_kC, this.state.k, "0x0000000000000000000000000000000000000000").send({ from: accounts[0]})
             
         }catch (err) {
-        this.setState({ errorMessage: err.message });
+            this.setState({ errorMessage: err.message });
         } finally {
             this.setState({ loading: false });
         }
@@ -131,7 +150,39 @@ class Home extends Component {
                 </Table.Row>
             )
         })
+
     };
+
+    renderRequests(){
+        const data = this.state.user_db;
+        console.log('dataa', data)
+        return Object.keys(data).map((requests, index) => {
+            console.log(data[index]);
+            if(data[index]['channel'] === ''){
+                return (
+                <Table.Row>
+                    <Table.Cell>
+                        {index}
+                    </Table.Cell>
+                    <Table.Cell>
+                        {data[index]['customer']}
+                    </Table.Cell> 
+                    <Table.Cell>
+                        {data[index]['service']}
+                    </Table.Cell>
+                    <Table.Cell>
+                    <Button animated='vertical' color='blue' /*onClick={() => this.onFinish(this.Finish.delivery)}*/>
+                        <Button.Content hidden>Accept</Button.Content>
+                        <Button.Content visible>
+                          <Icon name='send' />
+                        </Button.Content>
+                    </Button>
+                    </Table.Cell>   
+                </Table.Row>
+                )
+            }
+        })
+    }
 
     render() {
         // Loading
@@ -165,6 +216,19 @@ class Home extends Component {
                         </Table.Row>
                     </Table.Body>
                 </Table>
+                <h3><Icon name = 'sign in alternate' circular />&nbsp;Requests</h3>
+                <Table fixed>
+                    <Table.Header>
+                        <Table.Row>
+                            <Table.HeaderCell>#</Table.HeaderCell>
+                            <Table.HeaderCell>Customer</Table.HeaderCell>
+                            <Table.HeaderCell>Service</Table.HeaderCell>
+                            <Table.HeaderCell></Table.HeaderCell>
+                        </Table.Row>
+                    </Table.Header>
+                    <Table.Body>{this.renderRequests()}</Table.Body>
+                </Table>
+
                 <h3><Icon name='sign in alternate' circular />&nbsp;Owned Channels</h3>
                 <Table fixed>
                     <Table.Header>

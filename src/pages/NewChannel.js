@@ -24,20 +24,39 @@ class NewChannel extends Component {
     idMerchant:0,
     loading: false,
     merchant:'',
+    services:'',
     merchantAddr:'',
     data: '',
     errorMessage: ''
   };
+
+  componentDidMount(){
+    fetch('http://localhost:8000/services2', {
+        headers:{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      })
+      .then(res =>{
+        //console.log('response ',res);
+        return res.json();
+      }).then(data =>{
+        console.log('data', data);
+        this.setState({
+          services: data,
+        })
+       })
+
+       
+  }
 
   onSubmit = async event => {
     event.preventDefault();
     this.setState({ loading: true, errorMessage: '' });
     const accounts = await web3.eth.getAccounts();
 
-
     try {
-
-      fetch('http://localhost:8000/'+this.state.merchantAddr, {
+      fetch('http://localhost:8000/'+this.state.merchant, {
         method:'POST',
         headers: {
           "Content-Type": "application/json"
@@ -53,7 +72,9 @@ class NewChannel extends Component {
         })
         .then(data => {
           console.log('fetch',data);  
-        })
+        });
+
+
       
         /*
         TRANSACCIÓ CREATECHANNEL
@@ -83,7 +104,9 @@ class NewChannel extends Component {
         this.props.history.push('/');*/
 
     } catch (err) {
-        this.setState({ errorMessage: err.message });
+        this.setState({
+          errorMessage: err.message
+        });
     } finally {
         this.setState({ loading: false });
     }
@@ -91,42 +114,51 @@ class NewChannel extends Component {
   };
 
   renderMerchants(){
+    const data = this.state.services;
+    const difMerchant = [];
+    console.log('renderMerchants')
     
-    return Object.keys(db['services'][0]).map((merchants, index) =>{
-      console.log('merchant', this.state.merchant)
+
+    Object.keys(data).map((merchant, index1) => {
+      console.log('1', data[index1]['merchant'])
+      difMerchant.push(data[index1]['merchant'])
+    })
+
+    let unics = Array.from(new Set(difMerchant))
+
+    console.log(unics);
+    
+    return Object.keys(unics).map((merchants, index) =>{
+      //console.log('merchant', this.state.merchant)
+      //console.log('merchaaants', merchants)
+      
       if(this.state.merchant == ''){
         this.setState({merchant: merchants})
       }
-      return(
-        <option>{merchants}</option>
-      )
+        return(
+          <option>{unics[index]}</option>
+        )
+      
     })
   }
 
-  renderServices(merchant){
-    console.log('users', Object.keys(db['services'][0]['merchant1'][0]));
-
-    if(merchant!=''){
-      //console.log(merchant);
-    //}else{
-    console.log(Object.keys(db['services'][0][merchant][0]));
+  renderServices(merchants){
+    const data = this.state.services;
     
-
-    //const keys = Object.keys(services.merchant);
-    //console.log(keys)
-    
-    
-    return Object.keys(db['services'][0][merchant][0]).map((service, index) =>{
-        console.log(service)
-        
+    return Object.keys(data).map((service, index) => {
+      //console.log(data[index].info)
+      //console.log(data[index].merchant)
+      //console.log('merchants',merchants);
+      
+      if(data[index].merchant === merchants){
         return(
-               <option>{service}</option>     
-      )
-      })
-    }
-    
-   
-  };
+          <option>
+            {data[index].info}
+          </option>
+        )
+      }
+    })
+  }
 
   render() {
     return (
@@ -137,10 +169,11 @@ class NewChannel extends Component {
         <Form.Field>
           <label>Select merchant:</label>
         <select value={this.state.merchant} onChange={event =>  {
-          this.setState({ merchant: event.target.value, merchantAddr: db['services'][0][event.target.value][0]['Ethereum address']});
+          this.setState({ merchant: event.target.value/*, merchantAddr: db['services'][0][event.target.value][0]['Ethereum address']*/});
           //this.renderServices(event.target.value)
           }
         }>
+          <option></option>
             {this.renderMerchants()}
         </select>
         </Form.Field>
