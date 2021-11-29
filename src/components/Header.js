@@ -12,7 +12,7 @@ export default () => {
                 <Menu.Item as={Link} to='/'>
                     Channels
                 </Menu.Item>
-                <Menu.Item as={Link} to='/deliveries/new'>
+                <Menu.Item as={Link} to='/channels/new'>
                     +
                 </Menu.Item>
             </Menu.Menu>

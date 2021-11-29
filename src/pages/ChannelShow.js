@@ -1,16 +1,11 @@
-/*import React, { Component } from 'react';
+import React, { Component } from 'react';
 import { withRouter, Link } from "react-router-dom";
 import { Form, Button, Message, Input, Dimmer, Loader } from 'semantic-ui-react';
-import notification from '../ethereum/notification';
 import web3 from '../ethereum/web3';
 
-class DeliveryShow extends Component {
+class ChannelShow extends Component {
   state = {
-    address: '',
-    sender: '',
-    receiver: '',
-    message: '',
-    deposit: '',
+    channel:'',
     loading: false,
     errorMessage: ''
   };
@@ -20,83 +15,105 @@ class DeliveryShow extends Component {
     this.setState({ loading: true, errorMessage: '' });
 
     try {
-      let address = this.props.match.params.address;
-      let deliveryContract = notification(address);
+      let id = this.props.match.params.id;
+      console.log(id)
 
-      let deposit = await web3.eth.getBalance(address)
+      var channel = await fetch('http://localhost:7000/channels/'+id, {
+        headers:{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      })
+      .then(res =>{
+        //console.log('response ',res);
+        return res.json();
+      }).then(data =>{
+        console.log('data', data);
+        this.setState({
+          channel: data,
+        })
+       })
 
-      let sender = await deliveryContract.methods.sender().call();
-      let receiver = await deliveryContract.methods.receivers(0).call();
-      let message = await deliveryContract.methods.message().call();
 
-      this.setState({ 
-        address: address,
-        sender: sender,
-        receiver: receiver,
-        message: message,
-        deposit: deposit
-      });
+      console.log(this.state.channel);
     } catch (err) {
       this.setState({ errorMessage: err.message });
     } finally {
       this.setState({ loading: false });
     }
   }
-
+/*
   onSubmit = async event => {
     event.preventDefault();
 
     // Refresh, using withRouter
     this.props.history.push('/');
-  };
+  };*/
 
   render() {
+    
     return (
       <div>
         <Dimmer inverted active={this.state.loading}>
           <Loader inverted content='Loading...'></Loader>
         </Dimmer>
         <Link to='/'>Back</Link>
-        <h3>Show Delivery</h3>
+        <h3>Show Channel</h3>
         <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage} hidden={this.state.loading}>
           <Form.Field>
-            <label>Address of Smart Contract</label>
+            <label>Merchant</label>
             <Input
               readOnly
-              value={this.state.address}
+              value={this.state.channel.merchant}
             />
           </Form.Field>
 
           <Form.Field>
-            <label>Sender</label>
+            <label>Customer</label>
             <Input
               readOnly
-              value={this.state.sender}
+              value={this.state.channel.customer}
             />
           </Form.Field>
 
           <Form.Field>
-            <label>Receiver</label>
+            <label>Service</label>
             <Input
               readOnly
-              value={this.state.receiver}
+              value={this.state.channel.service}
             />
           </Form.Field>
 
           <Form.Field>
-            <label>Message</label>
+            <label>Service price</label>
             <Input
               readOnly
-              value={this.state.message}
+              value={this.state.channel.price}
             />
           </Form.Field>
 
           <Form.Field>
-            <label>Deposit</label>
+            <label>µ-coins</label>
             <Input
               label="wei"
               labelPosition="right"
-              value={this.state.deposit}
+              value={this.state.channel.c}
+            />
+          </Form.Field>
+
+          <Form.Field>
+            <label>W_0M</label>
+            <Input
+              readOnly
+              value={this.state.channel.W_0M}
+            />
+          </Form.Field>
+
+          <Form.Field>
+            <label>W_0C</label>
+            <Input
+              readOnly
+              value={this.state.message}
             />
           </Form.Field>
 
@@ -110,4 +127,5 @@ class DeliveryShow extends Component {
   }
 }
 
-export default withRouter(DeliveryShow);*/
+
+export default withRouter(ChannelShow);

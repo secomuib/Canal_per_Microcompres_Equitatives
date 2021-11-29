@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from "react-router-dom";
-import { Form, Button, Message, Input } from 'semantic-ui-react';
+import { Form, Button, Message, Input, Table } from 'semantic-ui-react';
 import factory from '../ethereum/factory';
 import web3 from '../ethereum/web3';
 import variables from '../ethereum/variables';
@@ -12,11 +12,13 @@ import { identifier } from '@babel/types';
 
 var sha256 = require('js-sha256');
 
+
 class NewChannel extends Component {
   state = {
     c: '',
     v: '',
     service:'',
+    service_price:'',
     T_exp:'',
     TD:'',
     TR:'',
@@ -26,12 +28,13 @@ class NewChannel extends Component {
     merchant:'',
     services:'',
     merchantAddr:'',
+    S_id:'',
     data: '',
     errorMessage: ''
   };
 
   componentDidMount(){
-    fetch('http://localhost:8000/services2', {
+    fetch('http://localhost:7000/services2', {
         headers:{
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -56,15 +59,32 @@ class NewChannel extends Component {
     const accounts = await web3.eth.getAccounts();
 
     try {
-      fetch('http://localhost:8000/'+this.state.merchant, {
+
+      // Obtain the S_id of the selected service
+      const data = this.state.services;
+      Object.keys(data).map((merchant, index) => {
+        console.log('S_id: ', data[index].info +' '+ data[index].id);
+        console.log('service' + this.state.service)
+        if(data[index].info === this.state.service){
+          console.log('S_id: ', data[index].info +' '+ data[index].id);
+          this.setState({
+            "S_id": data[index]['id']
+          })
+        }
+      })
+
+      //Merchant saved
+      fetch('http://localhost:7000/'+this.state.merchant, {
         method:'POST',
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "channel": "channelid",
+          "channel": "",
           "customer": accounts[0],
-          "service": this.state.service
+          "service": this.state.service,
+          "c": this.state.c,
+          "S_id": this.state.S_id
         })
       })
         .then(res => {
@@ -74,6 +94,26 @@ class NewChannel extends Component {
           console.log('fetch',data);  
         });
 
+        //Customer saved
+        fetch('http://localhost:7000/'+accounts[0], {
+        method:'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "channel": "",
+          "merchant": this.state.merchant,
+          "service": this.state.service,
+          "c": this.state.c,
+          "S_id": this.state.S_id
+        })
+      })
+        .then(res => {
+            return res.json();
+        })
+        .then(data => {
+          console.log('fetch',data);  
+        });
 
       
         /*
@@ -160,6 +200,18 @@ class NewChannel extends Component {
     })
   }
 
+  renderServicePrice(){
+    const data = this.state.services;
+    const S_id = '';
+    return Object.keys(data).map((price, index)=>{
+      if(data[index].info === this.state.service){
+        console.log('info', data[index].info, data[index].price)
+        return(data[index].price)
+      }
+    })
+    
+  }
+
   render() {
     return (
       <div>
@@ -180,9 +232,22 @@ class NewChannel extends Component {
         <Form.Field>
           <label>Select the merchant service:</label>
           <select value={this.state.service} onChange={event => this.setState({ service: event.target.value })}>
-                    {this.renderServices(this.state.merchant)}
+            <option></option>
+            {this.renderServices(this.state.merchant)}  
           </select>
-          </Form.Field>
+        </Form.Field>
+        <Form.Field>
+          <label>Service price:</label>
+          <Input>{this.renderServicePrice()}</Input>
+        </Form.Field>
+        <Form.Field>
+          <label>Number of µ-coins to be introduced in the channel:</label>
+          <Input
+            value={this.state.c}
+            onChange={event => this.setState({ c: event.target.value })}
+          />
+        </Form.Field>
+
           {/*<Form.Field>
             <label>Number of micro-coins (c):</label>
             <Input

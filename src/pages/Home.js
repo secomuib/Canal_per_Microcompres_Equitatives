@@ -10,10 +10,13 @@ import db from '../db.json';
 
 var sha256 = require('js-sha256');
 
+const EC = require ('elliptic').ec;
+const elliptic = require ('elliptic');
 
 class Home extends Component {
     state = {
         channel:'',
+        channels:'',
         k:'',
         user_db:'',
         loadingPage: true,
@@ -34,7 +37,7 @@ class Home extends Component {
                 })
             );
 
-            fetch('http://localhost:8000/'+accounts[0], {
+            fetch('http://localhost:7000/'+accounts[0], {
                 headers:{
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
@@ -46,13 +49,30 @@ class Home extends Component {
             }).then(data =>{
                 console.log('data', data);
                 this.setState({
-                    user_db: data
+                    user_db: data,
+                    accounts: accounts
+                })
+            });
+
+            const channels = fetch('http://localhost:7000/channels', {
+                headers:{
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res =>{
+                //console.log('response ',res);
+                return res.json();
+            }).then(data =>{
+                this.setState({
+                    channels: data
                 })
             })
 
 
             this.setState({
-                openChannels: openChannels
+                openChannels: openChannels,
+                accounts: accounts
             })
             /*const receiverDeliveriesCount = await factory.methods.getReceiverDeliveriesCount(accounts[0]).call();
             
@@ -120,6 +140,67 @@ class Home extends Component {
 
     }
 
+    Accept(service_index){
+        console.log('service_index', service_index);
+
+        const W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
+        var W = W_LM;
+
+        var L = 2*(service_index.c)+1;
+        for(L; L!= 0; L--){
+            W = sha256(W);
+            W = Buffer.from(W,'hex');
+        }
+            
+
+        fetch('http://localhost:7000/channels', {
+            method:'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "customer": service_index.customer,
+                "merchant": this.state.accounts[0],
+                "W_0M": Buffer.from(W).toString("hex"),
+                "service": service_index.service,
+                "c": service_index.c,
+                "S_id": service_index.id,
+            })
+        })
+        .then(res => {
+            return res.json();
+        })
+        .then(data => {
+        console.log('fetch',data);  
+        });
+
+        console.log('http://localhost:7000/'+ this.state.accounts[0] +'/'+ service_index['id'])
+
+        fetch('http://localhost:7000/'+ this.state.accounts[0] +'/'+ service_index['id'], {
+            method:'PUT',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "id": service_index['id'],
+                "channel": service_index.channel,
+                "customer": service_index.customer,
+                "service": service_index.info,
+                "c": service_index.c,
+                "S_id": service_index.S_id,
+                "W_LM":Buffer.from(W_LM).toString("hex"),
+                "State": "accepted"
+            })
+          })
+            .then(res => {
+                return res.json();
+            })
+            .then(data => {
+              console.log('fetch',data);  
+            });
+    
+    }
+
     /*renderDeliveryRows(sent) {
         var deliveries;
         if (sent) {
@@ -141,7 +222,39 @@ class Home extends Component {
 
     renderChannels(){
         
-        return this.state.openChannels.map((channel, index) =>{
+        const data = this.state.channels;
+
+        return Object.keys(data).map((requests, index) => {
+            if(data[index]['customer'] === this.state.accounts[0] || data[index]['merchant'] === this.state.accounts[0]){
+                console.log('dataa', data)
+                return (
+                <Table.Row>
+                    <Table.Cell>
+                        {index}
+                    </Table.Cell>
+                    <Table.Cell>
+                        {data[index]['merchant']}
+                    </Table.Cell>   
+                    <Table.Cell>
+                        {data[index]['customer']}
+                    </Table.Cell> 
+                    <Table.Cell>
+                    <Link to={"/channels/"+data[index]['id']}>
+                    <Button animated='vertical' color='blue'>
+                        <Button.Content hidden>View</Button.Content>
+                        <Button.Content visible>
+                          <Icon name='eye' />
+                        </Button.Content>
+                    </Button>
+                    </Link>
+                    </Table.Cell> 
+                </Table.Row>
+                )
+            }
+        })
+
+
+        /*return this.state.openChannels.map((channel, index) =>{
             return(
                 <Table.Row>
                     <Table.Cell>
@@ -149,16 +262,17 @@ class Home extends Component {
                     </Table.Cell>    
                 </Table.Row>
             )
-        })
+        })*/
 
     };
 
     renderRequests(){
         const data = this.state.user_db;
-        console.log('dataa', data)
+
         return Object.keys(data).map((requests, index) => {
-            console.log(data[index]);
-            if(data[index]['channel'] === ''){
+
+            if(data[index]['State'] != 'accepted' && data[index]['customer']){
+                
                 return (
                 <Table.Row>
                     <Table.Cell>
@@ -171,7 +285,10 @@ class Home extends Component {
                         {data[index]['service']}
                     </Table.Cell>
                     <Table.Cell>
-                    <Button animated='vertical' color='blue' /*onClick={() => this.onFinish(this.Finish.delivery)}*/>
+                        {data[index]['c']}
+                    </Table.Cell>
+                    <Table.Cell>
+                    <Button animated='vertical' color='blue' onClick={() => this.Accept(data[index])}>
                         <Button.Content hidden>Accept</Button.Content>
                         <Button.Content visible>
                           <Icon name='send' />
@@ -207,23 +324,25 @@ class Home extends Component {
                 (<div>
                 <h3>Channels</h3>
                 <Table fixed>
-                    <TableHeader>
-                    <Table.HeaderCell>Open Channels</Table.HeaderCell>
-                    </TableHeader>
-                    <Table.Body>
+                    <Table.Header>
                         <Table.Row>
-                                {this.renderChannels()}
+                            <Table.HeaderCell style={{ width: "10%" }}>#</Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "30%" }}>Merchant</Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "30%" }}>Customer</Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "10%" }}></Table.HeaderCell>
                         </Table.Row>
-                    </Table.Body>
+                    </Table.Header>
+                    <Table.Body>{this.renderChannels()}</Table.Body>
                 </Table>
                 <h3><Icon name = 'sign in alternate' circular />&nbsp;Requests</h3>
                 <Table fixed>
                     <Table.Header>
                         <Table.Row>
-                            <Table.HeaderCell>#</Table.HeaderCell>
-                            <Table.HeaderCell>Customer</Table.HeaderCell>
-                            <Table.HeaderCell>Service</Table.HeaderCell>
-                            <Table.HeaderCell></Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "10%" }}>#</Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "30%" }}>Customer</Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "40%" }}>Service</Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "10%" }}>µ-coins</Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "10%" }}></Table.HeaderCell>
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>{this.renderRequests()}</Table.Body>
