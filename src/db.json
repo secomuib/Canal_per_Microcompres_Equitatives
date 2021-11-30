@@ -107,37 +107,118 @@
     },
     {
       "customer_channel_id": 1,
+      "State": "opened",
+      "id": 2,
       "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
       "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
-      "W_0M": "c45761e8228c2435d3672f4c23e2a60c43524f952a07d82e8a2fadbc90bc8a03",
+      "W_0M": "35e1c81dfa1bab63b3c90611e4e95aea42a2c36f0e0e97b97f46355b222097a7",
       "service": "Access to a newspaper article",
-      "c": "1000",
-      "S_id": 1,
-      "id": 2
+      "c": "100",
+      "S_id": 2
+    },
+    {
+      "customer_channel_id": 2,
+      "State": "opened",
+      "id": 3,
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "W_0M": "a7574dd77749bb5a5fabd705c09efa5f4bd9c4870a0742ce044aed39a0385ce5",
+      "service": "Access to a newspaper for one day",
+      "c": "500",
+      "S_id": 3
+    },
+    {
+      "customer_channel_id": 3,
+      "State": "requested",
+      "id": 4
+    },
+    {
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 4,
+      "State": "requested",
+      "id": 5
     }
   ],
   "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b": [
     {
-      "id": 1,
+      "channel": "",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "service": "Access to a documentary film for 24 hours",
+      "c": "100",
+      "S_id": 5,
+      "id": 1
+    },
+    {
       "channel": "",
       "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
-      "c": "1000",
+      "service": "Access to a newspaper article",
+      "c": "100",
       "S_id": 1,
-      "W_LM": "6333623262323864623763353638633336626461653666306630396462323035",
-      "State": "accepted"
+      "channelID": 2,
+      "id": 2,
+      "W_LM": "3939373131653164623664333761643137393461343261326365313234626537"
+    },
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a newspaper for one day",
+      "c": "500",
+      "S_id": 2,
+      "channelID": 3,
+      "id": 3,
+      "W_LM": "3666323737633766626131303633336339323030366331633038356136303331"
+    },
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a newspaper article",
+      "c": "10000",
+      "S_id": 1,
+      "channelID": 4,
+      "id": 4
+    },
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a newspaper for one day",
+      "c": "500",
+      "S_id": 2,
+      "channelID": 5,
+      "id": 5
     }
   ],
   "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec": [],
   "0x70F6714dCa2f53A17558C5dff99D572959f77D9c": [],
   "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0": [
     {
+      "W_LC": "",
+      "id": 1
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper for one day",
+      "c": "500",
+      "S_id": 2,
+      "W_LC": "",
+      "id": 2
+    },
+    {
       "channel": "",
       "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
       "service": "Access to a newspaper article",
-      "c": "1000",
+      "c": "10000",
       "S_id": 1,
-      "W_LC": "7105895ea68d66da4efc15af69c1e8d2",
-      "id": 1
+      "id": 3
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper for one day",
+      "c": "500",
+      "S_id": 2,
+      "id": 4
     }
   ]
 }

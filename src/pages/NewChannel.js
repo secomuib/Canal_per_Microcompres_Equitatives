@@ -101,7 +101,10 @@ class NewChannel extends Component {
             "Content-Type": "application/json"
           },
         body: JSON.stringify({
-          "customer_channel_id": this.state.C_channels.id
+          "customer": accounts[0],
+          "merchant": this.state.merchant,
+          "customer_channel_id": this.state.C_channels.id,
+          "State": 'requested'
         })
       })
         .then(res => {
