@@ -102,7 +102,7 @@ class ChannelShow extends Component {
           </Form.Field>
 
           <Form.Field>
-            <label>W_0M</label>
+            <label>W<sub>0M</sub></label>
             <Input
               readOnly
               value={this.state.channel.W_0M}
@@ -110,7 +110,7 @@ class ChannelShow extends Component {
           </Form.Field>
 
           <Form.Field>
-            <label>W_0C</label>
+            <label>W<sub>0C</sub></label>
             <Input
               readOnly
               value={this.state.message}

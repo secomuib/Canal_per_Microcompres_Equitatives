@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from "react-router-dom";
 import { Form, Button, Message, Input, Table } from 'semantic-ui-react';
-import factory from '../ethereum/factory';
 import web3 from '../ethereum/web3';
 import variables from '../ethereum/variables';
 import db from '../db.json';
 import { readFile } from 'fs';
-import { identifier } from '@babel/types';
+import { identifier, throwStatement } from '@babel/types';
 
 //const fs = require('fs');
 
@@ -30,6 +29,8 @@ class NewChannel extends Component {
     merchantAddr:'',
     S_id:'',
     data: '',
+    C_channels:'',
+    channelid:'',
     errorMessage: ''
   };
 
@@ -50,14 +51,12 @@ class NewChannel extends Component {
         })
        })
 
-       
   }
 
   onSubmit = async event => {
     event.preventDefault();
     this.setState({ loading: true, errorMessage: '' });
     const accounts = await web3.eth.getAccounts();
-
     try {
 
       // Obtain the S_id of the selected service
@@ -73,29 +72,8 @@ class NewChannel extends Component {
         }
       })
 
-      //Merchant saved
-      fetch('http://localhost:7000/'+this.state.merchant, {
-        method:'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "channel": "",
-          "customer": accounts[0],
-          "service": this.state.service,
-          "c": this.state.c,
-          "S_id": this.state.S_id
-        })
-      })
-        .then(res => {
-            return res.json();
-        })
-        .then(data => {
-          console.log('fetch',data);  
-        });
-
         //Customer saved
-        fetch('http://localhost:7000/'+accounts[0], {
+        await fetch('http://localhost:7000/'+accounts[0], {
         method:'POST',
         headers: {
           "Content-Type": "application/json"
@@ -112,10 +90,52 @@ class NewChannel extends Component {
             return res.json();
         })
         .then(data => {
+          this.setState({
+            C_channels: data
+          }) 
+        });
+        console.log('C_channels', this.state.C_channels.id)
+        await fetch('http://localhost:7000/channels', {
+          method:'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+        body: JSON.stringify({
+          "customer_channel_id": this.state.C_channels.id
+        })
+      })
+        .then(res => {
+            return res.json();
+        })
+        .then(data => {
+          this.setState({
+            channelid: data.id
+          })  
+        });
+        //console.log('channelID', this.state.channelid)
+
+        //Merchant saved
+        await fetch('http://localhost:7000/'+this.state.merchant, {
+        method:'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "channel": "",
+          "customer": accounts[0],
+          "service": this.state.service,
+          "c": this.state.c,
+          "S_id": this.state.S_id,
+          "channelID": this.state.channelid
+        })
+      })
+        .then(res => {
+            return res.json();
+        })
+        .then(data => {
           console.log('fetch',data);  
         });
 
-      
         /*
         TRANSACCIÓ CREATECHANNEL
         const accounts = await web3.eth.getAccounts();
@@ -138,10 +158,10 @@ class NewChannel extends Component {
         await factory.methods
             .createChannel("0x"+W_0M, "0x"+W_0C, this.state.service, this.state.c, this.state.v, this.state.T_exp, this.state.TD, this.state.TR)
             .send({ from: accounts[0], value: this.state.deposit, gas:6000000 });
-        
+        */
         alert('Delivery created!');
         // Refresh, using withRouter
-        this.props.history.push('/');*/
+        this.props.history.push('/');
 
     } catch (err) {
         this.setState({

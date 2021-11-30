@@ -69,7 +69,6 @@ class Home extends Component {
                 })
             })
 
-
             this.setState({
                 openChannels: openChannels,
                 accounts: accounts
@@ -150,15 +149,17 @@ class Home extends Component {
         for(L; L!= 0; L--){
             W = sha256(W);
             W = Buffer.from(W,'hex');
-        }
-            
+        }    
+        const id = service_index.channelID;
+        console.log(this.state.channels[id-1]['customer_channel_id'])
 
-        fetch('http://localhost:7000/channels', {
-            method:'POST',
+        fetch('http://localhost:7000/channels/'+service_index.channelID, {
+            method:'PUT',
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
+                "customer_channel_id": this.state.channels[id-1]['customer_channel_id'],
                 "customer": service_index.customer,
                 "merchant": this.state.accounts[0],
                 "W_0M": Buffer.from(W).toString("hex"),
@@ -198,7 +199,6 @@ class Home extends Component {
             .then(data => {
               console.log('fetch',data);  
             });
-    
     }
 
     /*renderDeliveryRows(sent) {
@@ -244,6 +244,15 @@ class Home extends Component {
                         <Button.Content hidden>View</Button.Content>
                         <Button.Content visible>
                           <Icon name='eye' />
+                        </Button.Content>
+                    </Button>
+                    </Link>
+
+                    <Link to={"/channels/open/"+data[index]['id']}>
+                    <Button animated='vertical' color='blue'>
+                        <Button.Content hidden>Open</Button.Content>
+                        <Button.Content visible>
+                            <Icon name='exchange'/>
                         </Button.Content>
                     </Button>
                     </Link>
@@ -294,6 +303,7 @@ class Home extends Component {
                           <Icon name='send' />
                         </Button.Content>
                     </Button>
+                    
                     </Table.Cell>   
                 </Table.Row>
                 )
@@ -329,7 +339,7 @@ class Home extends Component {
                             <Table.HeaderCell style={{ width: "10%" }}>#</Table.HeaderCell>
                             <Table.HeaderCell style={{ width: "30%" }}>Merchant</Table.HeaderCell>
                             <Table.HeaderCell style={{ width: "30%" }}>Customer</Table.HeaderCell>
-                            <Table.HeaderCell style={{ width: "10%" }}></Table.HeaderCell>
+                            <Table.HeaderCell style={{ width: "20%" }}></Table.HeaderCell>
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>{this.renderChannels()}</Table.Body>
