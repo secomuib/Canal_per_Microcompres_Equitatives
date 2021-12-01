@@ -17,7 +17,7 @@ class NewChannel extends Component {
     c: '',
     v: '',
     service:'',
-    service_price:'',
+    service_data:'',
     T_exp:'',
     TD:'',
     TR:'',
@@ -71,6 +71,22 @@ class NewChannel extends Component {
           })
         }
       })
+      
+      //Obtain the service selected
+      await fetch('http://localhost:7000/services2/'+this.state.S_id, {
+        headers:{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }).then(res =>{
+        //console.log('response ',res);
+        return res.json();
+      }).then(data =>{
+        console.log('data services2', data);
+        this.setState({
+          service_data: data,
+        })
+       })
 
         //Customer saved
         await fetch('http://localhost:7000/'+accounts[0], {
@@ -94,7 +110,7 @@ class NewChannel extends Component {
             C_channels: data
           }) 
         });
-        console.log('C_channels', this.state.C_channels.id)
+
         await fetch('http://localhost:7000/channels', {
           method:'POST',
           headers: {
@@ -104,6 +120,9 @@ class NewChannel extends Component {
           "customer": accounts[0],
           "merchant": this.state.merchant,
           "customer_channel_id": this.state.C_channels.id,
+          "service": this.state.service,
+          "c": this.state.c,
+          "service_price": this.state.service_data.price,
           "State": 'requested'
         })
       })

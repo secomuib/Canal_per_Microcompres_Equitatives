@@ -33,8 +33,6 @@ class ChannelShow extends Component {
           channel: data,
         })
        })
-
-
       console.log(this.state.channel);
     } catch (err) {
       this.setState({ errorMessage: err.message });
@@ -42,13 +40,13 @@ class ChannelShow extends Component {
       this.setState({ loading: false });
     }
   }
-/*
+
   onSubmit = async event => {
     event.preventDefault();
 
     // Refresh, using withRouter
     this.props.history.push('/');
-  };*/
+  };
 
   render() {
     
@@ -88,7 +86,7 @@ class ChannelShow extends Component {
             <label>Service price</label>
             <Input
               readOnly
-              value={this.state.channel.price}
+              value={this.state.channel.service_price}
             />
           </Form.Field>
 
@@ -100,27 +98,60 @@ class ChannelShow extends Component {
               value={this.state.channel.c}
             />
           </Form.Field>
-
-          <Form.Field>
+        {(this.state.channel.State === 'accepted' || this.state.channel.State === 'opened' || this.state.channel.State === 'payment') && (
+        <Form.Field>
             <label>W<sub>0M</sub></label>
             <Input
               readOnly
               value={this.state.channel.W_0M}
             />
-          </Form.Field>
-
+          </Form.Field>)}
+           {(this.state.channel.State === 'opened' || this.state.channel.State === 'payment') && (
+          <Form>
           <Form.Field>
             <label>W<sub>0C</sub></label>
             <Input
               readOnly
-              value={this.state.message}
+              value={this.state.channel.W_0C}
             />
           </Form.Field>
 
+          <Form.Field>
+            <label>ethAddress</label>
+            <Input
+              readOnly
+              value={this.state.channel.ethAddress}
+            />
+          </Form.Field> 
+          </Form>
+          )}
+          {(this.state.channel.State === 'payment') && (
+            <Form>
+            <Form.Field>
+              <label>m<sub>1</sub></label>
+              <Input readOnly value={this.state.channel.messages.m1}/>
+            </Form.Field>
+
+            <Form.Field>
+            <label>m<sub>2</sub></label>
+            <Input readOnly value={this.state.channel.messages.m2}/>
+            </Form.Field>
+            <Form.Field>
+
+            <label>m<sub>3</sub></label>
+            <Input readOnly value={this.state.channel.messages.m3}/>
+          </Form.Field>
+          </Form>
+          )}
+          
+
+          <Form.Field>
           <Message error header="ERROR" content={this.state.errorMessage} />
           <Button primary loading={this.state.loading}>
             Close
           </Button>
+          </Form.Field>
+
         </Form>
       </div>
     );

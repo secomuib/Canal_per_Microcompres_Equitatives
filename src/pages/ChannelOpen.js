@@ -16,6 +16,7 @@ class ChannelOpen extends Component {
     Δ_TD: '',
     W_LC: '',
     W_0C: '',
+    customerInfo: '',
     channel: '',
     accounts: '',
     loading: false,
@@ -60,10 +61,10 @@ class ChannelOpen extends Component {
 
       //W = Buffer.from(W).toString("hex");
       console.log('W final', W)
-      
+
       console.log('W_LC', this.state.W_LC, 'W_0C', this.state.W_0C);
 
-      const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
+      /*const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
         .then(res => {
           return res.json();
         })
@@ -86,7 +87,7 @@ class ChannelOpen extends Component {
           "service": this.state.customerInfo.service,
           "c": this.state.customerInfo.c,
           "S_id": this.state.customerInfo.S_id,
-          "W_LC": this.state.W_LC
+          "channelID": 
         })
       })
         .then(res => {
@@ -97,13 +98,13 @@ class ChannelOpen extends Component {
             data: data
           })
           
-        });
+        });*/
 
-        this.setState({
-          W_LC: W_LC,
-          W_0C: W,
-          accounts: accounts
-        })
+      this.setState({
+        W_LC: W_LC,
+        W_0C: W,
+        accounts: accounts
+      })
 
     } catch (err) {
       this.setState({ errorMessage: err.message });
@@ -126,17 +127,51 @@ class ChannelOpen extends Component {
       const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, this.state.T_EXP, this.state.Δ_TD, this.state.Δ_TR)
         .send({ from: accounts[0], value: this.state.channel.c * 1, gas: 6000000 });
 
-        if(addressChannel){
-          console.log(addressChannel);
+      if (addressChannel) {
+        console.log(addressChannel);
 
-          let id = this.props.match.params.id;
+        let id = this.props.match.params.id;
 
-      await fetch('http://localhost:7000/channels/' + id, {
+        const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            console.log('fetch', data);
+            this.setState({
+              customerInfo: data
+            })
+          });
+
+
+        await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
           method: 'PATCH',
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
+            "W_LC": this.state.W_LC,
+            "channelID": id
+          })
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            this.setState({
+              data: data
+            })
+
+          });
+
+        await fetch('http://localhost:7000/channels/' + id, {
+          method: 'PATCH',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "W_0C": this.state.W_0C,
+            "ethAddress": addressChannel.blockHash,
             "State": 'opened'
           })
         })
@@ -145,9 +180,9 @@ class ChannelOpen extends Component {
           })
           .then(data => {
             console.log('fetch', data);
-            
+
           });
-        }
+      }
       // Refresh
       alert('Channel opened');
       // Refresh, using withRouter
@@ -159,48 +194,48 @@ class ChannelOpen extends Component {
     };
   }
 
-    render() {
+  render() {
 
-      return (
-        <div>
-          <Dimmer inverted active={this.state.loading}>
-            <Loader inverted content='Loading...'></Loader>
-          </Dimmer>
-          <Link to='/'>Back</Link>
-          <h3>Open Channel</h3>
-          <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage} hidden={this.state.loading}>
-            <Form.Field>
-              <label>T <sub>EXP</sub></label>
-              <Input
-                value={this.state.T_EXP}
-                onChange={event => this.setState({ T_EXP: event.target.value })}
-              />
-            </Form.Field>
+    return (
+      <div>
+        <Dimmer inverted active={this.state.loading}>
+          <Loader inverted content='Loading...'></Loader>
+        </Dimmer>
+        <Link to='/'>Back</Link>
+        <h3>Open Channel</h3>
+        <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage} hidden={this.state.loading}>
+          <Form.Field>
+            <label>T <sub>EXP</sub></label>
+            <Input
+              value={this.state.T_EXP}
+              onChange={event => this.setState({ T_EXP: event.target.value })}
+            />
+          </Form.Field>
 
-            <Form.Field>
-              <label>Δ<sub>TD</sub></label>
-              <Input
-                value={this.state.Δ_TD}
-                onChange={event => this.setState({ Δ_TD: event.target.value })}
-              />
-            </Form.Field>
+          <Form.Field>
+            <label>Δ<sub>TD</sub></label>
+            <Input
+              value={this.state.Δ_TD}
+              onChange={event => this.setState({ Δ_TD: event.target.value })}
+            />
+          </Form.Field>
 
-            <Form.Field>
-              <label>Δ<sub>TR</sub></label>
-              <Input
-                value={this.state.Δ_TR}
-                onChange={event => this.setState({ Δ_TR: event.target.value })}
-              />
-            </Form.Field>
+          <Form.Field>
+            <label>Δ<sub>TR</sub></label>
+            <Input
+              value={this.state.Δ_TR}
+              onChange={event => this.setState({ Δ_TR: event.target.value })}
+            />
+          </Form.Field>
 
-            <Message error header="ERROR" content={this.state.errorMessage} />
-            <Button primary loading={this.state.loading}>
-              Open Channel
-            </Button>
-          </Form>
-        </div>
-      );
-    }
+          <Message error header="ERROR" content={this.state.errorMessage} />
+          <Button primary loading={this.state.loading}>
+            Open Channel
+          </Button>
+        </Form>
+      </div>
+    );
   }
+}
 
 export default withRouter(ChannelOpen);
