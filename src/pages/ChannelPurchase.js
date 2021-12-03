@@ -47,11 +47,15 @@ class ChannelPurchase extends Component {
 
         
         function W_nX (n, W_X){
-            var W=Buffer.from(W_X,'hex');
+            
+
+            var W= W_X//Buffer.from(W_X,'hex');
+            
             var L = 2*(c)+1;
             for(L; L!= n; L--){
               W = sha256(W);
-              W = Buffer.from(W,'hex');
+              console.log(W)
+              //W = Buffer.from(W,'hex');
             }
             return W;
           };
@@ -119,7 +123,7 @@ class ChannelPurchase extends Component {
           
 
       // Refresh
-      alert('Channel opened');
+      alert('Micro-coin sended');
       // Refresh, using withRouter
       this.props.history.push('/');
     } catch (err) {

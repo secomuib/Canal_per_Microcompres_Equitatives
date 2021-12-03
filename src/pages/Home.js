@@ -225,6 +225,88 @@ class Home extends Component {
         });
     }*/
 
+    send(data){
+        console.log('data index', data)
+        console.log(this.state.user_db)
+        var index_userChannel;
+        this.state.user_db.map((info, index)=>{
+            if(this.state.user_db[index]['channelID'] === data['id']){
+                index_userChannel = index;
+            }
+        })
+        console.log(this.state.user_db[index_userChannel]['j'])
+        console.log(data['messages']['i'])
+
+        function W_nX (i, j, W_X){
+            var W= W_X//Buffer.from(W_X,'hex');
+            
+            //var L = 2*(c)+1;
+            for(i; i!= j; i--){
+              W = sha256(W);
+              // console.log(W)
+              //W = Buffer.from(W,'hex');
+            }
+            return W;
+          };
+
+        var c = data['c'];
+        var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m1'])
+        
+        const W_ic = 'W_'+this.state.user_db[index_userChannel]['j']+'C';
+
+        if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === data['W_'+this.state.user_db[index_userChannel]['j']+'C'])){
+            fetch('http://localhost:7000/channels/' + data['id'], {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "State": 'send service',
+                    W_ic: data['messages']['m1'],
+                    "messages":{
+                        "i": data['messages']['i'],
+                        "m1": data['messages']['m1'],
+                        "m2": data['service']
+                    }
+                })
+                })
+                .then(res => {
+                    //console.log('response ',res);
+                    return res.json();
+                }).then(data => {
+                    this.setState({
+                        channels: data
+                    })
+                })
+
+                fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + index_userChannel, {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "i": this.state.user_db[index_userChannel]['j']
+                })
+                })
+                .then(res => {
+                    //console.log('response ',res);
+                    return res.json();
+                }).then(data => {
+                    this.setState({
+                        channels: data
+                    })
+                })
+            
+           
+        }else{
+            alert('The micro coin is not valid!')
+        }
+
+
+        //Verify i>j and M forms part of the chain
+
+    }
+
     renderChannels() {
 
         const data = this.state.channels;
@@ -273,20 +355,31 @@ class Home extends Component {
                                     </Button>
                                 </Link>
                             ):(data[index]['State'] === 'payment' && data[index]['merchant'] === this.state.accounts[0] ? (
-                                <Link to={"/channels/send/" + data[index]['id']}>
-                                    <Button animated='vertical' color='blue'>
+                                
+                                <Button animated='vertical' color='blue' onClick={() => this.send(data[index])}>
+                                    <Button.Content hidden>Send</Button.Content>
+                                    <Button.Content visible>
+                                        <Icon name='exchange' />
+                                    </Button.Content>
+                                </Button>
+                                
+
+                            ):(data[index]['State'] === 'payment' && data[index]['customer'] === this.state.accounts[0] ? (
+                                
+                                <Link to={"/channels/purchase/" + data[index]['id']}>
+                                    <Button animated='vertical' color='yellow'>
                                         <Button.Content hidden>Send</Button.Content>
                                         <Button.Content visible>
                                             <Icon name='exchange' />
                                         </Button.Content>
                                     </Button>
                                 </Link>
+
                             ):(data[index]['State'] === 'opened' && data[index]['merchant'] === this.state.accounts[0] ? (
                                 <Label as='a' color='green' horizontal>Opened</Label>
                             ):(
                                 <Label as='a' color='yellow' horizontal>Accepted</Label>
-                            ))))}
-
+                            )))))}
                         </Table.Cell>
                     </Table.Row>
                 )
@@ -338,17 +431,9 @@ class Home extends Component {
                             </Button>
                         </Table.Cell>
                     </Table.Row>
-
                 )
-
             }
-
-
-
         })
-
-
-
     }
 
     render() {

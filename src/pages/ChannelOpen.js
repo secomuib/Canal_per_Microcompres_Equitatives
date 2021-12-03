@@ -52,7 +52,7 @@ class ChannelOpen extends Component {
       const W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
       var W = W_LC;
       console.log(W)
-      var L = 2//2*(this.state.channel.c)+1;
+      var L = 2*(this.state.channel.c)+1;
       for (L; L != 0; L--) {
         W = sha256(W);
         console.log(W)
@@ -119,8 +119,6 @@ class ChannelOpen extends Component {
 
     try {
       const accounts = await web3.eth.getAccounts();
-
-      /**/
 
       //console.log(this.state.channel.W_0M, this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, this.state.T_EXP, this.state.Δ_TD, this.state.Δ_TR)
 

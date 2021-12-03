@@ -116,11 +116,136 @@
       "id": 2,
       "W_0M": "f5696c7ed59442487953f51f57e905d32bc86c8178381230ee370e05684333c2",
       "S_id": 1,
-      "W_0C": "9b9582b6bb3c3235b8ce8dc2d44c6746f9eeaf244f1cf4fe797fc894530b88cd",
-      "ethAddress": "0x369164a4cb40af98ddf21b1ee0378be2b28143856ebf7b7241d63bf90c48677f",
+      "W_0C": "0f4e11db0621e1132f22c2b60f01f574f06b8ca9f4137463d9c545ce67284f63",
+      "ethAddress": "0x1a4e1a7849f7eb114f0bbc04f242f0237f7a9d276d7dd8153d0afa41438b131d",
       "messages": {
+        "i": "1",
         "m1": "74b5cdf9d5ef2233590393f313a76da4ae41713ccc0803a42f2d4c03ac8aff63"
       }
+    },
+    {
+      "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 2,
+      "service": "Access to a newspaper for one day",
+      "c": "3",
+      "service_price": "5 Gwei",
+      "State": "requested",
+      "id": 3
+    },
+    {
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "customer_channel_id": 2,
+      "service": "Access to a documentary film for 24 hours",
+      "c": "3",
+      "service_price": "1 Gwei",
+      "State": "payment",
+      "id": 4,
+      "W_0M": "ab92cb898547b2e095a324883a079760d0062f6ad60d544ee66a88c9fc95292b",
+      "S_id": 1,
+      "W_0C": "164cf95e3c0631d44e2dd92cf9cea0941dd4c33631f88a045a73eacb39d7ba4e",
+      "ethAddress": "0x2ae1bf5dec7ca80bd7a4622020f1c91df2a7b6c3f15d3a89883d6a0194f918d3",
+      "messages": {
+        "i": "1",
+        "m1": "50b402303b2c2d88c44fa7571e7d4e0e248346fe7467a61344be5fc9143c45be"
+      }
+    },
+    {
+      "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 4,
+      "service": "Access to a newspaper for one day",
+      "c": "5",
+      "service_price": "5 Gwei",
+      "State": "accepted",
+      "id": 5,
+      "W_0M": "d14ce6e1f3556a014481579ba0c4756e7b9eae939f426129b269a7ee48b8ccba",
+      "S_id": 5
+    },
+    {
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 3,
+      "service": "Access to a newspaper article",
+      "c": "3",
+      "service_price": "1 Gwei",
+      "State": "payment",
+      "id": 6,
+      "W_0M": "e98ef0c5dc8899ce298c22e2beb5af4ec151edc8ab8880684ea9990afdb7f505",
+      "S_id": 6,
+      "W_0C": "164cf95e3c0631d44e2dd92cf9cea0941dd4c33631f88a045a73eacb39d7ba4e",
+      "ethAddress": "0x606d0c0916af32b2b91f67389aed1530abb5b515f2f58aaedf769ce17a1891ec",
+      "messages": {
+        "i": "1",
+        "m1": "3ca1a72a68de550cb253e687f5e18b7e0449587f87170c51260556bd0d6add27"
+      }
+    },
+    {
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 4,
+      "service": "Access to a newspaper article",
+      "c": "3",
+      "service_price": "1 Gwei",
+      "State": "payment",
+      "id": 7,
+      "W_0M": "5328032cc830fc888ee8d10ae8df5cd72e59cf235f5183b6320022f29cebcb46",
+      "S_id": 7,
+      "W_0C": "164cf95e3c0631d44e2dd92cf9cea0941dd4c33631f88a045a73eacb39d7ba4e",
+      "ethAddress": "0x0db2785d65330e2a8e8a60ed0c5a432cd24c322c90b5c58680a9a531b791bd46",
+      "messages": {
+        "i": "1",
+        "m1": "3ca1a72a68de550cb253e687f5e18b7e0449587f87170c51260556bd0d6add27"
+      }
+    },
+    {
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "customer_channel_id": 5,
+      "service": "Access to a documentary film for 48 hours",
+      "c": "5",
+      "service_price": "2 Gwei",
+      "State": "requested",
+      "id": 8
+    },
+    {
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "customer_channel_id": 6,
+      "service": "Access to a documentary film for 24 hours",
+      "c": "5",
+      "service_price": "1 Gwei",
+      "State": "payment",
+      "id": 9,
+      "W_0M": "31bd7399f936a0cac58d37c467bdad3f55cdc828faa0206e27159b9a0f267f22",
+      "S_id": 3,
+      "W_0C": "0f4e11db0621e1132f22c2b60f01f574f06b8ca9f4137463d9c545ce67284f63",
+      "ethAddress": "0x5007c80a4ac98f1e68a8ed701fdb8b2fd2c14c60c2d5412748860d00b058e002",
+      "messages": {
+        "i": "1",
+        "m1": "ae429df7383ed33302eafc38ac21b6d8fbc50eec3709fe1a40f43987aad8d156"
+      }
+    },
+    {
+      "customer": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 4,
+      "service": "Access to a newspaper article",
+      "c": "5",
+      "service_price": "1 Gwei",
+      "State": "send service",
+      "id": 10,
+      "W_0M": "d04dc773c03cf8d2413232c5925094081ccc4d1618b77aa9148d44c9215171c6",
+      "S_id": 8,
+      "W_0C": "9fe545644bfe08ca17daa59d185d787f0b14d187d23962a1c15703612ddd988d",
+      "ethAddress": "0xd45463a7f5850fb9a4857f1aeb35e7641512fce40a4fb35727e3346a731893da",
+      "messages": {
+        "i": 1,
+        "m1": "67e5a27e58a0973040cd9af95b1c12f2eb3fc1c37b77d3a2850a6ff5ad91cd21",
+        "m2": "Access to a newspaper article"
+      },
+      "W_ic": "67e5a27e58a0973040cd9af95b1c12f2eb3fc1c37b77d3a2850a6ff5ad91cd21"
     }
   ],
   "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b": [
@@ -134,9 +259,119 @@
       "id": 1,
       "W_LM": "6632626336636638626334333265633032633433363266623232356333373438",
       "j": 0
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper for one day",
+      "c": "3",
+      "S_id": 2,
+      "id": 2
+    },
+    {
+      "channel": "",
+      "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper for one day",
+      "c": "3",
+      "S_id": 2,
+      "channelID": 3,
+      "id": 3
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper for one day",
+      "c": "5",
+      "S_id": 2,
+      "id": 4
+    },
+    {
+      "channel": "",
+      "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper for one day",
+      "c": "5",
+      "S_id": 2,
+      "channelID": 5,
+      "id": 5
+    },
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a newspaper article",
+      "c": "3",
+      "S_id": 1,
+      "channelID": 6,
+      "id": 6,
+      "W_LM": "3661623665646436376464376434336435323166393332353562306364383362",
+      "j": 0
+    },
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a newspaper article",
+      "c": "3",
+      "S_id": 1,
+      "channelID": 7,
+      "id": 7,
+      "W_LM": "3231373466653038633934346364376164346531383130323839613264323931",
+      "j": 0,
+      "i": 0
+    },
+    {
+      "channel": "",
+      "customer": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "service": "Access to a newspaper article",
+      "c": "5",
+      "S_id": 1,
+      "channelID": 10,
+      "id": 8,
+      "W_LM": "3837336364336562616630663637643564333136323064646136343561343933",
+      "j": 0
     }
   ],
-  "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec": [],
+  "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec": [
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a documentary film for 24 hours",
+      "c": "3",
+      "S_id": 5,
+      "channelID": 4,
+      "id": 1,
+      "W_LM": "6431633766383461663961386534383139346166323863383439633834316232",
+      "j": 0
+    },
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a documentary film for 48 hours",
+      "c": "5",
+      "S_id": 6,
+      "channelID": 8,
+      "id": 2
+    },
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a documentary film for 24 hours",
+      "c": "5",
+      "S_id": 5,
+      "channelID": 9,
+      "id": 3,
+      "W_LM": "3333316330656338613332346638383536633334656538623430366266306261",
+      "j": 0
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper article",
+      "c": "5",
+      "S_id": 1,
+      "id": 4,
+      "W_LC": "108bdd6e2ab5739a423a371767838c8e",
+      "channelID": "10"
+    }
+  ],
   "0x70F6714dCa2f53A17558C5dff99D572959f77D9c": [],
   "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0": [
     {
@@ -148,6 +383,54 @@
       "id": 1,
       "W_LC": "1fd526eacbe385fa35e16febd17b9a00",
       "channelID": "2"
+    },
+    {
+      "channel": "",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "service": "Access to a documentary film for 24 hours",
+      "c": "3",
+      "S_id": 5,
+      "id": 2,
+      "W_LC": "1fd526eacbe385fa35e16febd17b9a00",
+      "channelID": "4"
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper article",
+      "c": "3",
+      "S_id": 1,
+      "id": 3,
+      "W_LC": "1fd526eacbe385fa35e16febd17b9a00",
+      "channelID": "6"
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper article",
+      "c": "3",
+      "S_id": 1,
+      "id": 4,
+      "W_LC": "1fd526eacbe385fa35e16febd17b9a00",
+      "channelID": "7"
+    },
+    {
+      "channel": "",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "service": "Access to a documentary film for 48 hours",
+      "c": "5",
+      "S_id": 6,
+      "id": 5
+    },
+    {
+      "channel": "",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "service": "Access to a documentary film for 24 hours",
+      "c": "5",
+      "S_id": 5,
+      "id": 6,
+      "W_LC": "1fd526eacbe385fa35e16febd17b9a00",
+      "channelID": "9"
     }
   ]
 }
