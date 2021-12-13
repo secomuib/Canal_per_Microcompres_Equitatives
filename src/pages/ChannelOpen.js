@@ -119,10 +119,13 @@ class ChannelOpen extends Component {
 
     try {
       const accounts = await web3.eth.getAccounts();
+      let T_EXP = new Date(this.state.T_EXP).getTime() / 1000;
+      console.log(T_EXP);
+      console.log(new Date(T_EXP * 1000)) //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
 
-      //console.log(this.state.channel.W_0M, this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, this.state.T_EXP, this.state.Δ_TD, this.state.Δ_TR)
+      console.log(this.state.channel.W_0M, this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
 
-      const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, this.state.T_EXP, this.state.Δ_TD, this.state.Δ_TR)
+      const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
         .send({ from: accounts[0], value: this.state.channel.c * 1, gas: 6000000 });
 
       if (addressChannel) {
@@ -185,6 +188,7 @@ class ChannelOpen extends Component {
       alert('Channel opened');
       // Refresh, using withRouter
       this.props.history.push('/');
+      
     } catch (err) {
       this.setState({ errorMessage: err.message });
     } finally {
@@ -206,6 +210,7 @@ class ChannelOpen extends Component {
             <label>T <sub>EXP</sub></label>
             <Input
               value={this.state.T_EXP}
+              type="date"
               onChange={event => this.setState({ T_EXP: event.target.value })}
             />
           </Form.Field>

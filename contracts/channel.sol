@@ -4,12 +4,13 @@ contract factoryChannel{
     mapping(address => address[]) public ownerChannels;
     address[] public channels;
     
-    function createChannel(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) public payable {
+    function createChannel(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) public payable returns(address){
         require(msg.value == _c * _v, "msg.value error");
         
         address newChannel = address ((new channel){value: msg.value}(_W_jm, _W_jc, _S_id, _c, _v, _T_exp, _TD, _TR, msg.sender));
         channels.push(newChannel);
         ownerChannels[msg.sender].push(newChannel);
+        return newChannel;
     }
 
     function getChannels(uint index) public view returns(address){

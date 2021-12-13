@@ -98,7 +98,9 @@ class ChannelShow extends Component {
               value={this.state.channel.c}
             />
           </Form.Field>
-        {(this.state.channel.State === 'accepted' || this.state.channel.State === 'opened' || this.state.channel.State === 'payment') && (
+        {(this.state.channel.State === 'accepted' || this.state.channel.State === 'opened' || 
+        this.state.channel.State === 'payment' || this.state.channel.State === 'send service'|| 
+        this.state.channel.State === 'send proof') && (
         <Form.Field>
             <label>W<sub>0M</sub></label>
             <Input
@@ -106,7 +108,8 @@ class ChannelShow extends Component {
               value={this.state.channel.W_0M}
             />
           </Form.Field>)}
-           {(this.state.channel.State === 'opened' || this.state.channel.State === 'payment') && (
+           {(this.state.channel.State === 'opened' || this.state.channel.State === 'payment' || 
+           this.state.channel.State === 'send service' || this.state.channel.State === 'send proof') && (
           <Form>
           <Form.Field>
             <label>W<sub>0C</sub></label>
@@ -123,10 +126,7 @@ class ChannelShow extends Component {
               value={this.state.channel.ethAddress}
             />
           </Form.Field> 
-          </Form>
-          )}
-          {(this.state.channel.State === 'payment') && (
-            <Form>
+         
             <Form.Field>
               <label>m<sub>1</sub></label>
               <Input readOnly value={this.state.channel.messages.m1}/>
@@ -141,17 +141,27 @@ class ChannelShow extends Component {
             <label>m<sub>3</sub></label>
             <Input readOnly value={this.state.channel.messages.m3}/>
           </Form.Field>
+
+            <Form.Field>
+              <label>i</label>
+              <Input readOnly value={this.state.channel.messages.i}/>
+            </Form.Field>
+
+            <Form.Field>
+              <label>W_ic</label>
+              <Input readOnly value={this.state.channel.W_ic}/>
+            </Form.Field>
           </Form>
           )}
           
-
+          <Form>
           <Form.Field>
           <Message error header="ERROR" content={this.state.errorMessage} />
           <Button primary loading={this.state.loading}>
             Close
           </Button>
           </Form.Field>
-
+          </Form>
         </Form>
       </div>
     );

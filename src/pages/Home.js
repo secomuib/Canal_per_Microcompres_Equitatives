@@ -73,6 +73,7 @@ class Home extends Component {
                 openChannels: openChannels,
                 accounts: accounts
             })
+            console.log('user_Db',this.state.user_db)
             /*const receiverDeliveriesCount = await factory.methods.getReceiverDeliveriesCount(accounts[0]).call();
             
             const senderDeliveries = await Promise.all(
@@ -143,6 +144,7 @@ class Home extends Component {
         //console.log('channel_ID', channel_ID);
         //console.log(this.state.user_db);
         const data = this.state.user_db
+        console.log('data', data);
         let merchant_ch;
 
         data.map((ch, index) => {
@@ -225,15 +227,27 @@ class Home extends Component {
         });
     }*/
 
+    //Send m2
     send(data){
         console.log('data index', data)
         console.log(this.state.user_db)
         var index_userChannel;
+
+        let address = data['ethAddress']
+        console.log(address)
+        let channelContract = factory(address);
+        console.log(channelContract)
+        //console.log(channelContract.methods.T_exp.call())
+/*
+        if(Date.now()< T_EXP){
+
+        }
         this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id']){
                 index_userChannel = index;
             }
         })
+        console.log('index user channel', index_userChannel);
         console.log(this.state.user_db[index_userChannel]['j'])
         console.log(data['messages']['i'])
 
@@ -262,7 +276,7 @@ class Home extends Component {
                 },
                 body: JSON.stringify({
                     "State": 'send service',
-                    W_ic: data['messages']['m1'],
+                    W_ic:data['messages']['m1'],
                     "messages":{
                         "i": data['messages']['i'],
                         "m1": data['messages']['m1'],
@@ -277,15 +291,16 @@ class Home extends Component {
                     this.setState({
                         channels: data
                     })
-                })
+                });
 
-                fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + index_userChannel, {
+                //console.log('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1));
+                fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
                 method: 'PATCH',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "i": this.state.user_db[index_userChannel]['j']
+                    "j": data['messages']['i']
                 })
                 })
                 .then(res => {
@@ -296,15 +311,143 @@ class Home extends Component {
                         channels: data
                     })
                 })
-            
            
         }else{
             alert('The micro coin is not valid!')
         }
-
+*/
 
         //Verify i>j and M forms part of the chain
 
+    }
+
+    sendProof(data){
+        //TODO: DECRYPT M2
+
+        console.log('data index', data)
+        console.log(this.state.user_db)
+        var index_userChannel;
+        this.state.user_db.map((info, index)=>{
+            if(this.state.user_db[index]['channelID'] === data['id'].toString()){
+                index_userChannel = index;
+            }
+        })
+        /*console.log('index user channel', index_userChannel);
+        console.log(this.state.user_db[index_userChannel]);
+        console.log('i',data['messages']['i'])*/
+
+        function W_nX (n, W_X){
+            
+            var W= W_X//Buffer.from(W_X,'hex');
+            
+            var L = 2*(c)+1;
+            for(L; L!= n; L--){
+              W = sha256(W);
+              console.log(W)
+              //W = Buffer.from(W,'hex');
+            }
+            return W;
+          };
+
+        var c = data['c'];
+        console.log('W_LC',this.state.user_db[index_userChannel]['W_LC'])
+        var hash = W_nX(parseInt(data['messages']['i'],10)+1, this.state.user_db[index_userChannel]['W_LC'])
+
+        console.log('hash', hash);
+        fetch('http://localhost:7000/channels/' + data['id'], {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "State": 'send proof',
+                    "messages":{
+                        "i": (parseInt(data['messages']['i'])+1),
+                        "m1": data['messages']['m1'],
+                        "m2": data['messages']['m2'],
+                        "m3": hash
+                    }
+                })
+                })
+                .then(res => {
+                    //console.log('response ',res);
+                    return res.json();
+                }).then(data => {
+                    this.setState({
+                        channels: data
+                    })
+                });
+    }
+    verify(data){
+        //TODO: DECRYPT M3
+
+        console.log('data index', data)
+        console.log(this.state.user_db)
+        var index_userChannel;
+        this.state.user_db.map((info, index)=>{
+            if(this.state.user_db[index]['channelID'] === data['id']){
+                index_userChannel = index;
+            }
+        })
+        console.log('index user channel', index_userChannel);
+        console.log('j',this.state.user_db[index_userChannel]['j']);
+        console.log('i',data['messages']['i'])
+
+        function W_nX (i, j, W_X){
+            var W= W_X//Buffer.from(W_X,'hex');
+            console.log(W)
+            //var L = 2*(c)+1;
+            for(i; i!= j; i--){
+            W = sha256(W);
+            //W = Buffer.from(W,'hex');
+            }
+            return W;
+        };
+
+        //var c = data['c'];
+        //console.log(parseInt(data['messages']['i'],10)+1)
+        var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m3'])
+        console.log(hash);
+
+        if(hash === data['W_ic']){
+            fetch('http://localhost:7000/channels/' + data['id'], {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "State": 'opened',
+                    W_ic:data['messages']['m3']
+                })
+            })
+            .then(res => {
+                //console.log('response ',res);
+                return res.json();
+            }).then(data => {
+                this.setState({
+                    channels: data
+                })
+            });
+
+            //Update j
+            fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "j": data['messages']['i']
+                })
+            })
+            .then(res => {
+                //console.log('response ',res);
+                return res.json();
+            }).then(data => {
+                this.setState({
+                    channels: data
+                })
+            })
+        }
     }
 
     renderChannels() {
@@ -312,7 +455,8 @@ class Home extends Component {
         const data = this.state.channels;
 
         return Object.keys(data).map((requests, index) => {
-            if ((data[index]['customer'] === this.state.accounts[0] || data[index]['merchant'] === this.state.accounts[0]) && data[index]['State'] != 'requested') {
+            console.log('hola',data[index]['customer'])
+            if (data[index]['customer'] === this.state.accounts[0] || data[index]['merchant'] === this.state.accounts[0]) {
                 console.log('dataa', data)
                 return (
                     <Table.Row>
@@ -377,9 +521,30 @@ class Home extends Component {
 
                             ):(data[index]['State'] === 'opened' && data[index]['merchant'] === this.state.accounts[0] ? (
                                 <Label as='a' color='green' horizontal>Opened</Label>
-                            ):(
-                                <Label as='a' color='yellow' horizontal>Accepted</Label>
-                            )))))}
+                            ):(data[index]['State'] === 'send service' && data[index]['merchant'] === this.state.accounts[0] ? ( 
+                                <Label as='a' color='blue' horizontal>Waiting proof</Label>
+                            ):(data[index]['State'] === 'send service' && data[index]['customer'] === this.state.accounts[0] ? (
+                                
+                                <Button animated='vertical' color='yellow' onClick={() => this.sendProof(data[index])}>
+                                    <Button.Content hidden>Proof</Button.Content>
+                                    <Button.Content visible>
+                                        <Icon name='exchange' />
+                                    </Button.Content>
+                                </Button>
+
+                            ):(data[index]['State'] === 'send proof' && data[index]['customer'] === this.state.accounts[0] ? ( 
+                                <Label as='a' color='orange' horizontal>Waiting M verification</Label>
+                            ):(data[index]['State'] === 'send proof' && data[index]['merchant'] === this.state.accounts[0] ? (
+                                
+                                <Button animated='vertical' color='yellow' onClick={() => this.verify(data[index])}>
+                                    <Button.Content hidden>Verify</Button.Content>
+                                    <Button.Content visible>
+                                        <Icon name='check' />
+                                    </Button.Content>
+                                </Button>
+
+                            ):(<></>)
+                            ))))))))}
                         </Table.Cell>
                     </Table.Row>
                 )
