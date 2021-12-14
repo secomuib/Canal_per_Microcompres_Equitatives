@@ -16,6 +16,7 @@ const elliptic = require('elliptic');
 class Home extends Component {
     state = {
         channel: '',
+        channelID:'',
         channels: '',
         k: '',
         user_db: '',
@@ -29,7 +30,7 @@ class Home extends Component {
         try {
             const accounts = await web3.eth.getAccounts();
             const channelsCount = await factory.methods.getChannelsCount().call();
-            console.log(channelsCount)
+            //console.log(channelsCount)
 
             const openChannels = await Promise.all(
                 Array(parseInt(channelsCount)).fill().map((delivery, index) => {
@@ -47,7 +48,7 @@ class Home extends Component {
                     //console.log('response ',res);
                     return res.json();
                 }).then(data => {
-                    console.log('data', data);
+                    //console.log('data', data);
                     this.setState({
                         user_db: data,
                         accounts: accounts
@@ -73,7 +74,8 @@ class Home extends Component {
                 openChannels: openChannels,
                 accounts: accounts
             })
-            console.log('user_Db',this.state.user_db)
+            //console.log('user_Db',this.state.user_db)
+            
             /*const receiverDeliveriesCount = await factory.methods.getReceiverDeliveriesCount(accounts[0]).call();
             
             const senderDeliveries = await Promise.all(
@@ -97,6 +99,7 @@ class Home extends Component {
                 receiverDeliveries: receiverDeliveries,
                 accounts: accounts
             });*/
+
         } finally {
             this.setState({ loadingPage: false })
         }
@@ -108,43 +111,72 @@ class Home extends Component {
         this.setState({ loading: true, errorMessage: '' });
 
         try {
-            const accounts = await web3.eth.getAccounts();
-            let channelContract = channel(this.state.channel)
-            const c = await channelContract.methods.c().call();
-            const v = await channelContract.methods.v().call();
-            console.log('c', c);
+            //console.log('ldw',this.state.channelID)
+            let channel_info;
+            let W_kC, W_kM;
+            let L;
 
-            const L = c * v;
-
-            function W_nX(n, W_X) {
-                var W = Buffer.from(W_X, 'hex');
-                var L = 2 * (c) + 1;
-                for (L; L != n; L--) {
-                    W = sha256(W);
-                    W = Buffer.from(W, 'hex');
+            function W_nX (i, j, W_X){
+                var W= W_X//Buffer.from(W_X,'hex');
+                console.log('i', i)
+                console.log('j', j)
+                console.log('W',W)
+                //var L = 2*(c)+1;
+                for(i; i!= j; i--){
+                  W = sha256(W);
+                  console.log('W',W)
+                  //W = Buffer.from(W,'hex');
                 }
                 return W;
-            };
+              };
 
-            let W_kM = W_nX(this.state.k, variables.W_LM).toString('hex');
 
-            let W_kC = W_nX(this.state.k, variables.W_LC).toString('hex');
+            this.state.user_db.map((chns, index)=>{
+                if(this.state.user_db[index]['channelID'] === parseInt(this.state.channelID)){
+                    channel_info = this.state.user_db[index]
+                }
+            });
 
-            await channelContract.methods.transferDeposit("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000").send({ from: accounts[0] })
+            console.log('this.state.k', this.state.k)
+            console.log('channel[j]', channel_info['j'])
+            let ind; 
+            this.state.channels.map((chn, index) => {
+                if(this.state.channels[index]['id'] === parseInt(this.state.channelID,10)){
+                    ind = index;
+                }
+            })
 
+            if(parseInt(this.state.k, 10) === (channel_info['j']-1)){
+                W_kC = this.state.channels[ind]['messages']['m1'];
+                console.log('W_kC', W_kC)
+            }else{
+                W_kC = W_nX( channel_info['j'], this.state.k, this.state.channels[ind]['W_ic'])
+                console.log('W_kC', W_kC)
+            }
+
+            L = 2*(channel_info['c'])+1;
+            
+            W_kM = W_nX(L, this.state.k, channel_info['W_LM'])
+
+            const accounts = await web3.eth.getAccounts();
+            let channelContract = channel(this.state.channels[ind]['ethAddress'])
+            console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
+            console.log(channelContract)
+            await channelContract.methods.transferDeposit("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
+            .send({ from: accounts[0] });
+            
         } catch (err) {
             this.setState({ errorMessage: err.message });
         } finally {
             this.setState({ loading: false });
         }
-
     }
 
     Accept(channel_ID) {
         //console.log('channel_ID', channel_ID);
         //console.log(this.state.user_db);
         const data = this.state.user_db
-        console.log('data', data);
+        //console.log('data', data);
         let merchant_ch;
 
         data.map((ch, index) => {
@@ -162,8 +194,9 @@ class Home extends Component {
             W = sha256(W);
             W = Buffer.from(W, 'hex');
         }
+
         const id = merchant_ch.channelID;
-        console.log(this.state.channels[id - 1]['customer_channel_id'])
+        //console.log(this.state.channels[id - 1]['customer_channel_id'])
 
         fetch('http://localhost:7000/channels/' + merchant_ch.channelID, {
             method: 'PATCH',
@@ -188,7 +221,7 @@ class Home extends Component {
                 console.log('fetch', data);
             });
 
-        console.log('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'])
+        //console.log('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'])
 
         fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'], {
             method: 'PATCH',
@@ -208,38 +241,19 @@ class Home extends Component {
             });
     }
 
-    /*renderDeliveryRows(sent) {
-        var deliveries;
-        if (sent) {
-            deliveries = this.state.senderDeliveries;
-        } else {
-            deliveries = this.state.receiverDeliveries;
-        }
-        return deliveries.map((delivery, index) => {
-            return (
-                <DeliveryRow
-                    key={index}
-                    id={index}
-                    delivery={delivery}
-                    sent={sent}
-                />
-            );
-        });
-    }*/
-
     //Send m2
-    send(data){
-        console.log('data index', data)
-        console.log(this.state.user_db)
+    send= async (data) => {
+        //console.log('data index', data)
+        //console.log(this.state.user_db)
         var index_userChannel;
 
         let address = data['ethAddress']
-        console.log(address)
-        let channelContract = factory(address);
+        //console.log(address)
+        let channelContract = channel(address);
         console.log(channelContract)
-        //console.log(channelContract.methods.T_exp.call())
-/*
-        if(Date.now()< T_EXP){
+        const T_EXP = await channelContract.methods.T_exp().call()
+
+        if(Date.now() < T_EXP*1000){
 
         }
         this.state.user_db.map((info, index)=>{
@@ -315,7 +329,7 @@ class Home extends Component {
         }else{
             alert('The micro coin is not valid!')
         }
-*/
+
 
         //Verify i>j and M forms part of the chain
 
@@ -332,9 +346,6 @@ class Home extends Component {
                 index_userChannel = index;
             }
         })
-        /*console.log('index user channel', index_userChannel);
-        console.log(this.state.user_db[index_userChannel]);
-        console.log('i',data['messages']['i'])*/
 
         function W_nX (n, W_X){
             
@@ -370,7 +381,7 @@ class Home extends Component {
                 })
                 })
                 .then(res => {
-                    //console.log('response ',res);
+
                     return res.json();
                 }).then(data => {
                     this.setState({
@@ -405,7 +416,6 @@ class Home extends Component {
         };
 
         //var c = data['c'];
-        //console.log(parseInt(data['messages']['i'],10)+1)
         var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m3'])
         console.log(hash);
 
@@ -461,7 +471,7 @@ class Home extends Component {
                 return (
                     <Table.Row>
                         <Table.Cell>
-                            {index}
+                            {index+1}
                         </Table.Cell>
                         <Table.Cell>
                             {data[index]['merchant']}
@@ -576,7 +586,7 @@ class Home extends Component {
                 return (
                     <Table.Row>
                         <Table.Cell>
-                            {index}
+                            {index+1}
                         </Table.Cell>
                         <Table.Cell>
                             {channels[index]['customer']}
@@ -598,6 +608,60 @@ class Home extends Component {
                     </Table.Row>
                 )
             }
+        })
+    }
+
+    renderOwnedChannelsLiquidation(){
+        const data = this.state.channels;
+
+        return Object.keys(data).map((requests, index) => {
+            
+            if (data[index]['merchant'] === this.state.accounts[0]) {
+                console.log('dataa', data[index]['id'])
+                return(
+                    <option>{data[index]['id']}</option>
+                )
+            }
+        })
+    }
+
+    rendermicroCoins (channelID) {
+        const data = this.state.channels;
+
+        return Object.keys(data).map((requests, index) => {
+            console.log(data[index]['id']);
+            console.log(channelID)
+            let coins = [];
+
+            if (data[index]['id'] === parseInt(channelID,10)) {
+                
+                console.log('customer info', this.state.user_db)
+                let j;
+                Object.keys(this.state.user_db).map((chn, index)=>{
+                    console.log('channelID 1',this.state.user_db[index]['channelID'])
+                    console.log('channelID 2',channelID)
+
+                    if(this.state.user_db[index]['channelID'] === parseInt(channelID,10)){
+                        console.log('j', this.state.user_db[index]['j'])
+                        j = this.state.user_db[index]['j'];
+
+                        for(j; j!= 0; j--){
+                            console.log('j', j);
+                            if(j%2 === 1){ 
+                                coins.push(j);
+                            }
+                        }
+
+                    }
+                    
+                })
+            }
+
+            return coins.map((coin, index)=>{
+                return(
+                    <option>{coins[index]}</option>
+                )
+            });
         })
     }
 
@@ -649,37 +713,30 @@ class Home extends Component {
                             <Table.Body>{this.renderRequests()}</Table.Body>
                         </Table>
 
-                        <h3><Icon name='sign in alternate' circular />&nbsp;Owned Channels</h3>
-                        <Table fixed>
-                            <Table.Header>
-                                <Table.Row>
-                                    <Table.HeaderCell>#</Table.HeaderCell>
-                                    <Table.HeaderCell>Address</Table.HeaderCell>
-                                    <Table.HeaderCell>Sender</Table.HeaderCell>
-                                    <Table.HeaderCell>Message</Table.HeaderCell>
-                                    <Table.HeaderCell>Action</Table.HeaderCell>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>{/*this.renderDeliveryRows(false)*/}</Table.Body>
-                        </Table>
-
-                        <h3>Channel payment</h3>
+                        <h3>Channel liquidation</h3>
                         <Form onSubmit={this.payment} error={!!this.state.errorMessage}>
-                            <Form.Field>
-                                <label>Channel address:</label>
-                                <Input
-                                    value={this.state.channel}
-                                    onChange={event => this.setState({ channel: event.target.value })}
-                                />
-                            </Form.Field>
 
+                            <Form.Field>
+                                <label>Channel ID:</label>
+                                <select value={this.state.channelID} onChange={event =>  {
+                                    this.setState({ channelID: event.target.value});
+                                }
+                                }>
+                                <option></option>
+                                    {this.renderOwnedChannelsLiquidation()}
+                                </select>
+                            </Form.Field>
 
                             <Form.Field>
                                 <label>k:</label>
-                                <Input
-                                    value={this.state.k}
-                                    onChange={event => this.setState({ k: event.target.value })}
-                                />
+                                <select value={this.state.k} onChange={event => {
+                                    this.setState({
+                                        k: event.target.value
+                                    })
+                                }}>
+                                <option></option>
+                                    {this.rendermicroCoins(this.state.channelID)}
+                                </select>
                             </Form.Field>
                             <Message error header="ERROR" content={this.state.errorMessage} />
                             <Button primary loading={this.state.loading}>

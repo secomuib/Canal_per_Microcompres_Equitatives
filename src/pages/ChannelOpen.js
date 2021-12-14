@@ -126,10 +126,13 @@ class ChannelOpen extends Component {
       console.log(this.state.channel.W_0M, this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
 
       const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
-        .send({ from: accounts[0], value: this.state.channel.c * 1, gas: 6000000 });
-
+        .send({ from: accounts[0], value: this.state.channel.c * 1, gas: 6000000 })
+      
+      //Obtain the channel SC address
+      const addresses = await factory.methods.getOwnerChannels(accounts[0]).call()
+      const channelAddr = addresses[addresses.length-1];
+      
       if (addressChannel) {
-        console.log(addressChannel);
 
         let id = this.props.match.params.id;
 
@@ -172,7 +175,7 @@ class ChannelOpen extends Component {
           },
           body: JSON.stringify({
             "W_0C": this.state.W_0C,
-            "ethAddress": addressChannel.blockHash,
+            "ethAddress": channelAddr,
             "State": 'opened'
           })
         })

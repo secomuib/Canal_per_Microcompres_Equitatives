@@ -77,8 +77,7 @@ contract channel{
         
         for (i; i!= 0; i--){
             hash_m = sha256(abi.encodePacked (hash_m));
-            hash_c = sha256(abi.encodePacked(hash_c));
-            
+            hash_c = sha256(abi.encodePacked(hash_c)); 
         }
         require (W_jm == hash_m, "W_km is incorrect");
         require (W_jc == hash_c, "W_kc is incorrect");
