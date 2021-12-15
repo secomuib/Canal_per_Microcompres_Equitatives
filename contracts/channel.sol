@@ -70,7 +70,7 @@ contract channel{
         
         require (k > j, "k <= j");
             
-        uint256 balance; 
+        uint256 balance;
         bytes32 hash_m = bytes32(_W_km);
         bytes32 hash_c = bytes32(_W_kc);
         uint256 i = k-j;
@@ -79,8 +79,9 @@ contract channel{
             hash_m = sha256(abi.encodePacked (hash_m));
             hash_c = sha256(abi.encodePacked(hash_c)); 
         }
+
         require (W_jm == hash_m, "W_km is incorrect");
-        require (W_jc == hash_c, "W_kc is incorrect");
+        //require (W_jc == hash_c, "W_kc is incorrect");
         
         if(k%2 == 0){
             balance = ((k-j)/2);

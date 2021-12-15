@@ -49,14 +49,15 @@ class ChannelPurchase extends Component {
         function W_nX (n, W_X){
             
 
-            var W= W_X//Buffer.from(W_X,'hex');
+            var W= Buffer.from(W_X,'hex');//W_X
             
             var L = 2*(c)+1;
             for(L; L!= n; L--){
               W = sha256(W);
               console.log(W)
-              //W = Buffer.from(W,'hex');
+              W = Buffer.from(W,'hex');
             }
+            W =  Buffer.from(W).toString("hex");
             return W;
           };
 

@@ -49,17 +49,18 @@ class ChannelOpen extends Component {
             channel: data,
           })
         })
-      const W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
-      var W = W_LC;
-      console.log(W)
+      //const W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
+      const W_LC = '8a9bcf1e51e812d0af8465a8dbcc9f741064bf0af3b3d08e6b0246437c19f7fb';
+      var W = Buffer.from(W_LC, 'hex'); //W_LC;
+      console.log(W);
       var L = 2*(this.state.channel.c)+1;
       for (L; L != 0; L--) {
         W = sha256(W);
         console.log(W)
-        //W = Buffer.from(W,'hex');
+        W = Buffer.from(W,'hex');
       }
 
-      //W = Buffer.from(W).toString("hex");
+      W = Buffer.from(W).toString("hex");
       console.log('W final', W)
 
       console.log('W_LC', this.state.W_LC, 'W_0C', this.state.W_0C);

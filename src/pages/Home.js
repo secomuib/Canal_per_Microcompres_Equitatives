@@ -117,7 +117,7 @@ class Home extends Component {
             let L;
 
             function W_nX (i, j, W_X){
-                var W= W_X//Buffer.from(W_X,'hex');
+                var W= Buffer.from(W_X,'hex'); //W_X
                 console.log('i', i)
                 console.log('j', j)
                 console.log('W',W)
@@ -125,7 +125,7 @@ class Home extends Component {
                 for(i; i!= j; i--){
                   W = sha256(W);
                   console.log('W',W)
-                  //W = Buffer.from(W,'hex');
+                  W = Buffer.from(W,'hex');
                 }
                 return W;
               };
@@ -140,6 +140,7 @@ class Home extends Component {
             console.log('this.state.k', this.state.k)
             console.log('channel[j]', channel_info['j'])
             let ind; 
+
             this.state.channels.map((chn, index) => {
                 if(this.state.channels[index]['id'] === parseInt(this.state.channelID,10)){
                     ind = index;
@@ -186,18 +187,23 @@ class Home extends Component {
             }
             //console.log(merchant_ch)
         })
-        const W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
-        var W = W_LM;
+        //const W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
+        const W_LM = '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225';
+        let W = Buffer.from(W_LM,'hex');//W_LM;
 
-        var L = 2 * (merchant_ch.c) + 1;
+        let L = 2 * (merchant_ch.c) + 1;
         for (L; L != 0; L--) {
             W = sha256(W);
+            console.log('W', W)
             W = Buffer.from(W, 'hex');
         }
 
+        W = Buffer.from(W).toString("hex");
+
+        console.log('W prova', W.toString('hex'))
         const id = merchant_ch.channelID;
         //console.log(this.state.channels[id - 1]['customer_channel_id'])
-
+        alert('W prova', W.toString('hex'))
         fetch('http://localhost:7000/channels/' + merchant_ch.channelID, {
             method: 'PATCH',
             headers: {
@@ -208,7 +214,7 @@ class Home extends Component {
                 "State": 'accepted',
                 "customer": merchant_ch.customer,
                 "merchant": this.state.accounts[0],
-                "W_0M": Buffer.from(W).toString("hex"),
+                "W_0M": W,//Buffer.from(W).toString("hex"),
                 "service": merchant_ch.service,
                 "c": merchant_ch.c,
                 "S_id": merchant_ch.id,
@@ -229,7 +235,7 @@ class Home extends Component {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "W_LM": Buffer.from(W_LM).toString("hex"),
+                "W_LM": W_LM,//Buffer.from(W_LM).toString("hex"),
                 "j": 0
             })
         })
@@ -266,21 +272,28 @@ class Home extends Component {
         console.log(data['messages']['i'])
 
         function W_nX (i, j, W_X){
-            var W= W_X//Buffer.from(W_X,'hex');
+            var W= Buffer.from(W_X,'hex'); //W_X
             
             //var L = 2*(c)+1;
             for(i; i!= j; i--){
               W = sha256(W);
               // console.log(W)
-              //W = Buffer.from(W,'hex');
+              W = Buffer.from(W,'hex');
             }
+
+            W = Buffer.from(W).toString("hex");
+            console.log('W sha256', W);
             return W;
-          };
+        };
 
         var c = data['c'];
         var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m1'])
         
         const W_ic = 'W_'+this.state.user_db[index_userChannel]['j']+'C';
+          console.log('i', data['messages']['i'])
+          console.log('j', this.state.user_db[index_userChannel]['j']);
+          console.log(hash)
+          console.log(data['W_'+this.state.user_db[index_userChannel]['j']+'C']);
 
         if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === data['W_'+this.state.user_db[index_userChannel]['j']+'C'])){
             fetch('http://localhost:7000/channels/' + data['id'], {
@@ -349,14 +362,15 @@ class Home extends Component {
 
         function W_nX (n, W_X){
             
-            var W= W_X//Buffer.from(W_X,'hex');
+            var W = Buffer.from(W_X,'hex');//W_X
             
             var L = 2*(c)+1;
             for(L; L!= n; L--){
               W = sha256(W);
               console.log(W)
-              //W = Buffer.from(W,'hex');
+              W = Buffer.from(W,'hex');
             }
+            W =  Buffer.from(W).toString("hex");
             return W;
           };
 
@@ -405,12 +419,12 @@ class Home extends Component {
         console.log('i',data['messages']['i'])
 
         function W_nX (i, j, W_X){
-            var W= W_X//Buffer.from(W_X,'hex');
+            var W= Buffer.from(W_X,'hex'); //W_X
             console.log(W)
             //var L = 2*(c)+1;
             for(i; i!= j; i--){
             W = sha256(W);
-            //W = Buffer.from(W,'hex');
+            W = Buffer.from(W,'hex');
             }
             return W;
         };
