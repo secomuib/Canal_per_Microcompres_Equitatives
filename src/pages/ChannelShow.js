@@ -3,6 +3,8 @@ import { withRouter, Link } from "react-router-dom";
 import { Form, Button, Message, Input, Dimmer, Loader } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 
+import channelSC from '../ethereum/channel';
+
 class ChannelShow extends Component {
   state = {
     channel:'',
@@ -34,6 +36,20 @@ class ChannelShow extends Component {
         })
        })
       console.log(this.state.channel);
+      const accounts = await web3.eth.getAccounts();
+      let channelContract = channelSC(this.state.channel.ethAddress)
+       if(accounts[0] === this.state.channel.customer){
+        console.log(await channelContract.methods.costumer().call());
+        await channelContract.methods.channelClose().send({ from: accounts[0] });
+       }
+
+      web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
+        if (err) {
+          console.log(err)
+        } else {
+          console.log(web3.utils.fromWei(result, "ether") + " ETH")
+        }
+      })
     } catch (err) {
       this.setState({ errorMessage: err.message });
     } finally {

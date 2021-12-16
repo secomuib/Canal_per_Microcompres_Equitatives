@@ -9,7 +9,7 @@ const compiledContract = require(compiledContractPath);
 // Mnemonic from a test account and an Infura provider
 
   const provider = new HDWalletProvider(
-  'tragic square news business dad cricket nurse athlete tide split about ring',
+  'margin replace dance powder sponsor point dignity gallery board army shed install',
   'https://rinkeby.infura.io/v3/6c6c7356844a424e9c277e665ac7e109'
 );
   
@@ -18,13 +18,13 @@ const web3 = new Web3(provider);
 const deploy = async () => {
   const accounts = await web3.eth.getAccounts();
 
-  console.log('Attempting to deploy from account', accounts[0]);
+  console.log('Attempting to deploy from account', accounts[1]);
 
   // We deploy the EDelivery smart contract to the Rinkeby test network
 
   const result = await new web3.eth.Contract(compiledContract.abi)
     .deploy({ data: compiledContract.evm.bytecode.object, arguments: [] })
-    .send({ from: accounts[0], gas: '6000000' });
+    .send({ from: accounts[1], gas: '6000000' });
   
   // fs.writeFileSync('./CONTRACTADDRESS', result.options.address);
   compiledContract.address = result.options.address;

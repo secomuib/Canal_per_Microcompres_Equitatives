@@ -125,9 +125,10 @@ class ChannelOpen extends Component {
       console.log(new Date(T_EXP * 1000)) //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
 
       console.log(this.state.channel.W_0M, this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
-
-      const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
-        .send({ from: accounts[0], value: this.state.channel.c * 1, gas: 6000000 })
+      console.log(web3.utils.toWei((this.state.channel.c * 1).toString(),'ether'))
+      alert('wait');
+      const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, web3.utils.toWei('1','ether'), T_EXP, this.state.Δ_TD, this.state.Δ_TR)
+        .send({ from: accounts[0], value: web3.utils.toWei((this.state.channel.c * 1).toString(),'ether'), gas: 6000000 })
       
       //Obtain the channel SC address
       const addresses = await factory.methods.getOwnerChannels(accounts[0]).call()

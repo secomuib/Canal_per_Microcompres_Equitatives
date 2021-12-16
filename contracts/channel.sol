@@ -81,7 +81,7 @@ contract channel{
         }
 
         require (W_jm == hash_m, "W_km is incorrect");
-        //require (W_jc == hash_c, "W_kc is incorrect");
+        require (W_jc == hash_c, "W_kc is incorrect");
         
         if(k%2 == 0){
             balance = ((k-j)/2);
@@ -90,9 +90,9 @@ contract channel{
         }
         
         if(newChannelAddress != 0x0000000000000000000000000000000000000000){
-            payable(newChannelAddress).transfer(balance);
+            payable(newChannelAddress).transfer(balance * (1 ether));
         }else{
-            payable(msg.sender).transfer(balance);
+            payable(msg.sender).transfer(balance*(1 ether));
         }
         
         j = k;

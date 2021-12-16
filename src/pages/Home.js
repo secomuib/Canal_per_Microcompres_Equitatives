@@ -127,6 +127,7 @@ class Home extends Component {
                   console.log('W',W)
                   W = Buffer.from(W,'hex');
                 }
+                W = Buffer.from(W).toString("hex");
                 return W;
               };
 
@@ -163,6 +164,10 @@ class Home extends Component {
             let channelContract = channel(this.state.channels[ind]['ethAddress'])
             console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             console.log(channelContract)
+            console.log('W_kM', W_kM)
+            console.log('W_kC', W_kC)
+            console.log('k', this.state.k)
+
             await channelContract.methods.transferDeposit("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: accounts[0] });
             
@@ -426,6 +431,7 @@ class Home extends Component {
             W = sha256(W);
             W = Buffer.from(W,'hex');
             }
+            W = Buffer.from(W).toString("hex");
             return W;
         };
 

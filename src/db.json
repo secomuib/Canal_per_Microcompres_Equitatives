@@ -94,14 +94,53 @@
     }
   ],
   "channels": [
-    
+    {
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 1,
+      "service": "Access to a newspaper article",
+      "c": "1",
+      "service_price": "1 Gwei",
+      "State": "send proof",
+      "id": 1,
+      "W_0M": "aeb8ff0e1f2deb2ee5bf53ea37d6f2678de2f9725c2a0aa49783a300627e2bd2",
+      "S_id": 1,
+      "W_0C": "c53865fedf7b65092abcb930ee122b5559b095526a82b79e798b650e57d3603f",
+      "ethAddress": "0x2E00BB701D76520B06f39844B5A878b475733892",
+      "messages": {
+        "i": 2,
+        "m1": "097f5f271cc24c25f6dc8d8ece1fa342ecd9e63d73df26d8e8cb79d49228e22c",
+        "m2": "Access to a newspaper article",
+        "m3": "07ac0aa1defbdc7efb7c1670d18eee3a4d0a6e412f109ba248975c09a20de72b"
+      },
+      "W_ic": "097f5f271cc24c25f6dc8d8ece1fa342ecd9e63d73df26d8e8cb79d49228e22c"
+    }
   ],
   "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b": [
-    
+    {
+      "channel": "",
+      "customer": "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0",
+      "service": "Access to a newspaper article",
+      "c": "1",
+      "S_id": 1,
+      "channelID": 1,
+      "id": 1,
+      "W_LM": "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225",
+      "j": "1"
+    }
   ],
   "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec": [],
   "0x70F6714dCa2f53A17558C5dff99D572959f77D9c": [],
   "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0": [
-    
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper article",
+      "c": "1",
+      "S_id": 1,
+      "id": 1,
+      "W_LC": "8a9bcf1e51e812d0af8465a8dbcc9f741064bf0af3b3d08e6b0246437c19f7fb",
+      "channelID": "1"
+    }
   ]
 }
