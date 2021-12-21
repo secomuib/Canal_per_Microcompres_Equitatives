@@ -253,7 +253,7 @@ class Home extends Component {
     }
 
     //Send m2
-    send= async (data) => {
+    send = async (data) => {
         //console.log('data index', data)
         //console.log(this.state.user_db)
         var index_userChannel;
@@ -292,23 +292,40 @@ class Home extends Component {
         };
 
         var c = data['c'];
+        console.log('data[messages][i]', data['messages']['i']);
+        console.log(this.state.user_db[index_userChannel]['j']);
+        console.log(data['messages']['m1']);
+
         var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m1'])
         
-        const W_ic = 'W_'+this.state.user_db[index_userChannel]['j']+'C';
+        //const W_ic = 'W_'+this.state.user_db[index_userChannel]['j']+'C';
           console.log('i', data['messages']['i'])
           console.log('j', this.state.user_db[index_userChannel]['j']);
           console.log(hash)
-          console.log(data['W_'+this.state.user_db[index_userChannel]['j']+'C']);
+          console.log('data', data['messages']['m1']);
+          console.log('Wic', data['W_0C']);
+        
+          var W_ic;
 
-        if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === data['W_'+this.state.user_db[index_userChannel]['j']+'C'])){
+        //Not the first payement
+        if(data['W_ic']){
+            W_ic = data['W_ic'];
+        }
+        //Is the first payement:
+        else{
+            W_ic = data['W_0C'];
+        }
+
+        if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === W_ic)){
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
                 headers: {
                     "Content-Type": "application/json"
                 },
+
                 body: JSON.stringify({
                     "State": 'send service',
-                    W_ic:data['messages']['m1'],
+                    "W_ic":data['messages']['m1'],
                     "messages":{
                         "i": data['messages']['i'],
                         "m1": data['messages']['m1'],
@@ -317,7 +334,7 @@ class Home extends Component {
                 })
                 })
                 .then(res => {
-                    //console.log('response ',res);
+                    //console.log('response',res);
                     return res.json();
                 }).then(data => {
                     this.setState({
@@ -325,24 +342,26 @@ class Home extends Component {
                     })
                 });
 
-                //console.log('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1));
+                console.log('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1));
+                alert('hello');
+
                 fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
-                method: 'PATCH',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "j": data['messages']['i']
-                })
-                })
-                .then(res => {
-                    //console.log('response ',res);
-                    return res.json();
-                }).then(data => {
-                    this.setState({
-                        channels: data
+                    method: 'PATCH',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "j": data['messages']['i']
                     })
-                })
+                    })
+                    .then(res => {
+                        //console.log('response ',res);
+                        return res.json();
+                    }).then(data => {
+                        this.setState({
+                            channels: data
+                        })
+                    })
            
         }else{
             alert('The micro coin is not valid!')
@@ -664,12 +683,13 @@ class Home extends Component {
                     if(this.state.user_db[index]['channelID'] === parseInt(channelID,10)){
                         console.log('j', this.state.user_db[index]['j'])
                         j = this.state.user_db[index]['j'];
-
+                        
                         for(j; j!= 0; j--){
                             console.log('j', j);
-                            if(j%2 === 1){ 
+                            coins.push(j)
+                            /*if(j%2 === 1){ 
                                 coins.push(j);
-                            }
+                            }*/
                         }
 
                     }

@@ -47,6 +47,7 @@ class ChannelShow extends Component {
         if (err) {
           console.log(err)
         } else {
+          console.log('Balance:');
           console.log(web3.utils.fromWei(result, "ether") + " ETH")
         }
       })

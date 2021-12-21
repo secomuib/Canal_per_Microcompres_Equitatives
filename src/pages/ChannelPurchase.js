@@ -44,7 +44,6 @@ class ChannelPurchase extends Component {
     this.setState({ loading: true, errorMessage: '' });
 
     try {
-
         
         function W_nX (n, W_X){
             
@@ -63,7 +62,7 @@ class ChannelPurchase extends Component {
 
       const accounts = await web3.eth.getAccounts();
 
-      const i = this.state.microcoin;
+      let i;
 
       await fetch('http://localhost:7000/channels/' + this.state.propsID)
       .then(res => {
@@ -75,6 +74,14 @@ class ChannelPurchase extends Component {
           channelInfo: data
         })
       });
+
+      if(this.state.channelInfo['messages']){
+        console.log('hello')
+        i = parseInt(this.state.microcoin,10) + this.state.channelInfo['messages']['i'];
+        console.log('i',i)
+      }else{
+        i = this.state.microcoin;
+      }
 
       await fetch('http://localhost:7000/'+ accounts[0])
       .then(res => {

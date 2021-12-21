@@ -127,6 +127,8 @@ class ChannelOpen extends Component {
       console.log(this.state.channel.W_0M, this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
       console.log(web3.utils.toWei((this.state.channel.c * 1).toString(),'ether'))
       alert('wait');
+
+
       const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, web3.utils.toWei('1','ether'), T_EXP, this.state.Δ_TD, this.state.Δ_TR)
         .send({ from: accounts[0], value: web3.utils.toWei((this.state.channel.c * 1).toString(),'ether'), gas: 6000000 })
       
@@ -134,6 +136,7 @@ class ChannelOpen extends Component {
       const addresses = await factory.methods.getOwnerChannels(accounts[0]).call()
       const channelAddr = addresses[addresses.length-1];
       
+      //If channel open successfull:
       if (addressChannel) {
 
         let id = this.props.match.params.id;
