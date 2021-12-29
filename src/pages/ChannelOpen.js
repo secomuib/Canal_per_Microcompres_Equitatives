@@ -49,11 +49,13 @@ class ChannelOpen extends Component {
             channel: data,
           })
         })
-      //const W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
-      const W_LC = '8a9bcf1e51e812d0af8465a8dbcc9f741064bf0af3b3d08e6b0246437c19f7fb';
+      
+        const W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
+      //const W_LC = '8a9bcf1e51e812d0af8465a8dbcc9f741064bf0af3b3d08e6b0246437c19f7fb';
       var W = Buffer.from(W_LC, 'hex'); //W_LC;
       console.log(W);
       var L = 2*(this.state.channel.c)+1;
+      
       for (L; L != 0; L--) {
         W = sha256(W);
         console.log(W)
@@ -121,16 +123,25 @@ class ChannelOpen extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
       let T_EXP = new Date(this.state.T_EXP).getTime() / 1000;
+      console.log('prova', new Date(this.state.T_EXP));
+      let P_T_EXP = new Date(this.state.T_EXP); 
+      console.log(new Date(P_T_EXP.getTime()))
+
+      console.log('hola')
       console.log(T_EXP);
       console.log(new Date(T_EXP * 1000)) //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
+      console.log('hours', new Date(T_EXP*1000).getHours());
+      console.log(this.state.Δ_TD)
+      console.log('prova', new Date((T_EXP + parseInt(this.state.Δ_TD,10))*1000));
+      console.log('minutes', new Date((T_EXP+parseInt(this.state.Δ_TD))*1000).getMinutes());
 
       console.log(this.state.channel.W_0M, this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
       console.log(web3.utils.toWei((this.state.channel.c * 1).toString(),'ether'))
       alert('wait');
 
 
-      const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, web3.utils.toWei('1','ether'), T_EXP, this.state.Δ_TD, this.state.Δ_TR)
-        .send({ from: accounts[0], value: web3.utils.toWei((this.state.channel.c * 1).toString(),'ether'), gas: 6000000 })
+      const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, 1 /*web3.utils.toWei('1','ether')*/, T_EXP, this.state.Δ_TD, this.state.Δ_TR)
+        .send({ from: accounts[0], value: this.state.channel.c * 1 /*web3.utils.toWei((this.state.channel.c * 1).toString(),'ether')*/, gas: 6000000 })
       
       //Obtain the channel SC address
       const addresses = await factory.methods.getOwnerChannels(accounts[0]).call()
@@ -192,8 +203,10 @@ class ChannelOpen extends Component {
 
           });
       }
+
       // Refresh
       alert('Channel opened');
+      
       // Refresh, using withRouter
       this.props.history.push('/');
       
@@ -218,7 +231,7 @@ class ChannelOpen extends Component {
             <label>T <sub>EXP</sub></label>
             <Input
               value={this.state.T_EXP}
-              type="date"
+              type="datetime-local"
               onChange={event => this.setState({ T_EXP: event.target.value })}
             />
           </Form.Field>

@@ -61,12 +61,16 @@ contract channel{
         start = block.timestamp;
     }
     
+    function blocktimestamp() public returns(uint256){
+        return block.timestamp;
+    }
+
     //Funció per a transferir un determinat nombre de micromonedes del present smart contract a la wallet del venedor 
     //o fer la transferència a un nou canal. És a dir, protocols "liquidación de canal" i "transferencia de canal".
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
         
         //now < T_exp || T_exp < now < TD
-        require ((block.timestamp < start + T_exp) || ((T_exp + TD > block.timestamp) && (block.timestamp > start + T_exp)), "Time error");
+        require ((block.timestamp > T_exp && block.timestamp < (T_exp + TD) && newChannelAddress == 0x0000000000000000000000000000000000000000) /*|| ((T_exp + TD > block.timestamp) && (block.timestamp > T_exp))*/, "Time error");
         
         require (k > j, "k <= j");
             
@@ -90,9 +94,9 @@ contract channel{
         }
         
         if(newChannelAddress != 0x0000000000000000000000000000000000000000){
-            payable(newChannelAddress).transfer(balance * (1 ether));
+            payable(newChannelAddress).transfer(balance /* * (1 ether)*/);
         }else{
-            payable(msg.sender).transfer(balance*(1 ether));
+            payable(msg.sender).transfer(balance /* *(1 ether)*/);
         }
         
         j = k;
@@ -101,10 +105,10 @@ contract channel{
     }
     
     //Funció per a tancar el canal i retorn del balaç que queda al propietari (selfdestruct de l'smart contract) 
-    function channelClose() public onlyOwner{
+    function channelClose() public payable onlyOwner{
         
         //T_exp + TD < now < T_exp + TD + TR
-        require(((start + T_exp + TD < block.timestamp) && (block.timestamp < start + T_exp + TD + TR)));
+        require(((T_exp + TD < block.timestamp) && (block.timestamp < T_exp + TD + TR)));
             
         selfdestruct(payable(msg.sender));
     }
@@ -112,7 +116,7 @@ contract channel{
     function merchantChange(bytes32 _W_0m, string memory _S_id, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner(){
         
         //T_exp + TD < now < T_exp + TD + TR
-        require(((start + T_exp + TD < block.timestamp) && (block.timestamp < start + T_exp + TD + TR)));
+        require(((T_exp + TD < block.timestamp) && (block.timestamp < T_exp + TD + TR)));
         
         W_jm = _W_0m;
         S_id = _S_id;

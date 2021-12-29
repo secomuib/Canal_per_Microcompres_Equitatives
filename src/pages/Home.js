@@ -117,6 +117,8 @@ class Home extends Component {
             let L;
 
             function W_nX (i, j, W_X){
+                console.log('bon dia', typeof(W_X));
+
                 var W= Buffer.from(W_X,'hex'); //W_X
                 console.log('i', i)
                 console.log('j', j)
@@ -148,11 +150,13 @@ class Home extends Component {
                 }
             })
 
+            console.log('ind', ind)
+
             if(parseInt(this.state.k, 10) === (channel_info['j']-1)){
                 W_kC = this.state.channels[ind]['messages']['m1'];
                 console.log('W_kC', W_kC)
             }else{
-                W_kC = W_nX( channel_info['j'], this.state.k, this.state.channels[ind]['W_ic'])
+                W_kC = W_nX( channel_info['j'], this.state.k, channel_info.W_ic)
                 console.log('W_kC', W_kC)
             }
 
@@ -163,10 +167,10 @@ class Home extends Component {
             const accounts = await web3.eth.getAccounts();
             let channelContract = channel(this.state.channels[ind]['ethAddress'])
             console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
-            console.log(channelContract)
-            console.log('W_kM', W_kM)
-            console.log('W_kC', W_kC)
-            console.log('k', this.state.k)
+            console.log(channelContract);
+            console.log('W_kM', W_kM);
+            console.log('W_kC', W_kC);
+            console.log('k', this.state.k);
 
             await channelContract.methods.transferDeposit("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: accounts[0] });
@@ -192,8 +196,9 @@ class Home extends Component {
             }
             //console.log(merchant_ch)
         })
-        //const W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
-        const W_LM = '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225';
+        
+        const W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
+        //const W_LM = '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225';
         let W = Buffer.from(W_LM,'hex');//W_LM;
 
         let L = 2 * (merchant_ch.c) + 1;
@@ -209,6 +214,7 @@ class Home extends Component {
         const id = merchant_ch.channelID;
         //console.log(this.state.channels[id - 1]['customer_channel_id'])
         alert('W prova', W.toString('hex'))
+        
         fetch('http://localhost:7000/channels/' + merchant_ch.channelID, {
             method: 'PATCH',
             headers: {
@@ -232,7 +238,8 @@ class Home extends Component {
                 console.log('fetch', data);
             });
 
-        //console.log('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'])
+            //console.log('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'])
+            
 
         fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'], {
             method: 'PATCH',
@@ -250,6 +257,7 @@ class Home extends Component {
             .then(data => {
                 console.log('fetch', data);
             });
+
     }
 
     //Send m2
@@ -306,16 +314,18 @@ class Home extends Component {
           console.log('Wic', data['W_0C']);
         
           var W_ic;
+          
+          console.log(this.state.user_db[index_userChannel]['W_ic']);
 
         //Not the first payement
-        if(data['W_ic']){
-            W_ic = data['W_ic'];
+        if(this.state.user_db[index_userChannel]['W_ic']){
+            W_ic = this.state.user_db[index_userChannel]['W_ic'];
         }
         //Is the first payement:
         else{
             W_ic = data['W_0C'];
         }
-
+        
         if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === W_ic)){
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
@@ -325,7 +335,6 @@ class Home extends Component {
 
                 body: JSON.stringify({
                     "State": 'send service',
-                    "W_ic":data['messages']['m1'],
                     "messages":{
                         "i": data['messages']['i'],
                         "m1": data['messages']['m1'],
@@ -351,6 +360,7 @@ class Home extends Component {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
+                        "W_ic":data['messages']['m1'],
                         "j": data['messages']['i']
                     })
                     })
@@ -427,8 +437,10 @@ class Home extends Component {
                     })
                 });
     }
+
+    //m3 verification by M
     verify(data){
-        //TODO: DECRYPT M3
+        //TODO: DECRYPT m3
 
         console.log('data index', data)
         console.log(this.state.user_db)
@@ -437,7 +449,8 @@ class Home extends Component {
             if(this.state.user_db[index]['channelID'] === data['id']){
                 index_userChannel = index;
             }
-        })
+        });
+
         console.log('index user channel', index_userChannel);
         console.log('j',this.state.user_db[index_userChannel]['j']);
         console.log('i',data['messages']['i'])
@@ -458,7 +471,10 @@ class Home extends Component {
         var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m3'])
         console.log(hash);
 
-        if(hash === data['W_ic']){
+        console.log('W_ic', this.state.user_db[index_userChannel]['W_ic'])
+
+        if(hash === this.state.user_db[index_userChannel]['W_ic']){
+            
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
                 headers: {
@@ -466,7 +482,6 @@ class Home extends Component {
                 },
                 body: JSON.stringify({
                     "State": 'opened',
-                    W_ic:data['messages']['m3']
                 })
             })
             .then(res => {
@@ -478,14 +493,16 @@ class Home extends Component {
                 })
             });
 
-            //Update j
+            
+            //Update j and W_ic
             fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
                 method: 'PATCH',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "j": data['messages']['i']
+                    "j": data['messages']['i'],
+                    "W_ic":data['messages']['m3']
                 })
             })
             .then(res => {
