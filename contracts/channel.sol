@@ -31,7 +31,7 @@ contract factoryChannel{
 }
 
 contract channel{
-    uint256 j;
+    uint256 public j;
     address public costumer;
 
     //Channel parameters

@@ -127,11 +127,7 @@ class ChannelShow extends Component {
       }
 
       
-      let channelContract = channelSC(this.state.channel.ethAddress)
-       if(accounts[0] === this.state.channel.customer){
-        console.log(await channelContract.methods.costumer().call());
-        await channelContract.methods.channelClose().send({ from: accounts[0] });
-       }
+      
 
       web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {
@@ -179,6 +175,14 @@ class ChannelShow extends Component {
             <Input
               readOnly
               value={this.state.channel.customer}
+            />
+          </Form.Field>
+
+          <Form.Field>
+            <label>Channel ID</label>
+            <Input
+              readOnly
+              value={this.state.channel.id}
             />
           </Form.Field>
 

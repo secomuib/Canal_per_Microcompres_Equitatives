@@ -20,6 +20,7 @@ class Home extends Component {
         channels: '',
         k: '',
         user_db: '',
+        newChnAddr: '',
         loadingPage: true,
         loading: false,
         errorMessage: '',
@@ -28,6 +29,10 @@ class Home extends Component {
 
     componentDidMount = async () => {
         try {
+            let T_EXP =[];
+            let T_D = [];
+            let T_R = [];
+
             const accounts = await web3.eth.getAccounts();
             const channelsCount = await factory.methods.getChannelsCount().call();
             //console.log(channelsCount)
@@ -55,7 +60,7 @@ class Home extends Component {
                     })
                 });
 
-            const channels = fetch('http://localhost:7000/channels', {
+            const channels = await fetch('http://localhost:7000/channels', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
@@ -74,6 +79,35 @@ class Home extends Component {
                 openChannels: openChannels,
                 accounts: accounts
             })
+
+            console.log('chn', this.state.channels);
+            
+            //Filling of arrays for use in rendering
+            await Promise.all(
+                this.state.channels.map(async(chns, index)=>{
+                    if(this.state.channels[index]['ethAddress'] && this.state.channels[index]['State'] != 'closed'){
+                        let address = this.state.channels[index]['ethAddress']
+                        //console.log('address',address)
+                        let channelContract = channel(address);
+                        T_EXP.push(await channelContract.methods.T_exp().call());
+                        //console.log('T_EXP', T_EXP)
+                        T_R.push(await channelContract.methods.TR().call());
+                        T_D.push(await channelContract.methods.TD().call());
+                        //console.log('T_R', T_R, 'T_D', T_D)
+                    }else{
+                        T_EXP.push('');
+                        //console.log('T_EXP', T_EXP)
+                        T_R.push('');
+                        T_D.push('');
+                    }
+                }));
+                this.setState({
+                    T_EXP: T_EXP,
+                    T_D: T_D,
+                    T_R: T_R
+                })
+            
+
             //console.log('user_Db',this.state.user_db)
             
             /*const receiverDeliveriesCount = await factory.methods.getReceiverDeliveriesCount(accounts[0]).call();
@@ -105,76 +139,223 @@ class Home extends Component {
         }
     }
 
+    prepare_W = async event => {
+        //console.log('ldw',this.state.channelID)
+        let channel_info;
+        let W_kC, W_kM;
+        let L;
+
+        function W_nX (i, j, W_X){
+            //console.log('bon dia', typeof(W_X));
+
+            var W= Buffer.from(W_X,'hex'); //W_X
+            //console.log('i', i)
+            //console.log('j', j)
+            //console.log('W',W)
+            //var L = 2*(c)+1;
+            for(i; i!= j; i--){
+              W = sha256(W);
+              //console.log('W',W)
+              W = Buffer.from(W,'hex');
+            }
+            W = Buffer.from(W).toString("hex");
+            return W;
+          };
+
+
+        this.state.user_db.map((chns, index)=>{
+            if(this.state.user_db[index]['channelID'] === parseInt(this.state.channelID)){
+                channel_info = this.state.user_db[index]
+            }
+        });
+
+        //console.log('this.state.k', this.state.k)
+        //console.log('channel[j]', channel_info['j'])
+        let ind; 
+
+        this.state.channels.map((chn, index) => {
+            if(this.state.channels[index]['id'] === parseInt(this.state.channelID,10)){
+                ind = index;
+            }
+        })
+
+        console.log('ind', ind)
+
+        if(parseInt(this.state.k, 10) === (channel_info['j']-1)){
+            W_kC = this.state.channels[ind]['messages']['m1'];
+            //console.log('W_kC', W_kC)
+        }else{
+            W_kC = W_nX( channel_info['j'], this.state.k, channel_info.W_ic)
+            //console.log('W_kC', W_kC)
+        }
+
+        L = 2*(channel_info['c'])+1;
+        
+        W_kM = W_nX(L, this.state.k, channel_info['W_LM']);
+
+        this.setState({
+            ind: ind,
+            W_kM: W_kM,
+            W_kC: W_kC,
+        })
+    }
+
     //Funció per transferir part de les micro-monedes de deposit del canal a la wallet del comprador
-    payment = async event => {
+    liquidation = async event => {
         event.preventDefault();
         this.setState({ loading: true, errorMessage: '' });
 
         try {
-            //console.log('ldw',this.state.channelID)
-            let channel_info;
-            let W_kC, W_kM;
-            let L;
+            this.prepare_W();
 
-            function W_nX (i, j, W_X){
-                console.log('bon dia', typeof(W_X));
+            const accounts = await web3.eth.getAccounts();
+            let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
+            //console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
+            //console.log(channelContract);
+            //console.log('W_kM', W_kM);
+            //console.log('W_kC', W_kC);
+            //console.log('k', this.state.k);
 
-                var W= Buffer.from(W_X,'hex'); //W_X
-                console.log('i', i)
-                console.log('j', j)
-                console.log('W',W)
-                //var L = 2*(c)+1;
-                for(i; i!= j; i--){
-                  W = sha256(W);
-                  console.log('W',W)
-                  W = Buffer.from(W,'hex');
-                }
-                W = Buffer.from(W).toString("hex");
-                return W;
-              };
+            await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
+            .send({ from: accounts[0] });
+            
+        } catch (err) {
+            this.setState({ errorMessage: err.message });
+        } finally {
+            this.setState({ loading: false });
+        }
+    }
 
+    transfer = async (event) => {
+        event.preventDefault();
+        this.setState({ loading: true, errorMessage: '' });
 
-            this.state.user_db.map((chns, index)=>{
-                if(this.state.user_db[index]['channelID'] === parseInt(this.state.channelID)){
-                    channel_info = this.state.user_db[index]
+        try {
+            console.log('transfer!!')
+            this.prepare_W();
+
+            const accounts = await web3.eth.getAccounts();
+            let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
+            //console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
+            //console.log(channelContract);
+            //console.log('W_kM', W_kM);
+            //console.log('W_kC', W_kC);
+            //console.log('k', this.state.k);
+
+            const j = await channelContract.methods.j().call();
+
+            /*
+            await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, this.state.newChnAddr)
+            .send({ from: accounts[0] });
+            */
+
+            let c, ind, id, customerAddr, merchantAddr;
+
+            if(this.state.k % 2 == 0){
+                c = ((this.state.k - j)/2);
+            }else{
+                c = ((this.state.k - j-1)/2);
+            }
+            
+            this.state.channels.map((chn, index) => {
+                if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
+                   // ind = index;
+                    id = this.state.channels[index]['id'];
+                    customerAddr = this.state.channels[index]['customer'];
+                    merchantAddr = this.state.channels[index]['merchant']
                 }
             });
 
-            console.log('this.state.k', this.state.k)
-            console.log('channel[j]', channel_info['j'])
-            let ind; 
+            fetch('http://localhost:7000/channels/' + id, {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "c": c
+                })
+            })
+            .then(res => {
+                return res.json();
+            })
+            .then(data => {
+                console.log('fetch', data);
+            });
 
-            this.state.channels.map((chn, index) => {
-                if(this.state.channels[index]['id'] === parseInt(this.state.channelID,10)){
-                    ind = index;
+            fetch('http://localhost:7000/' + customerAddr, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
             })
+                .then(res => {
+                    //console.log('response ',res);
+                    return res.json();
+                }).then(data => {
+                    let c_ID;
+                    data.map((chnC, index) => {
+                        if(data[index]['channelID'] === id){
+                           c_ID = data[index]['id'];
+                        }
+                    });
+                   this.setState({
+                       c_ID: c_ID
+                   })
+                });
 
-            console.log('ind', ind)
+                fetch('http://localhost:7000/' + customerAddr + '/' + this.state.c_ID, {
+                    method: 'PATCH',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "c": c
+                    })
+                })
+                .then(res => {
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('fetch', data);
+                });
 
-            if(parseInt(this.state.k, 10) === (channel_info['j']-1)){
-                W_kC = this.state.channels[ind]['messages']['m1'];
-                console.log('W_kC', W_kC)
-            }else{
-                W_kC = W_nX( channel_info['j'], this.state.k, channel_info.W_ic)
-                console.log('W_kC', W_kC)
-            }
+                fetch('http://localhost:7000/' + merchantAddr, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => {
+                    //console.log('response ',res);
+                    return res.json();
+                }).then(data => {
+                    let m_ID;
+                    data.map((chnM, index) => {
+                        if(data[index]['channelID'] === id){
+                           m_ID = data[index]['id'];
+                        }
+                    });
+                   this.setState({
+                       m_ID: m_ID
+                   })
+                });
 
-            L = 2*(channel_info['c'])+1;
-            
-            W_kM = W_nX(L, this.state.k, channel_info['W_LM'])
+                fetch('http://localhost:7000/' + customerAddr + '/' + this.state.c_ID, {
+                    method: 'PATCH',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        "c": c
+                    })
+                })
+                .then(res => {
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('fetch', data);
+                });
 
-            const accounts = await web3.eth.getAccounts();
-            let channelContract = channel(this.state.channels[ind]['ethAddress'])
-            console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
-            console.log(channelContract);
-            console.log('W_kM', W_kM);
-            console.log('W_kC', W_kC);
-            console.log('k', this.state.k);
-
-            await channelContract.methods.transferDeposit("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
-            .send({ from: accounts[0] });
-            
         } catch (err) {
             this.setState({ errorMessage: err.message });
         } finally {
@@ -270,11 +451,11 @@ class Home extends Component {
         //console.log(address)
         let channelContract = channel(address);
         console.log(channelContract)
-        const T_EXP = await channelContract.methods.T_exp().call()
+        /*const T_EXP = await channelContract.methods.T_exp().call()
 
         if(Date.now() < T_EXP*1000){
 
-        }
+        }*/
         this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id']){
                 index_userChannel = index;
@@ -516,14 +697,131 @@ class Home extends Component {
         }
     }
 
+    //Channel refund (Customer)
+    refund = async () =>  {
+        //console.log('index_refund', parseInt(this.state.index_refund,10))
+        //console.log('channels', this.state.channels)
+        let chn = this.state.channels
+        let ind = this.state.index_refund;
+        let address = chn[ind-1]['ethAddress']
+        let channelContract = channel(address);
+        //console.log(this.state.channels[ind-1]['customer']);
+       if(this.state.accounts[0] === chn[ind-1]['customer']){
+        //console.log(await channelContract.methods.costumer().call());
+        await channelContract.methods.channelClose().send({ from: this.state.accounts[0] });
+
+        fetch('http://localhost:7000/channels/' + chn[ind-1]['id'], {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "State": 'closed',
+                })
+            })
+            .then(res => {
+                //console.log('response ',res);
+                return res.json();
+            }).then(data => {
+                this.setState({
+                    channels: data
+                })
+            });
+       }
+
+
+    }
+
     renderChannels() {
 
         const data = this.state.channels;
+        let ret;
 
         return Object.keys(data).map((requests, index) => {
             console.log('hola',data[index]['customer'])
+            
+            console.log('uep')
+            console.log('T_EXP', parseInt(this.state.T_EXP[index+1],10)*1000)
+            console.log('now',  Date.now())
+            console.log(parseInt(this.state.T_EXP[index],10)*1000 + parseInt(this.state.T_D[index],10))
+            console.log('tot',(parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10) 
+            + parseInt(this.state.T_R[index], 10))*1000)
+            
             if (data[index]['customer'] === this.state.accounts[0] || data[index]['merchant'] === this.state.accounts[0]) {
                 console.log('dataa', data)
+
+                if(data[index]['State'] === 'accepted' && data[index]['customer'] === this.state.accounts[0]){
+                    ret =   <Link to={"/channels/open/" + data[index]['id']}>
+                                <Button animated='vertical' color='blue'>
+                                    <Button.Content hidden>Open</Button.Content>
+                                    <Button.Content visible>
+                                        <Icon name='exchange' />
+                                    </Button.Content>
+                                </Button>
+                            </Link>
+                } else if(data[index]['State'] === 'opened' && data[index]['customer'] === this.state.accounts[0] 
+                && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
+                    //Customer purchase service
+                    ret =   <Link to={"/channels/purchase/" + data[index]['id']}>
+                                <Button animated='vertical' color='blue'>
+                                    <Button.Content hidden>Purchase</Button.Content>
+                                    <Button.Content visible>
+                                        <Icon name='exchange' />
+                                    </Button.Content>
+                                </Button>
+                            </Link>
+                }else if(data[index]['State'] === 'closed'){
+                    ret = <Label as='a' color='green' horizontal>Channel closed</Label>
+                }else if(parseInt(this.state.T_EXP[index+1],10) != NaN && parseInt(this.state.T_D[index+1],10 != NaN && 
+                    parseInt(this.state.T_R[index+1], 10))*1000 != NaN && (Date.now() > ((parseInt(this.state.T_EXP[index+1],10) + parseInt(this.state.T_D[index+1],10) 
+                    + parseInt(this.state.T_R[index+1], 10))*1000))){
+                        console.log('prova', parseInt(this.state.T_EXP[index+1],10), index)
+                    ret = <Label as='a' color='green' horizontal>Channel closed - Period ended</Label>
+                }else if(data[index]['State'] === 'payment' && data[index]['merchant'] === this.state.accounts[0] 
+                && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
+                    //Merchant send service (m2)
+                    ret =   <Button animated='vertical' color='blue' onClick={() => this.send(data[index])}>
+                                <Button.Content hidden>Send</Button.Content>
+                                <Button.Content visible>
+                                    <Icon name='exchange' />
+                                </Button.Content>
+                            </Button>
+                }else if(data[index]['State'] === 'opened' && data[index]['merchant'] === this.state.accounts[0]  
+                && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
+                    ret = <Label as='a' color='green' horizontal>Opened</Label>
+                }else if(data[index]['State'] === 'send service' && data[index]['merchant'] === this.state.accounts[0] 
+                && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
+                    ret = <Label as='a' color='blue' horizontal>Waiting proof</Label>
+                }else if(data[index]['State'] === 'send service' && data[index]['customer'] === this.state.accounts[0] 
+                && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
+                    ret =   <Button animated='vertical' color='yellow' onClick={() => this.sendProof(data[index])}>
+                                <Button.Content hidden>Proof</Button.Content>
+                                <Button.Content visible>
+                                    <Icon name='exchange' />
+                                </Button.Content>
+                            </Button>
+                }else if(data[index]['State'] === 'send proof' && data[index]['customer'] === this.state.accounts[0] 
+                && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
+                    ret = <Label as='a' color='orange' horizontal>Waiting M verification</Label>
+                }else if(data[index]['State'] === 'send proof' && data[index]['merchant'] === this.state.accounts[0] 
+                && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
+                    ret =   <Button animated='vertical' color='yellow' onClick={() => this.verify(data[index])}>
+                                <Button.Content hidden>Verify</Button.Content>
+                                <Button.Content visible>
+                                    <Icon name='check' />
+                                </Button.Content>
+                            </Button>
+                }else if(parseInt(this.state.T_EXP[index],10)*1000 < Date.now() && Date.now() < 
+                (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000){
+                    ret = <Label as='a' color='blue' horizontal>Liquidation time</Label>
+                }else if((parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000 < Date.now() 
+                && Date.now() < (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10) 
+                + parseInt(this.state.T_R[index], 10))*1000){
+                    ret = <Label as='a' color='green' horizontal>Refund time</Label>
+                }else{
+                    ret = <></>
+                }
+
                 return (
                     <Table.Row>
                         <Table.Cell>
@@ -546,71 +844,7 @@ class Home extends Component {
                             </Link>
                         </Table.Cell>
                         <Table.Cell>
-                            {data[index]['State'] === 'accepted' && data[index]['customer'] === this.state.accounts[0] ? (
-                                <Link to={"/channels/open/" + data[index]['id']}>
-                                    <Button animated='vertical' color='blue'>
-                                        <Button.Content hidden>Open</Button.Content>
-                                        <Button.Content visible>
-                                            <Icon name='exchange' />
-                                        </Button.Content>
-                                    </Button>
-                                </Link>
-                            ) : (data[index]['State'] === 'opened' && data[index]['customer'] === this.state.accounts[0] ? (
-                                <Link to={"/channels/purchase/" + data[index]['id']}>
-                                    <Button animated='vertical' color='blue'>
-                                        <Button.Content hidden>Purchase</Button.Content>
-                                        <Button.Content visible>
-                                            <Icon name='exchange' />
-                                        </Button.Content>
-                                    </Button>
-                                </Link>
-                            ):(data[index]['State'] === 'payment' && data[index]['merchant'] === this.state.accounts[0] ? (
-                                
-                                <Button animated='vertical' color='blue' onClick={() => this.send(data[index])}>
-                                    <Button.Content hidden>Send</Button.Content>
-                                    <Button.Content visible>
-                                        <Icon name='exchange' />
-                                    </Button.Content>
-                                </Button>
-                                
-
-                            ):(data[index]['State'] === 'payment' && data[index]['customer'] === this.state.accounts[0] ? (
-                                
-                                <Link to={"/channels/purchase/" + data[index]['id']}>
-                                    <Button animated='vertical' color='yellow'>
-                                        <Button.Content hidden>Send</Button.Content>
-                                        <Button.Content visible>
-                                            <Icon name='exchange' />
-                                        </Button.Content>
-                                    </Button>
-                                </Link>
-
-                            ):(data[index]['State'] === 'opened' && data[index]['merchant'] === this.state.accounts[0] ? (
-                                <Label as='a' color='green' horizontal>Opened</Label>
-                            ):(data[index]['State'] === 'send service' && data[index]['merchant'] === this.state.accounts[0] ? ( 
-                                <Label as='a' color='blue' horizontal>Waiting proof</Label>
-                            ):(data[index]['State'] === 'send service' && data[index]['customer'] === this.state.accounts[0] ? (
-                                
-                                <Button animated='vertical' color='yellow' onClick={() => this.sendProof(data[index])}>
-                                    <Button.Content hidden>Proof</Button.Content>
-                                    <Button.Content visible>
-                                        <Icon name='exchange' />
-                                    </Button.Content>
-                                </Button>
-
-                            ):(data[index]['State'] === 'send proof' && data[index]['customer'] === this.state.accounts[0] ? ( 
-                                <Label as='a' color='orange' horizontal>Waiting M verification</Label>
-                            ):(data[index]['State'] === 'send proof' && data[index]['merchant'] === this.state.accounts[0] ? (
-                                
-                                <Button animated='vertical' color='yellow' onClick={() => this.verify(data[index])}>
-                                    <Button.Content hidden>Verify</Button.Content>
-                                    <Button.Content visible>
-                                        <Icon name='check' />
-                                    </Button.Content>
-                                </Button>
-
-                            ):(<></>)
-                            ))))))))}
+                            {ret}
                         </Table.Cell>
                     </Table.Row>
                 )
@@ -671,9 +905,18 @@ class Home extends Component {
         const data = this.state.channels;
 
         return Object.keys(data).map((requests, index) => {
-            
-            if (data[index]['merchant'] === this.state.accounts[0]) {
-                console.log('dataa', data[index]['id'])
+            /*console.log('T_EXP', parseInt(this.state.T_EXP[index],10)*1000)
+            console.log('now',  Date.now())
+            console.log((parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000)*/
+
+            if (data[index]['merchant'] === this.state.accounts[0] 
+            //COMENTAT PER PROGRMAR EL FUNCIONAMENT DEL TRANSFER
+            /*&& parseInt(this.state.T_EXP[index],10)*1000 < Date.now() && 
+            Date.now() < (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000*/)  {
+                /*console.log('T_EXP', parseInt(this.state.T_EXP[index],10)*1000)
+                console.log('now',  Date.now())
+                console.log(parseInt(this.state.T_EXP[index],10)*1000 + parseInt(this.state.T_D[index],10))
+                console.log('dataa', data[index]['id'])*/
                 return(
                     <option>{data[index]['id']}</option>
                 )
@@ -719,6 +962,28 @@ class Home extends Component {
                     <option>{coins[index]}</option>
                 )
             });
+        })
+    }
+
+    renderOwnedChannelsRefund() {
+        const data = this.state.channels;
+        
+        return Object.keys(data).map((requests, index) => {
+            /*console.log('T_EXP', parseInt(this.state.T_EXP[index],10)*1000)
+            console.log('now',  Date.now())
+            console.log((parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000)*/
+
+            if (data[index]['customer'] === this.state.accounts[0] 
+            && (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000 < Date.now() && 
+            Date.now() < (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10) + parseInt(this.state.T_R[index],10))*1000){
+                /*console.log('T_EXP', parseInt(this.state.T_EXP[index],10)*1000)
+                console.log('now',  Date.now())
+                console.log(parseInt(this.state.T_EXP[index],10)*1000 + parseInt(this.state.T_D[index],10))
+                console.log('dataa', data[index]['id'])*/
+                return(
+                    <option>{data[index]['id']}</option>
+                )
+            }
         })
     }
 
@@ -771,7 +1036,7 @@ class Home extends Component {
                         </Table>
 
                         <h3>Channel liquidation</h3>
-                        <Form onSubmit={this.payment} error={!!this.state.errorMessage}>
+                        <Form onSubmit={this.liquidation} error={!!this.state.errorMessage}>
 
                             <Form.Field>
                                 <label>Channel ID:</label>
@@ -798,6 +1063,64 @@ class Home extends Component {
                             <Message error header="ERROR" content={this.state.errorMessage} />
                             <Button primary loading={this.state.loading}>
                                 Send!
+                            </Button>
+                        </Form>
+
+                        <h3>Channel transference</h3>
+                        <Form onSubmit={this.transfer} error={!!this.state.errorMessage}>
+
+                            <Form.Field>
+                                <label>Channel ID:</label>
+                                <select value={this.state.channelID} onChange={event =>  {
+                                    this.setState({ channelID: event.target.value});
+                                }
+                                }>
+                                <option></option>
+                                    {this.renderOwnedChannelsLiquidation()}
+                                </select>
+                            </Form.Field>
+
+                            <Form.Field>
+                                <label>k:</label>
+                                <select value={this.state.k} onChange={event => {
+                                    this.setState({
+                                        k: event.target.value
+                                    })
+                                }}>
+                                <option></option>
+                                    {this.rendermicroCoins(this.state.channelID)}
+                                </select>
+                            </Form.Field>
+
+                            <Form.Field>
+                            <label>New channel Ethereum Address:</label>
+                            <Input
+                                value={this.state.newChnAddr}
+                                onChange={event => this.setState({ newChnAddr: event.target.value })}
+                            />
+                            </Form.Field>
+                            <Message error header="ERROR" content={this.state.errorMessage} />
+                            <Button primary loading={this.state.loading}>
+                                Send!
+                            </Button>
+                        </Form>
+
+                        <h3>Channel refund</h3>
+                        <Form onSubmit={this.refund} error={!!this.state.errorMessage}>
+
+                            <Form.Field>
+                                <label>Channel ID:</label>
+                                <select value={this.state.index_refund} onChange={event =>  {
+                                    this.setState({ index_refund: event.target.value});
+                                }
+                                }>
+                                <option></option>
+                                    {this.renderOwnedChannelsRefund()}
+                                </select>
+                            </Form.Field>
+                            <Message error header="ERROR" content={this.state.errorMessage} />
+                            <Button primary loading={this.state.loading}>
+                                Refund!
                             </Button>
                         </Form>
 
