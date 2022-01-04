@@ -103,15 +103,15 @@
       "service_price": "1 Gwei",
       "State": "opened",
       "id": 1,
-      "W_0M": "d553fdb8b3f9ae8177da27b71d51498b3b40e09e72f1c8658915b603d0c452c1",
+      "W_0M": "4774c89ddbee7ff10ac095e0a41bbe83bca64f2b0cfd748037aaaf45bf07be0b",
       "S_id": 1,
-      "W_0C": "8497f024ff55e6b1ec5e0664dc6f2988a420a91b3914a5e78d82d6ef1a5b84bd",
-      "ethAddress": "0xCbF7419B26431AeC9e4f19De25dBD6972642D3F7",
+      "W_0C": "28e16159c114b3fe9b0f60e02cdc33e957bd4e291de36330f2458b86c5989c2e",
+      "ethAddress": "0xa508D7c23cd671Bb32B151b40dB13AdC61D3208c",
       "messages": {
-        "i": 2,
-        "m1": "fd10f63607c8f2010ac45033436f732075232bb528a38bb36d25caef1e20044d",
+        "i": 4,
+        "m1": "a93e2298f858ae2a87e66a6e366b700ee66391b2aba29824b91f7e1f49d6befc",
         "m2": "Access to a newspaper article",
-        "m3": "7fac4586057efddf51500c8693cf95bac0ab6f7571c67ab2bd108f18a1fda5ee"
+        "m3": "7eb8a03222bf23b76cc432f89f580cb1819d47de623db0808c15083ec395b715"
       }
     },
     {
@@ -119,24 +119,19 @@
       "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
       "customer_channel_id": 2,
       "service": "Access to a documentary film for 24 hours",
-      "c": "1",
-      "service_price": "1 Gwei",
-      "State": "requested",
-      "id": 2
-    },
-    {
-      "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
-      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
-      "customer_channel_id": 3,
-      "service": "Access to a documentary film for 24 hours",
       "c": "0",
       "service_price": "1 Gwei",
-      "State": "opened",
-      "id": 3,
-      "W_0M": "b0ae7cb2454194a1c4dd768ec934fa47dd48fcf34d464576b9e198e53050e4e5",
-      "S_id": 2,
-      "W_0C": "b65ec2e6ea21909f6fd06fcc797b39d801b1879c736bc984e8114baeace2adc7",
-      "ethAddress": "0x627BefC72e35582fB4d5Df55160DE298dea7a11C"
+      "State": "send service",
+      "id": 2,
+      "W_0M": "33be3e81bf96b3f69ceac0520018f90cdb9bee7284361807377871d6c12ffc70",
+      "S_id": 1,
+      "W_0C": "0ff76f8990aa9e35aeb2f7f1b385ba49190cfc5694194d30998f582c1a8d06b3",
+      "ethAddress": "0xEe218a5962022E425Ab01F9F018B90E37DFc00F0",
+      "messages": {
+        "i": "1",
+        "m1": "5fd623e00faa3c41870f1b50df0163ca",
+        "m2": "Access to a documentary film for 24 hours"
+      }
     }
   ],
   "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b": [
@@ -148,17 +143,9 @@
       "S_id": 1,
       "channelID": 1,
       "id": 1,
-      "W_LM": "8adce9485be1cff9c926fe30cd531f88",
-      "j": 2,
-      "W_ic": "7fac4586057efddf51500c8693cf95bac0ab6f7571c67ab2bd108f18a1fda5ee"
-    },
-    {
-      "channel": "",
-      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
-      "service": "Access to a documentary film for 24 hours",
-      "c": "1",
-      "S_id": 5,
-      "id": 2
+      "W_LM": "d2b49bc476fd131f13037ec1f73a7247",
+      "j": 4,
+      "W_ic": "7eb8a03222bf23b76cc432f89f580cb1819d47de623db0808c15083ec395b715"
     },
     {
       "channel": "",
@@ -166,9 +153,9 @@
       "service": "Access to a documentary film for 24 hours",
       "c": "0",
       "S_id": 5,
-      "id": 3,
-      "W_LC": "e4e9053d1cf0ba6f47b0ee5a8f233f88",
-      "channelID": "3"
+      "id": 2,
+      "W_LC": "5fd623e00faa3c41870f1b50df0163ca",
+      "channelID": "2"
     }
   ],
   "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec": [
@@ -176,21 +163,13 @@
       "channel": "",
       "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
       "service": "Access to a documentary film for 24 hours",
-      "c": "1",
-      "S_id": 5,
-      "channelID": 2,
-      "id": 1
-    },
-    {
-      "channel": "",
-      "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
-      "service": "Access to a documentary film for 24 hours",
       "c": "0",
       "S_id": 5,
-      "channelID": 3,
-      "id": 2,
-      "W_LM": "c1a9405da915dfb9e740679d8865cfe5",
-      "j": 0
+      "channelID": 2,
+      "id": 1,
+      "W_LM": "eb1f02b7be194ee0da9c040b50a9259e",
+      "j": "1",
+      "W_ic": "5fd623e00faa3c41870f1b50df0163ca"
     }
   ],
   "0x70F6714dCa2f53A17558C5dff99D572959f77D9c": [
@@ -201,7 +180,7 @@
       "c": "3",
       "S_id": 1,
       "id": 1,
-      "W_LC": "d69ad4f9e7bcfd5277fa050318f78fe6",
+      "W_LC": "324a44fd5f320dca4e208bd4fe91ccb1",
       "channelID": "1"
     }
   ],

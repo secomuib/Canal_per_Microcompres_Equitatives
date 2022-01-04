@@ -220,18 +220,10 @@ class ChannelShow extends Component {
               value={this.state.channel.W_0M}
             />
           </Form.Field>)}
-           {((this.state.channel.State === 'opened' && this.state.channel.messages) || this.state.channel.State === 'payment' || 
-           this.state.channel.State === 'send service' || this.state.channel.State === 'send proof') && (
-          <Form>
-          <Form.Field>
-            <label>W<sub>0C</sub></label>
-            <Input
-              readOnly
-              value={this.state.channel.W_0C}
-            />
-          </Form.Field>
-
-          <Form.Field>
+          {(this.state.channel.State === 'opened' || this.state.channel.State === 'payment' || 
+          this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof') && (
+            <Form>
+            <Form.Field>
             <label>ethAddress</label>
             <Input
               readOnly
@@ -257,6 +249,18 @@ class ChannelShow extends Component {
             <Input
               readOnly
               value={this.state.Δ_TR}
+            />
+          </Form.Field>
+          </Form>
+        )}
+           {((this.state.channel.State === 'opened' && this.state.channel.messages) || this.state.channel.State === 'payment' || 
+           this.state.channel.State === 'send service' || this.state.channel.State === 'send proof') && (
+          <Form>
+          <Form.Field>
+            <label>W<sub>0C</sub></label>
+            <Input
+              readOnly
+              value={this.state.channel.W_0C}
             />
           </Form.Field>
           

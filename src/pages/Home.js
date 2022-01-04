@@ -21,6 +21,11 @@ class Home extends Component {
         k: '',
         user_db: '',
         newChnAddr: '',
+        ind: '',
+        W_kM: '',
+        W_kC: '',
+        channelContract: '',
+        j: '',
         loadingPage: true,
         loading: false,
         errorMessage: '',
@@ -86,6 +91,7 @@ class Home extends Component {
             await Promise.all(
                 this.state.channels.map(async(chns, index)=>{
                     if(this.state.channels[index]['ethAddress'] && this.state.channels[index]['State'] != 'closed'){
+                    
                         let address = this.state.channels[index]['ethAddress']
                         //console.log('address',address)
                         let channelContract = channel(address);
@@ -100,14 +106,14 @@ class Home extends Component {
                         T_R.push('');
                         T_D.push('');
                     }
+                    this.setState({
+                        T_EXP: T_EXP,
+                        T_D: T_D,
+                        T_R: T_R
+                    })
                 }));
-                this.setState({
-                    T_EXP: T_EXP,
-                    T_D: T_D,
-                    T_R: T_R
-                })
+                
             
-
             //console.log('user_Db',this.state.user_db)
             
             /*const receiverDeliveriesCount = await factory.methods.getReceiverDeliveriesCount(accounts[0]).call();
@@ -198,6 +204,7 @@ class Home extends Component {
             W_kM: W_kM,
             W_kC: W_kC,
         })
+
     }
 
     //Funció per transferir part de les micro-monedes de deposit del canal a la wallet del comprador
@@ -206,18 +213,17 @@ class Home extends Component {
         this.setState({ loading: true, errorMessage: '' });
 
         try {
-            this.prepare_W();
+            await this.prepare_W();
 
-            const accounts = await web3.eth.getAccounts();
+            //const accounts = await web3.eth.getAccounts();
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
-            //console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
-            //console.log(channelContract);
-            //console.log('W_kM', W_kM);
-            //console.log('W_kC', W_kC);
-            //console.log('k', this.state.k);
+
+            let j = await channelContract.methods.j().call();
 
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
-            .send({ from: accounts[0] });
+            .send({ from: this.state.accounts[0] });
+
+            this.updateC();
             
         } catch (err) {
             this.setState({ errorMessage: err.message });
@@ -232,40 +238,61 @@ class Home extends Component {
 
         try {
             console.log('transfer!!')
-            this.prepare_W();
+            await this.prepare_W();
 
-            const accounts = await web3.eth.getAccounts();
+            //const accounts = await web3.eth.getAccounts();
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
-            //console.log("0x" + W_kM, "0x" + W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
-            //console.log(channelContract);
-            //console.log('W_kM', W_kM);
-            //console.log('W_kC', W_kC);
-            //console.log('k', this.state.k);
 
-            const j = await channelContract.methods.j().call();
+            let j = await channelContract.methods.j().call();
 
-            /*
+            
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, this.state.newChnAddr)
-            .send({ from: accounts[0] });
-            */
+            .send({ from: this.state.accounts[0] });
 
-            let c, ind, id, customerAddr, merchantAddr;
+           //Update parameter c at the json-server data base:
+            this.updateC();
+
+        } catch (err) {
+            this.setState({ errorMessage: err.message });
+        } finally {
+            this.setState({ loading: false });
+        }
+    }
+
+    updateC = async (event) => {
+        event.preventDefault();
+        this.setState({ loading: true, errorMessage: '' });
+
+        try{
+            let c, ind, id;//, customerAddr, merchantAddr;
 
             if(this.state.k % 2 == 0){
-                c = ((this.state.k - j)/2);
+                c = ((this.state.k - parseInt(this.state.j,10))/2);
             }else{
-                c = ((this.state.k - j-1)/2);
+                c = ((this.state.k - (parseInt(this.state.j,10) - 1))/2);
             }
-            
+
             this.state.channels.map((chn, index) => {
                 if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
-                   // ind = index;
+                    // ind = index;
                     id = this.state.channels[index]['id'];
-                    customerAddr = this.state.channels[index]['customer'];
-                    merchantAddr = this.state.channels[index]['merchant']
+                    //customerAddr = this.state.channels[index]['customer'];
+                    //merchantAddr = this.state.channels[index]['merchant']
                 }
             });
 
+            //Update parameter c at the channel json-server data base:
+            fetch('http://localhost:7000/channels/' + this.state.channels[this.state.ind]['id'], {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c)
+                })
+            })
+
+            //Uptade parameter c at the NEW channel json-server database:
             fetch('http://localhost:7000/channels/' + id, {
                 method: 'PATCH',
                 headers: {
@@ -282,81 +309,7 @@ class Home extends Component {
                 console.log('fetch', data);
             });
 
-            fetch('http://localhost:7000/' + customerAddr, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            })
-                .then(res => {
-                    //console.log('response ',res);
-                    return res.json();
-                }).then(data => {
-                    let c_ID;
-                    data.map((chnC, index) => {
-                        if(data[index]['channelID'] === id){
-                           c_ID = data[index]['id'];
-                        }
-                    });
-                   this.setState({
-                       c_ID: c_ID
-                   })
-                });
-
-                fetch('http://localhost:7000/' + customerAddr + '/' + this.state.c_ID, {
-                    method: 'PATCH',
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "c": c
-                    })
-                })
-                .then(res => {
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('fetch', data);
-                });
-
-                fetch('http://localhost:7000/' + merchantAddr, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(res => {
-                    //console.log('response ',res);
-                    return res.json();
-                }).then(data => {
-                    let m_ID;
-                    data.map((chnM, index) => {
-                        if(data[index]['channelID'] === id){
-                           m_ID = data[index]['id'];
-                        }
-                    });
-                   this.setState({
-                       m_ID: m_ID
-                   })
-                });
-
-                fetch('http://localhost:7000/' + customerAddr + '/' + this.state.c_ID, {
-                    method: 'PATCH',
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "c": c
-                    })
-                })
-                .then(res => {
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('fetch', data);
-                });
-
-        } catch (err) {
+        }catch (err) {
             this.setState({ errorMessage: err.message });
         } finally {
             this.setState({ loading: false });
@@ -739,8 +692,9 @@ class Home extends Component {
 
         return Object.keys(data).map((requests, index) => {
             console.log('hola',data[index]['customer'])
+            console.log('T_EXP', this.state.T_EXP)
             
-            console.log('uep')
+            //console.log('uep')
             console.log('T_EXP', parseInt(this.state.T_EXP[index+1],10)*1000)
             console.log('now',  Date.now())
             console.log(parseInt(this.state.T_EXP[index],10)*1000 + parseInt(this.state.T_D[index],10))
@@ -772,12 +726,14 @@ class Home extends Component {
                             </Link>
                 }else if(data[index]['State'] === 'closed'){
                     ret = <Label as='a' color='green' horizontal>Channel closed</Label>
-                }else if(parseInt(this.state.T_EXP[index+1],10) != NaN && parseInt(this.state.T_D[index+1],10 != NaN && 
+                }
+                else if(parseInt(this.state.T_EXP[index+1],10) != NaN && parseInt(this.state.T_D[index+1],10 != NaN && 
                     parseInt(this.state.T_R[index+1], 10))*1000 != NaN && (Date.now() > ((parseInt(this.state.T_EXP[index+1],10) + parseInt(this.state.T_D[index+1],10) 
                     + parseInt(this.state.T_R[index+1], 10))*1000))){
                         console.log('prova', parseInt(this.state.T_EXP[index+1],10), index)
                     ret = <Label as='a' color='green' horizontal>Channel closed - Period ended</Label>
-                }else if(data[index]['State'] === 'payment' && data[index]['merchant'] === this.state.accounts[0] 
+                }
+                else if(data[index]['State'] === 'payment' && data[index]['merchant'] === this.state.accounts[0] 
                 && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
                     //Merchant send service (m2)
                     ret =   <Button animated='vertical' color='blue' onClick={() => this.send(data[index])}>
@@ -786,13 +742,16 @@ class Home extends Component {
                                     <Icon name='exchange' />
                                 </Button.Content>
                             </Button>
-                }else if(data[index]['State'] === 'opened' && data[index]['merchant'] === this.state.accounts[0]  
+                }
+                else if(data[index]['State'] === 'opened' && data[index]['merchant'] === this.state.accounts[0]  
                 && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
                     ret = <Label as='a' color='green' horizontal>Opened</Label>
-                }else if(data[index]['State'] === 'send service' && data[index]['merchant'] === this.state.accounts[0] 
+                }
+                else if(data[index]['State'] === 'send service' && data[index]['merchant'] === this.state.accounts[0] 
                 && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
                     ret = <Label as='a' color='blue' horizontal>Waiting proof</Label>
-                }else if(data[index]['State'] === 'send service' && data[index]['customer'] === this.state.accounts[0] 
+                }
+                else if(data[index]['State'] === 'send service' && data[index]['customer'] === this.state.accounts[0] 
                 && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
                     ret =   <Button animated='vertical' color='yellow' onClick={() => this.sendProof(data[index])}>
                                 <Button.Content hidden>Proof</Button.Content>
@@ -800,10 +759,12 @@ class Home extends Component {
                                     <Icon name='exchange' />
                                 </Button.Content>
                             </Button>
-                }else if(data[index]['State'] === 'send proof' && data[index]['customer'] === this.state.accounts[0] 
+                }
+                else if(data[index]['State'] === 'send proof' && data[index]['customer'] === this.state.accounts[0] 
                 && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
                     ret = <Label as='a' color='orange' horizontal>Waiting M verification</Label>
-                }else if(data[index]['State'] === 'send proof' && data[index]['merchant'] === this.state.accounts[0] 
+                }
+                else if(data[index]['State'] === 'send proof' && data[index]['merchant'] === this.state.accounts[0] 
                 && Date.now() < parseInt(this.state.T_EXP[index],10)*1000){
                     ret =   <Button animated='vertical' color='yellow' onClick={() => this.verify(data[index])}>
                                 <Button.Content hidden>Verify</Button.Content>
@@ -811,14 +772,17 @@ class Home extends Component {
                                     <Icon name='check' />
                                 </Button.Content>
                             </Button>
-                }else if(parseInt(this.state.T_EXP[index],10)*1000 < Date.now() && Date.now() < 
+                }
+                else if(parseInt(this.state.T_EXP[index],10)*1000 < Date.now() && Date.now() < 
                 (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000){
                     ret = <Label as='a' color='blue' horizontal>Liquidation time</Label>
-                }else if((parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000 < Date.now() 
+                }
+                else if((parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000 < Date.now() 
                 && Date.now() < (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10) 
                 + parseInt(this.state.T_R[index], 10))*1000){
                     ret = <Label as='a' color='green' horizontal>Refund time</Label>
-                }else{
+                }
+                else{
                     ret = <></>
                 }
 
@@ -909,10 +873,8 @@ class Home extends Component {
             console.log('now',  Date.now())
             console.log((parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000)*/
 
-            if (data[index]['merchant'] === this.state.accounts[0] 
-            //COMENTAT PER PROGRMAR EL FUNCIONAMENT DEL TRANSFER
-            /*&& parseInt(this.state.T_EXP[index],10)*1000 < Date.now() && 
-            Date.now() < (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000*/)  {
+            if (data[index]['merchant'] === this.state.accounts[0] && parseInt(this.state.T_EXP[index],10)*1000 < Date.now() && 
+            Date.now() < (parseInt(this.state.T_EXP[index],10) + parseInt(this.state.T_D[index],10))*1000)  {
                 /*console.log('T_EXP', parseInt(this.state.T_EXP[index],10)*1000)
                 console.log('now',  Date.now())
                 console.log(parseInt(this.state.T_EXP[index],10)*1000 + parseInt(this.state.T_D[index],10))

@@ -55,10 +55,12 @@ contract channel{
         S_id = _S_id;
         c = _c;
         v = _v;
+        start = block.timestamp;
+        //T_exp = start + _T_exp;
         T_exp = _T_exp;
         TD = _TD;
         TR = _TR;
-        start = block.timestamp;
+        
     }
     
     function blocktimestamp() public returns(uint256){
@@ -70,7 +72,7 @@ contract channel{
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
         
         //now < T_exp || T_exp < now < TD
-        require ((block.timestamp > T_exp && block.timestamp < (T_exp + TD) && newChannelAddress == 0x0000000000000000000000000000000000000000) /*|| ((T_exp + TD > block.timestamp) && (block.timestamp > T_exp))*/, "Time error");
+        require (block.timestamp > T_exp && block.timestamp < (T_exp + TD) /*&& newChannelAddress == 0x0000000000000000000000000000000000000000) || ((T_exp + TD > block.timestamp) && (block.timestamp > T_exp))*/, "Time error");
         
         require (k > j, "k <= j");
             
@@ -94,10 +96,15 @@ contract channel{
         }
         
         if(newChannelAddress != 0x0000000000000000000000000000000000000000){
-            payable(newChannelAddress).transfer(balance /* * (1 ether)*/);
+           // msg.value = balance;
+            payable(newChannelAddress).call{value: balance}("");
+            //payable(newChannelAddress).transfer(balance /* * (1 ether)*/);
         }else{
             payable(msg.sender).transfer(balance /* *(1 ether)*/);
         }
+
+        //Update c: 
+        c = c - balance;
         
         j = k;
         W_jm = bytes32 (_W_km);
@@ -126,6 +133,17 @@ contract channel{
         start = block.timestamp; 
     }
     
+     // Function to receive Ether. msg.data must be empty
+    receive() external payable {
+        c = address(this).balance;
+    }
+
+    // Fallback function is called when msg.data is not empty
+    fallback() external payable {
+        c = address(this).balance;
+    }
+
+
     modifier onlyOwner(){
         require (msg.sender == costumer, "Only merchant of the delivery can set the channel params.");
         _;
