@@ -120,7 +120,7 @@ contract channel{
         selfdestruct(payable(msg.sender));
     }
     
-    function merchantChange(bytes32 _W_0m, string memory _S_id, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner(){
+    /*function merchantChange(bytes32 _W_0m, string memory _S_id, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner(){
         
         //T_exp + TD < now < T_exp + TD + TR
         require(((T_exp + TD < block.timestamp) && (block.timestamp < T_exp + TD + TR)));
@@ -131,7 +131,7 @@ contract channel{
         TD = _TD;
         TR = _TR;
         start = block.timestamp; 
-    }
+    }*/
     
      // Function to receive Ether. msg.data must be empty
     receive() external payable {

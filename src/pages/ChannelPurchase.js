@@ -26,8 +26,6 @@ class ChannelPurchase extends Component {
 
     try {
       let id = this.props.match.params.id;
-      console.log(id)
-
         this.setState({
             propsID: id
         })
@@ -44,16 +42,12 @@ class ChannelPurchase extends Component {
     this.setState({ loading: true, errorMessage: '' });
 
     try {
-        
         function W_nX (n, W_X){
-            
-
             var W= Buffer.from(W_X,'hex');//W_X
             
             var L = 2*(c)+1;
             for(L; L!= n; L--){
               W = sha256(W);
-              console.log(W)
               W = Buffer.from(W,'hex');
             }
             W =  Buffer.from(W).toString("hex");
@@ -76,9 +70,7 @@ class ChannelPurchase extends Component {
       });
 
       if(this.state.channelInfo['messages']){
-        console.log('hello')
         i = parseInt(this.state.microcoin,10) + this.state.channelInfo['messages']['i'];
-        console.log('i',i)
       }else{
         i = this.state.microcoin;
       }
@@ -88,13 +80,8 @@ class ChannelPurchase extends Component {
         return res.json();
       })
       .then(data => {
-        console.log('fetch', data);
         data.map((ch, index)=>{
-
-            console.log('datad', data[index])
-
             if(data[index]['channelID'] === this.state.propsID){
-                console.log(data[index])
                 this.setState({
                     channel_C_Info: data[index]
                 })
@@ -103,11 +90,9 @@ class ChannelPurchase extends Component {
         })
       });
 
-
       var c = this.state.channelInfo.c;
 
       const W_iC = W_nX(i, this.state.channel_C_Info['W_LC']).toString('hex');
-      console.log(W_iC)
 
       await fetch('http://localhost:7000/channels/' + this.state.propsID, {
           method: 'PATCH',
@@ -129,9 +114,6 @@ class ChannelPurchase extends Component {
             console.log('fetch', data);
           });
           
-
-      // Refresh
-      alert('Micro-coin sended');
       // Refresh, using withRouter
       this.props.history.push('/');
     } catch (err) {

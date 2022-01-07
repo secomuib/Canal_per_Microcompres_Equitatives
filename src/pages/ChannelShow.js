@@ -23,7 +23,6 @@ class ChannelShow extends Component {
 
     try {
       let id = this.props.match.params.id;
-      console.log(id)
 
       var channel = await fetch('http://localhost:7000/channels/'+id, {
         headers:{
@@ -32,16 +31,13 @@ class ChannelShow extends Component {
         }
       })
       .then(res =>{
-        //console.log('response ',res);
         return res.json();
       }).then(data =>{
-        console.log('data', data);
         this.setState({
           channel: data,
         })
        })
 
-      console.log(this.state.channel);
       const accounts = await web3.eth.getAccounts();
 
       if(this.state.channel.ethAddress){
@@ -51,25 +47,14 @@ class ChannelShow extends Component {
         let Δ_TD = await channelContract.methods.TD().call();
         let Δ_TR = await channelContract.methods.TR().call();
         let blocktimestamp = await channelContract.methods.blocktimestamp().call();
-        console.log(blocktimestamp);
 
         let start_format = new Date(start*1000);
-        console.log('start', start * 1000);
-        console.log( new Date(start*1000));
-        console.log(parseInt(T_EXP,10) + parseInt(Δ_TD, 10))
-        console.log('prova', new Date(((parseInt(T_EXP, 10)) + parseInt(Δ_TD,10))*1000))
 
         let T_EXP_format = new Date(T_EXP*1000);
-        console.log('T_EXP', T_EXP);
-        console.log( new Date(T_EXP *1000) );
 
         let Δ_TD_format = new Date((parseInt(T_EXP,10) + parseInt(Δ_TD,10))*1000);
-        console.log('TD', Δ_TD);
-        console.log( new Date((parseInt(T_EXP,10) + parseInt(Δ_TD,10))*1000));
 
         let Δ_TR_format = new Date((parseInt(T_EXP,10) + parseInt(Δ_TD,10) + parseInt(Δ_TR,10))*1000);
-        console.log('TR', Δ_TR);
-        console.log(new Date((T_EXP * 1000) + parseInt(Δ_TD,10) + parseInt(Δ_TR,10)));
 
         await fetch('http://localhost:7000/' + accounts[0], {
           headers: {
@@ -78,10 +63,8 @@ class ChannelShow extends Component {
           }
       })
           .then(res => {
-              //console.log('response ',res);
               return res.json();
           }).then(data => {
-              //console.log('data', data);
               this.setState({
                   user_db: data,
               })
@@ -100,23 +83,6 @@ class ChannelShow extends Component {
 
       console.log(ID_userChannel)
 
-        /*fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'], {
-            method: 'PATCH',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "W_LM": W_LM,//Buffer.from(W_LM).toString("hex"),
-                "j": 0
-            })
-        })
-            .then(res => {
-                return res.json();
-            })
-            .then(data => {
-                console.log('fetch', data);
-            });*/
-
         this.setState({
           T_EXP: T_EXP_format,
           Δ_TD: Δ_TD_format,
@@ -125,9 +91,6 @@ class ChannelShow extends Component {
           ID_userChannel: ID_userChannel
         });
       }
-
-      
-      
 
       web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {

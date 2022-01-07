@@ -7,8 +7,6 @@ import db from '../db.json';
 import { readFile } from 'fs';
 import { identifier, throwStatement } from '@babel/types';
 
-//const fs = require('fs');
-
 var sha256 = require('js-sha256');
 
 
@@ -42,7 +40,6 @@ class NewChannel extends Component {
         }
       })
       .then(res =>{
-        //console.log('response ',res);
         return res.json();
       }).then(data =>{
         console.log('data', data);
@@ -79,7 +76,6 @@ class NewChannel extends Component {
           'Accept': 'application/json'
         }
       }).then(res =>{
-        //console.log('response ',res);
         return res.json();
       }).then(data =>{
         console.log('data services2', data);
@@ -98,7 +94,6 @@ class NewChannel extends Component {
           "channel": "",
           "merchant": this.state.merchant,
           "service": this.state.service,
-          "c": this.state.c,
           "S_id": this.state.S_id
         })
       })
@@ -123,6 +118,7 @@ class NewChannel extends Component {
           "service": this.state.service,
           "c": this.state.c,
           "service_price": this.state.service_data.price,
+          "S_id": this.state.S_id,
           "State": 'requested'
         })
       })
@@ -134,7 +130,6 @@ class NewChannel extends Component {
             channelid: data.id
           })  
         });
-        //console.log('channelID', this.state.channelid)
 
         //Merchant saved
         await fetch('http://localhost:7000/'+this.state.merchant, {
@@ -146,7 +141,6 @@ class NewChannel extends Component {
           "channel": "",
           "customer": accounts[0],
           "service": this.state.service,
-          "c": this.state.c,
           "S_id": this.state.S_id,
           "channelID": this.state.channelid
         })
@@ -158,31 +152,6 @@ class NewChannel extends Component {
           console.log('fetch',data);  
         });
 
-        /*
-        TRANSACCIÓ CREATECHANNEL
-        const accounts = await web3.eth.getAccounts();
-        console.log(this.state.c)
-        var c = this.state.c;
-        function W_nX (n,W_X){
-          var W=Buffer.from(W_X,'hex');
-          var L = 2*(c)+1;
-          for(L; L!= n; L--){
-            W = sha256(W);
-            W = Buffer.from(W,'hex');
-          }
-          return W;
-        };
-
-        let W_0M = W_nX(0, variables.W_LM).toString('hex');
-        let W_0C = W_nX(0, variables.W_LC).toString('hex');
-
-
-        await factory.methods
-            .createChannel("0x"+W_0M, "0x"+W_0C, this.state.service, this.state.c, this.state.v, this.state.T_exp, this.state.TD, this.state.TR)
-            .send({ from: accounts[0], value: this.state.deposit, gas:6000000 });
-        */
-        alert('Delivery created!');
-        // Refresh, using withRouter
         this.props.history.push('/');
 
     } catch (err) {
@@ -211,8 +180,6 @@ class NewChannel extends Component {
     console.log(unics);
     
     return Object.keys(unics).map((merchants, index) =>{
-      //console.log('merchant', this.state.merchant)
-      //console.log('merchaaants', merchants)
       
       if(this.state.merchant == ''){
         this.setState({merchant: merchants})
@@ -228,10 +195,6 @@ class NewChannel extends Component {
     const data = this.state.services;
     
     return Object.keys(data).map((service, index) => {
-      //console.log(data[index].info)
-      //console.log(data[index].merchant)
-      //console.log('merchants',merchants);
-      
       if(data[index].merchant === merchants){
         return(
           <option>
@@ -263,8 +226,7 @@ class NewChannel extends Component {
         <Form.Field>
           <label>Select merchant:</label>
         <select value={this.state.merchant} onChange={event =>  {
-          this.setState({ merchant: event.target.value/*, merchantAddr: db['services'][0][event.target.value][0]['Ethereum address']*/});
-          //this.renderServices(event.target.value)
+          this.setState({ merchant: event.target.value});
           }
         }>
           <option></option>
@@ -289,65 +251,6 @@ class NewChannel extends Component {
             onChange={event => this.setState({ c: event.target.value })}
           />
         </Form.Field>
-
-          {/*<Form.Field>
-            <label>Number of micro-coins (c):</label>
-            <Input
-              value={this.state.c}
-              onChange={event => this.setState({ c: event.target.value })}
-            />
-          </Form.Field>
-
-          <Form.Field>
-            <label>Micro-coins value (v):</label>
-            <Input
-              value={this.state.v}
-              onChange={event => this.setState({ v: event.target.value })}
-            />
-          </Form.Field>
-
-          <Form.Field>
-            <label>Service identifier:</label>
-            <Input
-              value={this.state.service}
-              onChange={event => this.setState({ service: event.target.value })}
-            />
-          </Form.Field>
-
-          <Form.Field>
-            <label>Expiration date (T_exp):</label>
-            <Input
-              value={this.state.T_exp}
-              onChange={event => this.setState({ T_exp: event.target.value })}
-            />
-          </Form.Field>
-
-          <Form.Field>
-            <label>Deposit period (TD):</label>
-            <Input
-              value={this.state.TD}
-              onChange={event => this.setState({ TD: event.target.value })}
-            />
-          </Form.Field>
-
-          <Form.Field>
-            <label>Payback period (TR):</label>
-            <Input
-              value={this.state.TR}
-              onChange={event => this.setState({ TR: event.target.value })}
-            />
-          </Form.Field>
-
-          <Form.Field>
-            <label>Deposit = c * v</label>
-            <Input
-              label="wei"
-              labelPosition="right"
-              value={this.state.deposit}
-              onChange={event => this.setState({ deposit: event.target.value })}
-            />
-          </Form.Field>*/}
-
           <Message error header="ERROR" content={this.state.errorMessage} />
           <Button primary loading={this.state.loading}>
             Send!
