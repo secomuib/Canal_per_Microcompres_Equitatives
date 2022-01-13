@@ -72,7 +72,7 @@ contract channel{
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
         
         //now < T_exp || T_exp < now < TD
-        require (block.timestamp > T_exp && block.timestamp < (T_exp + TD) /*&& newChannelAddress == 0x0000000000000000000000000000000000000000) || ((T_exp + TD > block.timestamp) && (block.timestamp > T_exp))*/, "Time error");
+        require (/*block.timestamp > T_exp &&*/ block.timestamp < (T_exp + TD) /*&& newChannelAddress == 0x0000000000000000000000000000000000000000) || ((T_exp + TD > block.timestamp) && (block.timestamp > T_exp))*/, "Time error");
         
         require (k > j, "k <= j");
             
@@ -97,10 +97,10 @@ contract channel{
         
         if(newChannelAddress != 0x0000000000000000000000000000000000000000){
            // msg.value = balance;
-            payable(newChannelAddress).call{value: balance}("");
+            payable(newChannelAddress).call{value: balance*v}("");
             //payable(newChannelAddress).transfer(balance /* * (1 ether)*/);
         }else{
-            payable(msg.sender).transfer(balance /* *(1 ether)*/);
+            payable(msg.sender).transfer(balance*v /* *(1 ether)*/);
         }
 
         //Update c: 
@@ -115,8 +115,7 @@ contract channel{
     function channelClose() public payable onlyOwner{
         
         //T_exp + TD < now < T_exp + TD + TR
-        require(((T_exp + TD < block.timestamp) && (block.timestamp < T_exp + TD + TR)));
-            
+        require(((T_exp + TD < block.timestamp) /*&& (block.timestamp < T_exp + TD + TR)*/));
         selfdestruct(payable(msg.sender));
     }
     

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import factory from '../ethereum/factory';
 import channel from '../ethereum/channel';
 import variables from '../ethereum/variables';
+import Swal from 'sweetalert2';
 import web3 from '../ethereum/web3';
 import DeliveryRow from '../components/DeliveryRow';
 import db from '../db.json';
@@ -60,9 +61,9 @@ class Home extends Component {
                         user_db: data,
                         accounts: accounts
                     })
-                });
+                })
 
-            const channels = await fetch('http://localhost:7000/channels', {
+            /*const channels = */await fetch('http://localhost:7000/channels', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
@@ -75,6 +76,7 @@ class Home extends Component {
                         channels: data
                     })
                 })
+    
 
             this.setState({
                 openChannels: openChannels,
@@ -82,6 +84,41 @@ class Home extends Component {
             })
 
             //console.log('chn', this.state.channels);
+
+            
+        return Object.keys(this.state.channels).map((requests, index) => {
+            let ret;
+            console.log('hola')
+            if(this.state.channels[index]['customer'] === this.state.accounts[0]){
+                if(parseInt(this.state.channels[index]['T_EXP'],10) != NaN && parseInt(this.state.channels[index]['Δ_TD'],10) != NaN && 
+                parseInt(this.state.channels[index]['Δ_TR'],10)*1000 != NaN && (Date.now() > ((parseInt(this.state.channels[index]['T_EXP'],10)
+                 + parseInt(this.state.channels[index]['Δ_TD'],10) + parseInt(this.state.channels[index]['Δ_TR'],10))*1000)) 
+                 && this.state.channels[index]['State'] != 'closed'){
+                    //Popup indicating the automatic refund transaction
+                    Swal.fire({
+                        title: 'The channel time periods have expired, so a refund of the remaining microcoins will be made.',
+                        icon: 'warning',
+                        showCloseButton: true,
+                        confirmButtonText: 'Accept',
+                        width: 600,
+                        padding: '3em',
+                        backdrop: `
+                          left top
+                          no-repeat
+                        `
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+            
+                        }
+                      })
+
+                    //Automatic refund
+                    this.setState({ index_refund: index+1});
+                    this.refund();
+
+                }
+            }
+        });
 
         } finally {
             this.setState({ loadingPage: false })
@@ -162,11 +199,30 @@ class Home extends Component {
                 c = ((this.state.k - (parseInt(j,10) - 1))/2);
             }
 
-            this.state.channels.map((chn, index) => {
+            /*let j_new = await channelContract.methods.j().call();
+            /*this.state.channels.map( (chn, index) => {
                 if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
                     id = this.state.channels[index]['id'];
                 }
-            });
+            });*/
+
+            //let State; //, index_userChannel; 
+            /*this.state.user_db.map((info, index)=>{
+                if(this.state.user_db[index]['channelID'] === this.state.channels[this.state.ind]['id']){
+                    index_userChannel = index;
+                }
+            });*/
+
+            /*console.log(this.state.channels[this.state.ind]['messages']['i'], j_new);
+
+            if(this.state.channels[this.state.ind]['messages']['i'] === j_new && this.state.channels[this.state.ind]['T_EXP'] < Date.now()){
+                State = "liquidated";
+                console.log('liquidated')
+            }else{
+                State = "opened";
+            }
+
+            alert('');*/
 
             //Update parameter c at the channel json-server data base:
             fetch('http://localhost:7000/channels/' + this.state.channels[this.state.ind]['id'], {
@@ -175,9 +231,11 @@ class Home extends Component {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c)
+                    "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c),
+                    //"State": State
                 })
             })
+
             this.props.history.push('/');
         } catch (err) {
             this.setState({ errorMessage: err.message });
@@ -208,7 +266,7 @@ class Home extends Component {
            //Update parameter c at the json-server data base:
             this.updateC();
 
-            this.props.history.push('/');
+            //this.props.history.push('/');
         } catch (err) {
             this.setState({ errorMessage: err.message });
         } finally {
@@ -242,9 +300,10 @@ class Home extends Component {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c)
+                    "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c),
                 })
             })
+
 
             //Uptade parameter c at the NEW channel json-server database:
             fetch('http://localhost:7000/channels/' + id, {
@@ -260,7 +319,8 @@ class Home extends Component {
                 return res.json();
             })
             .then(data => {
-            });
+            })
+
 
         }catch (err) {
             this.setState({ errorMessage: err.message });
@@ -316,7 +376,8 @@ class Home extends Component {
             })
             .then(data => {
                 
-            });
+            })
+
 
         fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'], {
             method: 'PATCH',
@@ -332,9 +393,114 @@ class Home extends Component {
                 return res.json();
             })
             .then(data => {
-            });
-            this.props.history.push('/');
+            })
+
+            //this.props.history.push('/');
     }
+
+    purchaseService = async (data) => {
+        this.setState({ loading: true, errorMessage: '' });
+
+        try {
+            let index_userChannel, i;
+
+            function W_nX (n, W_X){
+                var W= Buffer.from(W_X,'hex');//W_X
+                
+                var L = 2*(c)+1;
+                for(L; L!= n; L--){
+                  W = sha256(W);
+                  W = Buffer.from(W,'hex');
+                }
+    
+                W =  Buffer.from(W).toString("hex");
+                return W;
+            };
+    
+          /*const accounts = await web3.eth.getAccounts();
+    
+          let i;
+    
+          await fetch('http://localhost:7000/channels/' + this.state.propsID)
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            console.log('fetch', data);
+            this.setState({
+              channelInfo: data
+            })
+          });*/
+
+        this.state.user_db.map((info, index)=>{
+            if(this.state.user_db[index]['channelID'] === data['id'].toString()){
+                index_userChannel = index;
+            }
+        })
+
+        
+          /*if(this.state.channelInfo['messages']){
+            i = parseInt(this.state.microcoin,10) + this.state.channelInfo['messages']['i'];
+          }else{
+            i = this.state.microcoin;
+          }
+    
+          await fetch('http://localhost:7000/'+ this.state.accounts[0])
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            data.map((ch, index)=>{
+                if(data[index]['channelID'] === this.state.propsID){
+                    this.setState({
+                        channel_C_Info: data[index]
+                    })
+                }
+    
+            })
+          });*/
+          
+          if(data['messages']){
+            i = data['messages']['i']+1;
+          }else{
+            i = 1;
+          }
+
+          var c = data.c_init;
+          
+          console.log('c', c, data, 'i', i, this.state.user_db[index_userChannel]['W_LC'], data['id'])
+
+          const W_iC = W_nX(i, this.state.user_db[index_userChannel]['W_LC']).toString('hex');
+    
+          await fetch('http://localhost:7000/channels/' + data['id'], {
+              method: 'PATCH',
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                "messages":{
+                    "i": i,
+                    "m1": W_iC
+                }, 
+                "State": 'payment'
+              })
+            })
+              .then(res => {
+                return res.json();
+              })
+              .then(data => {
+                console.log('fetch', data);
+              });
+              
+          // Refresh, using withRouter
+          this.props.history.push('/');
+
+        } catch (err) {
+          this.setState({ errorMessage: err.message });
+        } finally {
+          this.setState({ loading: false });
+        };
+      }
 
     //Send m2
     send = async (data) => {
@@ -378,6 +544,7 @@ class Home extends Component {
             W_ic = data['W_0C'];
         }
         
+        console.log(data['messages']['i'], this.state.user_db[index_userChannel]['j'], hash, W_ic);
         if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === W_ic)){
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
@@ -400,7 +567,8 @@ class Home extends Component {
                     this.setState({
                         channels: data
                     })
-                });
+                })
+    
 
                 fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
                     method: 'PATCH',
@@ -419,19 +587,17 @@ class Home extends Component {
                             channels: data
                         })
                     })
+        
            
         }else{
             alert('The micro coin is not valid!')
         }
-
-
-        this.props.history.push('/');
+        //this.props.history.push('/');
 
     }
 
     sendProof(data){
         //TODO: DECRYPT M2
-
         var index_userChannel;
         this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id'].toString()){
@@ -478,8 +644,9 @@ class Home extends Component {
                     this.setState({
                         channels: data
                     })
-                });
-                this.props.history.push('/');
+                })
+    
+                //this.props.history.push('/');
     }
 
     //m3 verification by M
@@ -522,7 +689,7 @@ class Home extends Component {
                 this.setState({
                     channels: data
                 })
-            });
+            })
 
             
             //Update j and W_ic
@@ -543,39 +710,50 @@ class Home extends Component {
                     channels: data
                 })
             })
+
         }
-        this.props.history.push('/');
+        //this.props.history.push('/');
     }
 
     //Channel refund (Customer)
     refund = async () =>  {
-        let chn = this.state.channels
-        let ind = this.state.index_refund;
-        let address = chn[ind-1]['ethAddress']
-        let channelContract = channel(address);
-       if(this.state.accounts[0] === chn[ind-1]['customer']){
-        await channelContract.methods.channelClose().send({ from: this.state.accounts[0] });
+        try{ 
+            let chn = this.state.channels
+            let ind = this.state.index_refund;
+            let address = chn[ind-1]['ethAddress']
+            let channelContract = channel(address);
+            console.log('good morning')
+            console.log('ch', channelContract);
 
-        fetch('http://localhost:7000/channels/' + chn[ind-1]['id'], {
-                method: 'PATCH',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    'c': 0,
-                    "State": 'closed'
-                })
-            })
-            .then(res => {
-                return res.json();
-            }).then(data => {
-                this.setState({
-                    channels: data
-                })
-            });
-       }
-       this.props.history.push('/');
+            if(this.state.accounts[0] === chn[ind-1]['customer']){
+                await channelContract.methods.channelClose().send({ from: this.state.accounts[0] });
 
+                console.log('http://localhost:7000/channels/' + chn[ind-1]['id'])
+                alert();
+                fetch('http://localhost:7000/channels/' + chn[ind-1]['id'], {
+                        method: 'PATCH',
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            'c': 0,
+                            "State": 'closed'
+                        })
+                    })
+                    .then(res => {
+                        return res.json();
+                    }).then(data => {
+                        this.setState({
+                            channels: data
+                        })
+                    });
+            }
+        }catch (err) {
+            this.setState({ errorMessage: err.message });
+        } finally {
+            this.setState({ loading: false });
+        }
+       //this.props.history.push('/');
     }
 
     renderChannels() {
@@ -586,6 +764,14 @@ class Home extends Component {
             let ret;
 
             if((data[index]['customer'] === this.state.accounts[0] || data[index]['merchant'] === this.state.accounts[0])){
+                
+                console.log('now', Date.now());
+                console.log(Date.now() > (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
+                + parseInt(this.state.channels[index]['Δ_TR'],10))*1000);
+                console.log(data[index]['State'] != 'closed');
+                console.log((Date.now() > ((parseInt(this.state.channels[index]['T_EXP'],10)
+                + parseInt(this.state.channels[index]['Δ_TD'],10) + parseInt(this.state.channels[index]['Δ_TR'],10))*1000)))
+
                 if(data[index]['State'] === 'closed'){
                     ret = <div><Label as='a' color='green' horizontal>Channel closed</Label></div>
                 }else if(parseInt(this.state.channels[index]['T_EXP'],10)*1000 < Date.now() && Date.now() < 
@@ -602,7 +788,6 @@ class Home extends Component {
                     ret = <div><Label as='a' color='green' horizontal>Channel closed - Period ended</Label></div>
                 }
             
-
             if((this.state.accounts[0] === data[index]['merchant'] || data[index]['customer'] === this.state.accounts[0]) && ret === undefined ){
 
                 if(data[index]['customer'] === this.state.accounts[0]){
@@ -618,15 +803,22 @@ class Home extends Component {
                                     </Button>
                                 </Link></div>
                     }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000){
+                        if(data[index]['messages'] != undefined && data[index]['messages']['i'] === 2*data[index]['c_init']){
+                            //if(data[index]['messages']['i'] === 2*data[index]['c_init']){
+                                ret = <div><Label as='a' color='green' horizontal>Deposit ended</Label></div>
+                            //}
+                        }else{
+
                         //Customer purchase service
-                        ret =   <div><Link to={"/channels/purchase/" + data[index]['id']}>
-                                    <Button animated='vertical' color='blue'>
+                        ret =   <div>
+                                    <Button animated='vertical' color='blue' onClick={() => this.purchaseService(data[index])}>
                                         <Button.Content hidden>Purchase</Button.Content>
                                         <Button.Content visible>
                                             <Icon name='exchange' />
                                         </Button.Content>
                                     </Button>
-                                </Link></div>
+                                </div>
+                        }
                     }else if(data[index]['State'] === 'payment' && Date.now() > parseInt(this.state.channels[index]['T_EXP'],10)*1000){
                         ret =   <div><Label as='a' color='red' horizontal>Purchase time expired</Label></div>
                     }else if(data[index]['State'] === 'opened' && (Date.now > parseInt(this.state.channels[index]['T_EXP'],10) + 
@@ -660,6 +852,8 @@ class Home extends Component {
                                 </Button></div>
                     }else if(data[index]['State'] === 'payment' && Date.now() > parseInt(this.state.channels[index]['T_EXP'],10)*1000){
                         ret =   <div><Label as='a' color='red' horizontal>Purchase time expired</Label></div>
+                    }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000 && data[index]['messages']['i'] === 2*data[index]['c_init']){
+                        ret = <div><Label as='a' color='green' horizontal>Deposit ended</Label></div>
                     }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000){
                         ret = <div><Label as='a' color='green' horizontal>Opened</Label></div>
                     }else if(data[index]['State'] === 'opened' && Date.now() > (parseInt(this.state.channels[index]['T_EXP'],10) + 
@@ -747,7 +941,7 @@ class Home extends Component {
 
         return Object.keys(data).map((requests, index) => {
 
-            if (data[index]['merchant'] === this.state.accounts[0] && parseInt(this.state.channels[index]['T_EXP'],10)*1000 < Date.now() && 
+            if (data[index]['merchant'] === this.state.accounts[0] /*&& parseInt(this.state.channels[index]['T_EXP'],10)*1000 < Date.now()*/ && 
             Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000)  {
                 return(
                     <option>{data[index]['id']}</option>

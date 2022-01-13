@@ -116,7 +116,8 @@ class NewChannel extends Component {
           "merchant": this.state.merchant,
           "customer_channel_id": this.state.C_channels.id,
           "service": this.state.service,
-          "c": this.state.c,
+          "c": parseInt(this.state.c,10) /** this.state.service_data.price*/,
+          "c_init": parseInt(this.state.c,10) /** this.state.service_data.price*/,
           "service_price": this.state.service_data.price,
           "S_id": this.state.S_id,
           "State": 'requested'

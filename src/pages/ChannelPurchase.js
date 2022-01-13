@@ -50,6 +50,7 @@ class ChannelPurchase extends Component {
               W = sha256(W);
               W = Buffer.from(W,'hex');
             }
+
             W =  Buffer.from(W).toString("hex");
             return W;
           };
@@ -90,7 +91,7 @@ class ChannelPurchase extends Component {
         })
       });
 
-      var c = this.state.channelInfo.c;
+      var c = this.state.channelInfo.c_init;
 
       const W_iC = W_nX(i, this.state.channel_C_Info['W_LC']).toString('hex');
 

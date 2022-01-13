@@ -198,39 +198,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [
-					{
-						"internalType": "bytes32",
-						"name": "_W_0m",
-						"type": "bytes32"
-					},
-					{
-						"internalType": "string",
-						"name": "_S_id",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_T_exp",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_TD",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_TR",
-						"type": "uint256"
-					}
-				],
-				"name": "merchantChange",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
 				"inputs": [],
 				"name": "start",
 				"outputs": [
@@ -317,10 +284,10 @@
 	},
 	"sources": {
 		"contracts/channel.sol": {
-			"keccak256": "0xeb35962e127d3731e9c4ce70379589a5f0206ac3e9e5513c97be664183464bd7",
+			"keccak256": "0xb7c3952c83fdfe0be896e97c8fe64fb678460d50bae2879d87e2a195df2af31a",
 			"urls": [
-				"bzz-raw://61324976b6f3f5f66151a7b0b7a7f5144c25c7cae5c4243cbef740bc51db68c4",
-				"dweb:/ipfs/Qmd9EV2Vre9YdYe7AQmnqsQpF4LAszNdkmW7fYqPvQMnsL"
+				"bzz-raw://c3369c7a662f602f0a754139e048cdc2a827323c4457d69ddf6929be943753e1",
+				"dweb:/ipfs/QmdfUoWuibKiFyX9mPJru9x1QDXSLS6t2NoXggSRjB9ku9"
 			]
 		}
 	},

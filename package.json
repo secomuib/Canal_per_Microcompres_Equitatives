@@ -18,7 +18,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "json-server": "json-server --watch src/db.json --port 7000"
+    "json-server": "json-server --watch src/db.json --port 7000 --host 127.0.0.1"
   },
   "repository": {
     "type": "git",
@@ -53,6 +53,7 @@
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^0.88.2",
     "solc": "^0.8.7",
+    "sweetalert2": "^11.3.4",
     "web3": "^1.3.4"
   },
   "browserslist": {
