@@ -4,10 +4,10 @@ contract factoryChannel{
     mapping(address => address[]) public ownerChannels;
     address[] public channels;
     
-    function createChannel(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) public payable returns(address){
-        require(msg.value == _c * _v, "msg.value error");
+    function createChannel(/*bytes32 _W_jm, bytes32 _W_jc, string memory _S_id,*/ uint256 _c, uint256 _v/*, uint256 _T_exp, uint256 _TD, uint256 _TR*/) public payable returns(address){
+        //require(msg.value == _c * _v, "msg.value error");
         
-        address newChannel = address ((new channel){value: msg.value}(_W_jm, _W_jc, _S_id, _c, _v, _T_exp, _TD, _TR, msg.sender));
+        address newChannel = address((new channel){value: msg.value}(_c, _v, msg.sender));
         channels.push(newChannel);
         ownerChannels[msg.sender].push(newChannel);
         return newChannel;
@@ -32,7 +32,7 @@ contract factoryChannel{
 
 contract channel{
     uint256 public j;
-    address public costumer;
+    address public customer;
 
     //Channel parameters
     bytes32 public W_jm;
@@ -46,8 +46,18 @@ contract channel{
     uint256 public start; //Moment en que es defineixen els paràmetres del canal
 
     //Desplegament amb definició del propietari del canal i dels corresponents paràmetres
-    constructor(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR, address _costumer) payable {
-        costumer = _costumer;
+    constructor(uint256 _c, uint256 _v, address _customer) payable {
+        customer = _customer;
+        c = _c;
+        v = _v;
+
+        if(msg.value != 0){
+            require(msg.value == _c*_v);
+        }
+    }
+    
+    function setChannelParams(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) payable public onlyOwner {
+        require(address(this).balance + msg.value == _c * _v);
         j = 0;
         
         W_jm = _W_jm;
@@ -60,7 +70,7 @@ contract channel{
         T_exp = _T_exp;
         TD = _TD;
         TR = _TR;
-        
+
     }
     
     function blocktimestamp() public returns(uint256){
@@ -82,7 +92,7 @@ contract channel{
         uint256 i = k-j;
         
         for (i; i!= 0; i--){
-            hash_m = sha256(abi.encodePacked (hash_m));
+            hash_m = sha256(abi.encodePacked(hash_m));
             hash_c = sha256(abi.encodePacked(hash_c)); 
         }
 
@@ -144,7 +154,7 @@ contract channel{
 
 
     modifier onlyOwner(){
-        require (msg.sender == costumer, "Only merchant of the delivery can set the channel params.");
+        require (msg.sender == customer, "Only customer of the delivery can set the channel params.");
         _;
     }
 }

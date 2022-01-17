@@ -27,21 +27,6 @@
 			{
 				"inputs": [
 					{
-						"internalType": "bytes32",
-						"name": "_W_jm",
-						"type": "bytes32"
-					},
-					{
-						"internalType": "bytes32",
-						"name": "_W_jc",
-						"type": "bytes32"
-					},
-					{
-						"internalType": "string",
-						"name": "_S_id",
-						"type": "string"
-					},
-					{
 						"internalType": "uint256",
 						"name": "_c",
 						"type": "uint256"
@@ -49,21 +34,6 @@
 					{
 						"internalType": "uint256",
 						"name": "_v",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_T_exp",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_TD",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_TR",
 						"type": "uint256"
 					}
 				],
@@ -201,10 +171,10 @@
 	},
 	"sources": {
 		"contracts/channel.sol": {
-			"keccak256": "0xb7c3952c83fdfe0be896e97c8fe64fb678460d50bae2879d87e2a195df2af31a",
+			"keccak256": "0x4b67d624a4451c63c703852b40d0bc5688f0164de1f8d309be41907788de63e9",
 			"urls": [
-				"bzz-raw://c3369c7a662f602f0a754139e048cdc2a827323c4457d69ddf6929be943753e1",
-				"dweb:/ipfs/QmdfUoWuibKiFyX9mPJru9x1QDXSLS6t2NoXggSRjB9ku9"
+				"bzz-raw://8996badffc99b4527159aae5be72f1c82024199555ccc7d62c01648816935f2a",
+				"dweb:/ipfs/QmfKMtfqu1ifVWwuKhqvAiwDSRM2EpTCEfi1FNyHoHAepX"
 			]
 		}
 	},

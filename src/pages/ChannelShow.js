@@ -173,9 +173,9 @@ class ChannelShow extends Component {
               value={this.state.channel.c}
             />
           </Form.Field>
-        {(this.state.channel.State === 'accepted' || this.state.channel.State === 'opened' || 
-        this.state.channel.State === 'payment' || this.state.channel.State === 'send service'|| 
-        this.state.channel.State === 'send proof') && (
+        {(this.state.channel.State === 'accepted' || this.state.channel.State === 'opened- waiting configuration' || 
+        this.state.channel.State === 'opened' ||  this.state.channel.State === 'payment' || 
+        this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof') && (
         <Form.Field>
             <label>W<sub>0M</sub></label>
             <Input
@@ -183,8 +183,9 @@ class ChannelShow extends Component {
               value={this.state.channel.W_0M}
             />
           </Form.Field>)}
-          {(this.state.channel.State === 'opened' || this.state.channel.State === 'payment' || 
-          this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof') && (
+          {(this.state.channel.State === 'opened- waiting configuration' || this.state.channel.State === 'opened' || 
+          this.state.channel.State === 'payment' || this.state.channel.State === 'send service'|| 
+          this.state.channel.State === 'send proof') && (
             <Form>
             <Form.Field>
             <label>ethAddress</label>
@@ -193,6 +194,11 @@ class ChannelShow extends Component {
               value={this.state.channel.ethAddress}
             />
           </Form.Field> 
+          </Form>
+          )}
+          {(this.state.channel.State === 'opened' || this.state.channel.State === 'payment' || 
+          this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof') && (
+          <Form>
           <Form.Field>
           <label>T<sub>EXP</sub></label>
             <Input
@@ -260,7 +266,7 @@ class ChannelShow extends Component {
           <Form>
           <Form.Field>
           <Message error header="ERROR" content={this.state.errorMessage} />
-          <Button primary loading={this.state.loading}>
+          <Button primary loading={this.state.loading} style={{"margin-bottom":20, "margin-top":20}}>
             Close
           </Button>
           </Form.Field>

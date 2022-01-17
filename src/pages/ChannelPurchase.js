@@ -3,6 +3,8 @@ import { withRouter, Link } from "react-router-dom";
 import { Form, Button, Message, Input, Dimmer, Loader } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 import factory from '../ethereum/factory';
+import channel from '../ethereum/channel';
+
 
 var sha256 = require('js-sha256');
 
@@ -57,7 +59,7 @@ class ChannelPurchase extends Component {
 
       const accounts = await web3.eth.getAccounts();
 
-      let i;
+      let i, channelContract, time, balance;
 
       await fetch('http://localhost:7000/channels/' + this.state.propsID)
       .then(res => {
@@ -69,51 +71,74 @@ class ChannelPurchase extends Component {
           channelInfo: data
         })
       });
+      //Select the mart contract
+      channelContract = channel(this.state.channelInfo.ethAddress);
 
-      if(this.state.channelInfo['messages']){
-        i = parseInt(this.state.microcoin,10) + this.state.channelInfo['messages']['i'];
-      }else{
-        i = this.state.microcoin;
+
+      //If it is the first purchase, then we check that the smart contract balance is adequate.
+      if(!this.state.channelInfo['messages']){
+        let c = await channelContract.methods.c.call();
+        let v = await channelContract.methods.v.call()
+        if(web3.eth.getBalance(this.state.channelInfo.ethAddress) === (c * v)){
+          balance = true;
+        }
       }
 
-      await fetch('http://localhost:7000/'+ accounts[0])
-      .then(res => {
-        return res.json();
-      })
-      .then(data => {
-        data.map((ch, index)=>{
-            if(data[index]['channelID'] === this.state.propsID){
-                this.setState({
-                    channel_C_Info: data[index]
-                })
-            }
-
+      let T_exp = await channelContract.methods.T_exp().call();
+        if(new Date(T_exp*1000) < Date.now()){
+          time = true;
+        }
+      
+      if((!this.state.channelInfo['messages'] && balance && time) || (this.state.channelInfo['messages'] && !balance && time)){
+        
+        if(this.state.channelInfo['messages']){
+          i = parseInt(this.state.microcoin,10) + this.state.channelInfo['messages']['i'];
+        }else{
+          i = this.state.microcoin;
+        }
+  
+        await fetch('http://localhost:7000/'+ accounts[0])
+        .then(res => {
+          return res.json();
         })
-      });
-
-      var c = this.state.channelInfo.c_init;
-
-      const W_iC = W_nX(i, this.state.channel_C_Info['W_LC']).toString('hex');
-
-      await fetch('http://localhost:7000/channels/' + this.state.propsID, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "messages":{
-                "i": i,
-                "m1": W_iC
-            }, 
-            "State": 'payment'
+        .then(data => {
+          data.map((ch, index)=>{
+              if(data[index]['channelID'] === this.state.propsID){
+                  this.setState({
+                      channel_C_Info: data[index]
+                  })
+              }
+  
           })
-        })
-          .then(res => {
-            return res.json();
+        });
+  
+        var c = this.state.channelInfo.c_init;
+  
+        const W_iC = W_nX(i, this.state.channel_C_Info['W_LC']).toString('hex');
+  
+        await fetch('http://localhost:7000/channels/' + this.state.propsID, {
+            method: 'PATCH',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "messages":{
+                  "i": i,
+                  "m1": W_iC
+              }, 
+              "State": 'payment'
+            })
           })
-          .then(data => {
-            console.log('fetch', data);
-          });
+            .then(res => {
+              return res.json();
+            })
+            .then(data => {
+              console.log('fetch', data);
+            });
+      }else{
+        alert("Error: the purchase time has expired or the smart contract does not have the correct number of microcoins.");
+      }
+      
           
       // Refresh, using withRouter
       this.props.history.push('/');

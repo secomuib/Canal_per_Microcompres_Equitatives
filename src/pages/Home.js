@@ -184,9 +184,11 @@ class Home extends Component {
         try {
             await this.prepare_W();
 
-            let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
+            let channelContract = channel(this.state.channels[this.state.ind]['ethAddress']);
 
             let j = await channelContract.methods.j().call();
+            let W_0m = await channelContract.methods.W_jm().call();
+            let W_0c = await channelContract.methods.W_jc().call();
 
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: this.state.accounts[0] });
@@ -691,7 +693,6 @@ class Home extends Component {
                 })
             })
 
-            
             //Update j and W_ic
             fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
                 method: 'PATCH',
@@ -722,14 +723,10 @@ class Home extends Component {
             let ind = this.state.index_refund;
             let address = chn[ind-1]['ethAddress']
             let channelContract = channel(address);
-            console.log('good morning')
-            console.log('ch', channelContract);
 
             if(this.state.accounts[0] === chn[ind-1]['customer']){
                 await channelContract.methods.channelClose().send({ from: this.state.accounts[0] });
-
-                console.log('http://localhost:7000/channels/' + chn[ind-1]['id'])
-                alert();
+                
                 fetch('http://localhost:7000/channels/' + chn[ind-1]['id'], {
                         method: 'PATCH',
                         headers: {
@@ -802,6 +799,12 @@ class Home extends Component {
                                         </Button.Content>
                                     </Button>
                                 </Link></div>
+                    }else if(data[index]['State'] === 'opened- waiting configuration'){
+                        ret =   <div><Link to={"/channels/open/" + data[index]['id']}>
+                                    <Button color='blue'>
+                                        <Button.Content hidden>Configure</Button.Content>
+                                    </Button>
+                                </Link></div>
                     }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000){
                         if(data[index]['messages'] != undefined && data[index]['messages']['i'] === 2*data[index]['c_init']){
                             //if(data[index]['messages']['i'] === 2*data[index]['c_init']){
@@ -852,9 +855,11 @@ class Home extends Component {
                                 </Button></div>
                     }else if(data[index]['State'] === 'payment' && Date.now() > parseInt(this.state.channels[index]['T_EXP'],10)*1000){
                         ret =   <div><Label as='a' color='red' horizontal>Purchase time expired</Label></div>
-                    }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000 && data[index]['messages']['i'] === 2*data[index]['c_init']){
+                    }else if(data[index]['State'] === 'opened- waiting configuration'){
+                        ret =   <div><Label as='a' color='yellow' horizontal>Waiting channel configuration</Label></div>
+                    }/*else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000 && data[index]['messages']['i'] === 2*data[index]['c_init']){
                         ret = <div><Label as='a' color='green' horizontal>Deposit ended</Label></div>
-                    }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000){
+                    }*/else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000){
                         ret = <div><Label as='a' color='green' horizontal>Opened</Label></div>
                     }else if(data[index]['State'] === 'opened' && Date.now() > (parseInt(this.state.channels[index]['T_EXP'],10) + 
                     parseInt(this.state.channels[index]['Δ_TD'],10) + parseInt(this.state.channels[index]['Δ_TR'],10))*1000){
@@ -1128,7 +1133,7 @@ class Home extends Component {
                                 </select>
                             </Form.Field>
                             <Message error header="ERROR" content={this.state.errorMessage} />
-                            <Button primary loading={this.state.loading}>
+                            <Button primary loading={this.state.loading} style={{"margin-bottom":20}}>
                                 Refund!
                             </Button>
                         </Form>
