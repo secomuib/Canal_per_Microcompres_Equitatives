@@ -56,8 +56,8 @@ contract channel{
         }
     }
     
-    function setChannelParams(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) payable public onlyOwner {
-        require(address(this).balance + msg.value == _c * _v);
+    function setChannelParams(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) /*payable*/ public onlyOwner {
+        require(address(this).balance /*+ msg.value*/ == _c * _v);
         j = 0;
         
         W_jm = _W_jm;

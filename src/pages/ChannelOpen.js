@@ -29,9 +29,7 @@ class ChannelOpen extends Component {
     this.setState({ loading: true, errorMessage: '' });
 
     try {
-
       let id = this.props.match.params.id;
-      console.log(id)
 
       const accounts = await web3.eth.getAccounts();
 
@@ -44,12 +42,10 @@ class ChannelOpen extends Component {
         .then(res => {
           return res.json();
         }).then(data => {
-          console.log('data', data);
           this.setState({
             channel: data,
           })
-        })
-      //console.log('this.state.channel', this.state.channel.c)
+        });
 
       const W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
       var W = Buffer.from(W_LC, 'hex');
@@ -82,7 +78,9 @@ class ChannelOpen extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
       let T_EXP = new Date(this.state.T_EXP).getTime() / 1000; //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
-      
+      let T_D = (new Date(this.state.Δ_TD).getTime() / 1000) - T_EXP; 
+      let T_R = (new Date(this.state.Δ_TR).getTime() / 1000) - T_EXP - T_D; 
+
       //Smart contract deployment: (v = service_price)
       const addressChannel = await factory.methods.createChannel(this.state.channel.c, parseInt(this.state.channel.service_price,10))
             .send({ from: accounts[0], value: this.state.channel.c * parseInt(this.state.channel.service_price,10), gas: 6000000 });
@@ -100,7 +98,7 @@ class ChannelOpen extends Component {
       if (addressChannel) {
 
         let channelContract = channel(channelAddr)
-        await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, this.state.Δ_TD, this.state.Δ_TR)
+        await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
         .send({ from: accounts[0] });
 
         let id = this.props.match.params.id;
@@ -144,8 +142,8 @@ class ChannelOpen extends Component {
           },
           body: JSON.stringify({
             'T_EXP': T_EXP, 
-            'Δ_TD': this.state.Δ_TD, 
-            'Δ_TR': this.state.Δ_TR,
+            'Δ_TD': T_D, 
+            'Δ_TR': T_R,
             "W_0C": this.state.W_0C,
             "ethAddress": channelAddr,
             "State": 'opened'
@@ -170,6 +168,99 @@ class ChannelOpen extends Component {
     };
   }
 
+  reuseChannel = async event => {
+    /*event.preventDefault();*/
+    this.setState({ loading: true, errorMessage: '' });
+
+    try {
+      const accounts = await web3.eth.getAccounts();
+
+      let channelContract = channel(this.state.ethChAddr)
+
+      let T_EXP = await channelContract.methods.T_exp().call();
+      
+      //T_EXP = new Date(parseInt(T_EXP,10));
+      let T_R = await channelContract.methods.TR().call();
+      let T_D = await channelContract.methods.TD().call();
+
+      if((Date.now() > (parseInt(T_EXP,10) + parseInt(T_D,10))*1000) && (Date.now() < (parseInt(T_EXP,10) + parseInt(T_D,10) + parseInt(T_R,10))*1000)){
+        let T_EXP = new Date(this.state.T_EXP).getTime() / 1000; //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
+        let T_D = (new Date(this.state.Δ_TD).getTime() / 1000) - T_EXP; 
+        let T_R = (new Date(this.state.Δ_TR).getTime() / 1000) - T_EXP - T_D;
+      
+        await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
+        .send({ from: accounts[0] });
+
+      let id = this.props.match.params.id;
+
+      /*const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            console.log('fetch', data);
+            this.setState({
+              customerInfo: data
+            })
+          });*/
+
+
+        await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
+          method: 'PATCH',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "W_LC": this.state.W_LC,
+            "channelID": id
+          })
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            this.setState({
+              data: data
+            })
+
+          });
+
+        await fetch('http://localhost:7000/channels/' + id, {
+          method: 'PATCH',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            'T_EXP': T_EXP, 
+            'Δ_TD': T_D, 
+            'Δ_TR': T_R,
+            "W_0C": this.state.W_0C,
+            "ethAddress": this.state.ethChAddr,
+            "State": 'opened'
+          })
+        })
+          .then(res => {
+            return res.json();
+          })
+          .then(data => {
+            console.log('fetch', data);
+
+          });
+      }else{
+        alert("Error: the channel can't be reused.");
+      }
+      
+      // Refresh, using withRouter
+      this.props.history.push('/');
+      
+    } catch (err) {
+      this.setState({ errorMessage: err.message });
+    } finally {
+      this.setState({ loading: false });
+    };
+  }
+
+
   //Function used when the user customer wants to open a new channel, that would be used to transfer the 
   //microcoins received from another channel, where the customer represents de merchant.
   openChannel = async event =>{
@@ -189,18 +280,6 @@ class ChannelOpen extends Component {
         const channelAddr = addresses[addresses.length-1];
 
         let id = this.props.match.params.id;
-
-        /*const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
-          .then(res => {
-            return res.json();
-          })
-          .then(data => {
-            console.log('fetch', data);
-            this.setState({
-              customerInfo: data
-            })
-          });*/
-
 
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
           method: 'PATCH',
@@ -237,7 +316,6 @@ class ChannelOpen extends Component {
           })
           .then(data => {
             console.log('fetch', data);
-
           });
       }
       // Refresh, using withRouter
@@ -260,11 +338,12 @@ class ChannelOpen extends Component {
 
         const accounts = await web3.eth.getAccounts();
         let T_EXP = new Date(this.state.T_EXP).getTime() / 1000; //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
-      
+        let T_D = (new Date(this.state.Δ_TD).getTime() / 1000) - T_EXP; 
+        let T_R = (new Date(this.state.Δ_TR).getTime() / 1000) - T_EXP - T_D;
 
         let channelContract = channel(this.state.channel.ethAddress);
 
-        await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.channel.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, this.state.Δ_TD, this.state.Δ_TR)
+        await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.channel.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
         .send({ from: accounts[0] });
 
         let id = this.props.match.params.id;
@@ -288,8 +367,8 @@ class ChannelOpen extends Component {
           },
           body: JSON.stringify({
             'T_EXP': T_EXP, 
-            'Δ_TD': this.state.Δ_TD, 
-            'Δ_TR': this.state.Δ_TR,
+            'Δ_TD': T_D, 
+            'Δ_TR': T_R,
             "State": 'opened'
           })
         })
@@ -320,9 +399,9 @@ class ChannelOpen extends Component {
           <Loader inverted content='Loading...'></Loader>
         </Dimmer>
         <Link to='/'>Back</Link>
-        <h3>New Channel - Open</h3>
         
         <Form /*onSubmit={this.onSubmit}*/ error={!!this.state.errorMessage} hidden={this.state.loading}>
+          <h3>New Channel - Open</h3>
 
           <Form.Field>
             <label>T <sub>EXP</sub></label>
@@ -337,6 +416,7 @@ class ChannelOpen extends Component {
             <label>Δ<sub>TD</sub></label>
             <Input
               value={this.state.Δ_TD}
+              type="datetime-local"
               onChange={event => this.setState({ Δ_TD: event.target.value })}
             />
           </Form.Field>
@@ -345,6 +425,7 @@ class ChannelOpen extends Component {
             <label>Δ<sub>TR</sub></label>
             <Input
               value={this.state.Δ_TR}
+              type="datetime-local"
               onChange={event => this.setState({ Δ_TR: event.target.value })}
             />
           </Form.Field>
@@ -356,8 +437,54 @@ class ChannelOpen extends Component {
           </Button>
         </Form>
 
+        <Form /*onSubmit={this.onSubmit}*/ error={!!this.state.errorMessage} hidden={this.state.loading}>
+          <h3>Reuse Channel</h3>
+
+          <Form.Field>
+            <label>Ethereum channel address</label>
+            <Input
+              value={this.state.ethChAddr}
+              onChange={event => this.setState({ ethChAddr: event.target.value })}
+            />
+          </Form.Field>
+
+          <Form.Field>
+            <label>T <sub>EXP</sub></label>
+            <Input
+              value={this.state.T_EXP}
+              type="datetime-local"
+              onChange={event => this.setState({ T_EXP: event.target.value })}
+            />
+          </Form.Field>
+
+          <Form.Field>
+            <label>Δ<sub>TD</sub></label>
+            <Input
+              value={this.state.Δ_TD}
+              type="datetime-local"
+              onChange={event => this.setState({ Δ_TD: event.target.value })}
+            />
+          </Form.Field>
+
+          <Form.Field>
+            <label>Δ<sub>TR</sub></label>
+            <Input
+              value={this.state.Δ_TR}
+              type="datetime-local"
+              onChange={event => this.setState({ Δ_TR: event.target.value })}
+            />
+          </Form.Field>
+
+          <Message error header="ERROR" content={this.state.errorMessage} />
+          <Button primary loading={this.state.loading} style={{"margin-left": 0} } 
+                onClick={() => this.reuseChannel()} hidden={this.state.loading}>
+            Open Channel
+          </Button>
+        </Form>
+
+
+        <Form error={!!this.state.errorMessage} hidden={this.state.loading}>
         <h3>Open Transfer Channel</h3>
-        <Form>
         <h4>Open channel
           <Message error header="ERROR" content={this.state.errorMessage} />
           <Button primary loading={this.state.loading} style={{"margin-left": 100}}
@@ -382,6 +509,7 @@ class ChannelOpen extends Component {
             <label>Δ<sub>TD</sub></label>
             <Input
               value={this.state.Δ_TD}
+              type="datetime-local"
               onChange={event => this.setState({ Δ_TD: event.target.value })}
             />
           </Form.Field>
@@ -390,6 +518,7 @@ class ChannelOpen extends Component {
             <label>Δ<sub>TR</sub></label>
             <Input
               value={this.state.Δ_TR}
+              type="datetime-local"
               onChange={event => this.setState({ Δ_TR: event.target.value })}
             />
           </Form.Field>

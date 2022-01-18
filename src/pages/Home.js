@@ -88,7 +88,7 @@ class Home extends Component {
             
         return Object.keys(this.state.channels).map((requests, index) => {
             let ret;
-            console.log('hola')
+            //console.log('hola')
             if(this.state.channels[index]['customer'] === this.state.accounts[0]){
                 if(parseInt(this.state.channels[index]['T_EXP'],10) != NaN && parseInt(this.state.channels[index]['Δ_TD'],10) != NaN && 
                 parseInt(this.state.channels[index]['Δ_TR'],10)*1000 != NaN && (Date.now() > ((parseInt(this.state.channels[index]['T_EXP'],10)
@@ -108,13 +108,13 @@ class Home extends Component {
                         `
                       }).then((result) => {
                         if (result.isConfirmed) {
-            
+                            //Automatic refund
+                            this.setState({ index_refund: index+1});
+                            this.refund();
                         }
                       })
 
-                    //Automatic refund
-                    this.setState({ index_refund: index+1});
-                    this.refund();
+                    
 
                 }
             }
@@ -187,8 +187,8 @@ class Home extends Component {
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress']);
 
             let j = await channelContract.methods.j().call();
-            let W_0m = await channelContract.methods.W_jm().call();
-            let W_0c = await channelContract.methods.W_jc().call();
+            /*let W_0m = await channelContract.methods.W_jm().call();
+            let W_0c = await channelContract.methods.W_jc().call();*/
 
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: this.state.accounts[0] });
@@ -256,8 +256,13 @@ class Home extends Component {
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
 
             let j = await channelContract.methods.j().call();
+            let W_jm = await channelContract.methods.W_jm().call();
+            let W_jc = await channelContract.methods.W_jc().call();
 
-            
+            console.log("0x" + this.state.W_kM, "0x" + this.state.W_kC, "k", this.state.k, "New chn" + this.state.newChnAddr);
+            console.log('W_jm', W_jm, 'W_jc', W_jc);
+            alert();
+
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, this.state.newChnAddr)
             .send({ from: this.state.accounts[0] });
 
@@ -667,6 +672,7 @@ class Home extends Component {
             for(i; i!= j; i--){
             W = sha256(W);
             W = Buffer.from(W,'hex');
+            console.log(W)
             }
             W = Buffer.from(W).toString("hex");
             return W;
@@ -675,7 +681,7 @@ class Home extends Component {
         var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m3'])
 
         if(hash === this.state.user_db[index_userChannel]['W_ic']){
-            
+           
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
                 headers: {
@@ -712,6 +718,8 @@ class Home extends Component {
                 })
             })
 
+        }else{ 
+            alert ('Error!')
         }
         //this.props.history.push('/');
     }

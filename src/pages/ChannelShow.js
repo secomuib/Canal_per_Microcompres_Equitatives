@@ -13,6 +13,7 @@ class ChannelShow extends Component {
     Δ_TD: '',
     Δ_TR: '',
     ID_userChannel: '',
+    balance: '',
     loading: false,
     errorMessage: ''
   };
@@ -91,15 +92,19 @@ class ChannelShow extends Component {
           ID_userChannel: ID_userChannel
         });
       }
+      let balance;
 
       web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {
           console.log(err)
         } else {
-          console.log('Balance:');
-          console.log(web3.utils.fromWei(result, "ether") * 1000000000000000000 + " WEI")
+          balance = web3.utils.fromWei(result, "ether") * 1000000000000000000;
         }
-      })
+      }).then(res => {
+          this.setState({
+            balance: balance
+          })
+      });
 
     } catch (err) {
       this.setState({ errorMessage: err.message });
@@ -160,6 +165,8 @@ class ChannelShow extends Component {
           <Form.Field>
             <label>Service price</label>
             <Input
+              label="wei"
+              labelPosition="right"
               readOnly
               value={this.state.channel.service_price}
             />
@@ -192,6 +199,16 @@ class ChannelShow extends Component {
             <Input
               readOnly
               value={this.state.channel.ethAddress}
+            />
+          </Form.Field> 
+
+          <Form.Field>
+            <label>Channel Smart Contract Balance</label>
+            <Input
+              label="wei"
+              labelPosition="right"
+              readOnly
+              value={this.state.balance}
             />
           </Form.Field> 
           </Form>
