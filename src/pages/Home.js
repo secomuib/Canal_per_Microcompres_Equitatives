@@ -165,8 +165,16 @@ class Home extends Component {
         }
 
         L = 2*(this.state.channels[ind]['c'])+1;
+
+        //Determine the number of microcoins between the last microcoin liquideted and the last 
+        //microcoin that the user wants to liquidate/transfer now (k-j).
+        let channelContract = channel(this.state.channels[ind]['ethAddress']);
+        let j = await channelContract.methods.j().call();
         
-        W_kM = W_nX(L, this.state.k, channel_info['W_LM']);
+        console.log('this.state.k', this.state.k, 'j', j);
+        let microcoinNumber = this.state.k - j;
+
+        W_kM = W_nX(L, microcoinNumber, channel_info['W_LM']);
 
         this.setState({
             ind: ind,
@@ -256,12 +264,7 @@ class Home extends Component {
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
 
             let j = await channelContract.methods.j().call();
-            let W_jm = await channelContract.methods.W_jm().call();
-            let W_jc = await channelContract.methods.W_jc().call();
 
-            console.log("0x" + this.state.W_kM, "0x" + this.state.W_kC, "k", this.state.k, "New chn" + this.state.newChnAddr);
-            console.log('W_jm', W_jm, 'W_jc', W_jc);
-            alert();
 
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, this.state.newChnAddr)
             .send({ from: this.state.accounts[0] });
@@ -413,7 +416,7 @@ class Home extends Component {
 
             function W_nX (n, W_X){
                 var W= Buffer.from(W_X,'hex');//W_X
-                
+
                 var L = 2*(c)+1;
                 for(L; L!= n; L--){
                   W = sha256(W);
@@ -552,6 +555,7 @@ class Home extends Component {
         }
         
         console.log(data['messages']['i'], this.state.user_db[index_userChannel]['j'], hash, W_ic);
+
         if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === W_ic)){
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
@@ -622,10 +626,11 @@ class Home extends Component {
               W = Buffer.from(W,'hex');
             }
             W =  Buffer.from(W).toString("hex");
+           
             return W;
-          };
+        };
 
-        var c = data['c'];
+        var c = data['c_init'];
 
         var hash = W_nX(parseInt(data['messages']['i'],10)+1, this.state.user_db[index_userChannel]['W_LC'])
 
@@ -672,13 +677,15 @@ class Home extends Component {
             for(i; i!= j; i--){
             W = sha256(W);
             W = Buffer.from(W,'hex');
-            console.log(W)
             }
             W = Buffer.from(W).toString("hex");
+
             return W;
         };
 
         var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m3'])
+        console.log(hash)
+        console.log(this.state.user_db[index_userChannel]['W_ic']);
 
         if(hash === this.state.user_db[index_userChannel]['W_ic']){
            
@@ -769,13 +776,6 @@ class Home extends Component {
             let ret;
 
             if((data[index]['customer'] === this.state.accounts[0] || data[index]['merchant'] === this.state.accounts[0])){
-                
-                console.log('now', Date.now());
-                console.log(Date.now() > (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
-                + parseInt(this.state.channels[index]['Δ_TR'],10))*1000);
-                console.log(data[index]['State'] != 'closed');
-                console.log((Date.now() > ((parseInt(this.state.channels[index]['T_EXP'],10)
-                + parseInt(this.state.channels[index]['Δ_TD'],10) + parseInt(this.state.channels[index]['Δ_TR'],10))*1000)))
 
                 if(data[index]['State'] === 'closed'){
                     ret = <div><Label as='a' color='green' horizontal>Channel closed</Label></div>
