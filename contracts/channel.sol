@@ -4,9 +4,7 @@ contract factoryChannel{
     mapping(address => address[]) public ownerChannels;
     address[] public channels;
     
-    function createChannel(/*bytes32 _W_jm, bytes32 _W_jc, string memory _S_id,*/ uint256 _c, uint256 _v/*, uint256 _T_exp, uint256 _TD, uint256 _TR*/) public payable returns(address){
-        //require(msg.value == _c * _v, "msg.value error");
-        
+    function createChannel( uint256 _c, uint256 _v) public payable returns(address){
         address newChannel = address((new channel){value: msg.value}(_c, _v, msg.sender));
         channels.push(newChannel);
         ownerChannels[msg.sender].push(newChannel);
@@ -37,15 +35,14 @@ contract channel{
     //Channel parameters
     bytes32 public W_jm;
     bytes32 public W_jc; 
-    string public S_id; //identificador del servei
-    uint256 public c; //nombre de micromonedes
-    uint256 public v; //valor de les micromonedes
-    uint256 public T_exp; //Temps de caducitat
-    uint256 public TD; //Període de deposit
-    uint256 public TR; //Període de reembolsament
-    uint256 public start; //Moment en que es defineixen els paràmetres del canal
+    string public S_id; //Service identifier
+    uint256 public c; //Microcoins number
+    uint256 public v; //Microcoins value
+    uint256 public T_exp; //Expiration time
+    uint256 public TD; //Deposit period
+    uint256 public TR; //Refund period
+    //uint256 public start; 
 
-    //Desplegament amb definició del propietari del canal i dels corresponents paràmetres
     constructor(uint256 _c, uint256 _v, address _customer) payable {
         customer = _customer;
         c = _c;
@@ -56,8 +53,9 @@ contract channel{
         }
     }
     
-    function setChannelParams(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) /*payable*/ public onlyOwner {
-        require(address(this).balance /*+ msg.value*/ == _c * _v);
+    //Configuration channel params function
+    function setChannelParams(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner {
+        require(address(this).balance == _c * _v);
         j = 0;
         
         W_jm = _W_jm;
@@ -65,24 +63,22 @@ contract channel{
         S_id = _S_id;
         c = _c;
         v = _v;
-        start = block.timestamp;
+        //start = block.timestamp;
         //T_exp = start + _T_exp;
         T_exp = _T_exp;
         TD = _TD;
         TR = _TR;
-
     }
     
     function blocktimestamp() public returns(uint256){
         return block.timestamp;
     }
 
-    //Funció per a transferir un determinat nombre de micromonedes del present smart contract a la wallet del venedor 
-    //o fer la transferència a un nou canal. És a dir, protocols "liquidación de canal" i "transferencia de canal".
+    //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel liquidation"), 
+    //or, to transfer the microcoins to a new channel ("Chanel transference").
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
         
-        //now < T_exp || T_exp < now < TD
-        require (/*block.timestamp > T_exp &&*/ block.timestamp < (T_exp + TD) /*&& newChannelAddress == 0x0000000000000000000000000000000000000000) || ((T_exp + TD > block.timestamp) && (block.timestamp > T_exp))*/, "Time error");
+        require ( block.timestamp < (T_exp + TD) , "Time error");
         
         require (k > j, "k <= j");
             
@@ -106,14 +102,13 @@ contract channel{
         }
         
         if(newChannelAddress != 0x0000000000000000000000000000000000000000){
-           // msg.value = balance;
+           
             payable(newChannelAddress).call{value: balance*v}("");
-            //payable(newChannelAddress).transfer(balance /* * (1 ether)*/);
         }else{
             payable(msg.sender).transfer(balance*v /* *(1 ether)*/);
         }
 
-        //Update c: 
+        //Update params: 
         c = c - balance;
         
         j = k;

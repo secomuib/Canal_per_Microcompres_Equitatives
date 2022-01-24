@@ -7,8 +7,8 @@ import channel from '../ethereum/channel';
 
 var sha256 = require('js-sha256');
 
-const EC = require('elliptic').ec;
 const elliptic = require('elliptic');
+const ecies = require('ecies-geth');
 
 class ChannelOpen extends Component {
   state = {
@@ -38,8 +38,7 @@ class ChannelOpen extends Component {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
-      })
-        .then(res => {
+      }).then(res => {
           return res.json();
         }).then(data => {
           this.setState({
@@ -85,15 +84,10 @@ class ChannelOpen extends Component {
       const addressChannel = await factory.methods.createChannel(this.state.channel.c, parseInt(this.state.channel.service_price,10))
             .send({ from: accounts[0], value: this.state.channel.c * parseInt(this.state.channel.service_price,10), gas: 6000000 });
       
-      //v = service_price
-      //const addressChannel = await factory.methods.createChannel("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, this.state.Δ_TD, this.state.Δ_TR)
-        //.send({ from: accounts[0], value: this.state.channel.c * parseInt(this.state.channel.service_price,10), gas: 6000000 });
-      
       //Obtain the channel SC address
       const addresses = await factory.methods.getOwnerChannels(accounts[0]).call();
       const channelAddr = addresses[addresses.length-1];
 
-      
       //If channel open successfull then we have to set the channel params configuration:
       if (addressChannel) {
 
@@ -106,54 +100,53 @@ class ChannelOpen extends Component {
         const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
           .then(res => {
             return res.json();
-          })
-          .then(data => {
-            console.log('fetch', data);
+          }).then(data => {
             this.setState({
               customerInfo: data
             })
           });
 
+        //Creation of user customer private and public keys for this channel: 
+        const privateKey = elliptic.rand(32);
+        const publicKey = await ecies.getPublic(privateKey);
+
 
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "W_LC": this.state.W_LC,
-            "channelID": id
-          })
-        })
-          .then(res => {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "W_LC": this.state.W_LC,
+                "channelID": id, 
+                "Public Key": Buffer.from(publicKey, 'hex').toString('hex'),
+                "Private Key": Buffer.from(privateKey, 'hex').toString('hex')
+            })
+        }).then(res => {
             return res.json();
-          })
-          .then(data => {
+          }).then(data => {
             this.setState({
               data: data
             })
-
           });
 
         await fetch('http://localhost:7000/channels/' + id, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            'T_EXP': T_EXP, 
-            'Δ_TD': T_D, 
-            'Δ_TR': T_R,
-            "W_0C": this.state.W_0C,
-            "ethAddress": channelAddr,
-            "State": 'opened'
-          })
-        })
-          .then(res => {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "C Public Key": Buffer.from(publicKey, 'hex').toString('hex'),
+                'T_EXP': T_EXP, 
+                'Δ_TD': T_D, 
+                'Δ_TR': T_R,
+                "W_0C": this.state.W_0C,
+                "ethAddress": channelAddr,
+                "State": 'opened'
+            })
+        }).then(res => {
             return res.json();
-          })
-          .then(data => {
-            console.log('fetch', data);
+          }).then(data => {
 
           });
       }
@@ -193,58 +186,40 @@ class ChannelOpen extends Component {
 
       let id = this.props.match.params.id;
 
-      /*const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
-          .then(res => {
-            return res.json();
-          })
-          .then(data => {
-            console.log('fetch', data);
-            this.setState({
-              customerInfo: data
-            })
-          });*/
-
 
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "W_LC": this.state.W_LC,
-            "channelID": id
-          })
-        })
-          .then(res => {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "W_LC": this.state.W_LC,
+                "channelID": parseInt(id,10)
+            })
+          }).then(res => {
             return res.json();
-          })
-          .then(data => {
+          }).then(data => {
             this.setState({
               data: data
             })
-
           });
 
         await fetch('http://localhost:7000/channels/' + id, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            'T_EXP': T_EXP, 
-            'Δ_TD': T_D, 
-            'Δ_TR': T_R,
-            "W_0C": this.state.W_0C,
-            "ethAddress": this.state.ethChAddr,
-            "State": 'opened'
-          })
-        })
-          .then(res => {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                'T_EXP': T_EXP, 
+                'Δ_TD': T_D, 
+                'Δ_TR': T_R,
+                "W_0C": this.state.W_0C,
+                "ethAddress": this.state.ethChAddr,
+                "State": 'opened'
+            })
+        }).then(res => {
             return res.json();
-          })
-          .then(data => {
-            console.log('fetch', data);
-
+          }).then(data => {
           });
       }else{
         alert("Error: the channel can't be reused.");
@@ -260,13 +235,11 @@ class ChannelOpen extends Component {
     };
   }
 
-
   //Function used when the user customer wants to open a new channel, that would be used to transfer the 
   //microcoins received from another channel, where the customer represents de merchant.
   openChannel = async event =>{
     this.setState({ loading: true, errorMessage: '' });
     try {
-
       const accounts = await web3.eth.getAccounts();
       
       //Smart contract deployment: (v = service_price)
@@ -282,39 +255,35 @@ class ChannelOpen extends Component {
         let id = this.props.match.params.id;
 
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "W_LC": this.state.W_LC,
-            "channelID": id
-          })
-        })
-          .then(res => {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "W_LC": this.state.W_LC,
+                "channelID": id
+            })
+        }).then(res => {
             return res.json();
-          })
-          .then(data => {
+          }).then(data => {
             this.setState({
               data: data
             })
           });
 
         await fetch('http://localhost:7000/channels/' + id, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "W_0C": this.state.W_0C,
-            "ethAddress": channelAddr,
-            "State": 'opened- waiting configuration'
-          })
-        })
-          .then(res => {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "W_0C": this.state.W_0C,
+                "ethAddress": channelAddr,
+                "State": 'opened- waiting configuration'
+            })
+        }).then(res => {
             return res.json();
-          })
-          .then(data => {
+          }).then(data => {
             console.log('fetch', data);
           });
       }
@@ -348,36 +317,21 @@ class ChannelOpen extends Component {
 
         let id = this.props.match.params.id;
 
-        /*const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
-          .then(res => {
-            return res.json();
-          })
-          .then(data => {
-            console.log('fetch', data);
-            this.setState({
-              customerInfo: data
-            })
-          });*/
-
-
         await fetch('http://localhost:7000/channels/' + id, {
-          method: 'PATCH',
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            'T_EXP': T_EXP, 
-            'Δ_TD': T_D, 
-            'Δ_TR': T_R,
-            "State": 'opened'
-          })
-        })
-          .then(res => {
+            method: 'PATCH',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              'T_EXP': T_EXP, 
+              'Δ_TD': T_D, 
+              'Δ_TR': T_R,
+              "State": 'opened'
+            })
+        }).then(res => {
             return res.json();
-          })
-          .then(data => {
+          }).then(data => {
             console.log('fetch', data);
-
           });
       
       
@@ -400,7 +354,7 @@ class ChannelOpen extends Component {
         </Dimmer>
         <Link to='/'>Back</Link>
         
-        <Form /*onSubmit={this.onSubmit}*/ error={!!this.state.errorMessage} hidden={this.state.loading}>
+        <Form error={!!this.state.errorMessage} hidden={this.state.loading}>
           <h3>New Channel - Open</h3>
 
           <Form.Field>
@@ -437,7 +391,7 @@ class ChannelOpen extends Component {
           </Button>
         </Form>
 
-        <Form /*onSubmit={this.onSubmit}*/ error={!!this.state.errorMessage} hidden={this.state.loading}>
+        <Form error={!!this.state.errorMessage} hidden={this.state.loading}>
           <h3>Reuse Channel</h3>
 
           <Form.Field>
@@ -494,7 +448,7 @@ class ChannelOpen extends Component {
         </h4>
         </Form>
 
-        <Form /*onSubmit={this.onSubmit}*/ error={!!this.state.errorMessage} hidden={this.state.loading} style={{"margin-top": 30}}>
+        <Form error={!!this.state.errorMessage} hidden={this.state.loading} style={{"margin-top": 30}}>
           <h4>Parameters Configuration</h4>
           <Form.Field>
             <label>T <sub>EXP</sub></label>

@@ -8,8 +8,8 @@ import channel from '../ethereum/channel';
 
 var sha256 = require('js-sha256');
 
-const EC = require('elliptic').ec;
 const elliptic = require('elliptic');
+const ecies = require('ecies-geth');
 
 class ChannelPurchase extends Component {
   state = {
@@ -114,7 +114,8 @@ class ChannelPurchase extends Component {
   
         var c = this.state.channelInfo.c_init;
   
-        const W_iC = W_nX(i, this.state.channel_C_Info['W_LC']).toString('hex');
+        let W_iC = W_nX(i, this.state.channel_C_Info['W_LC']).toString('hex');
+
   
         await fetch('http://localhost:7000/channels/' + this.state.propsID, {
             method: 'PATCH',

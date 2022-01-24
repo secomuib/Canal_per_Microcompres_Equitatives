@@ -14,6 +14,8 @@ var sha256 = require('js-sha256');
 const EC = require('elliptic').ec;
 const elliptic = require('elliptic');
 
+const ecies = require('ecies-geth');
+
 class Home extends Component {
     state = {
         channel: '',
@@ -27,6 +29,7 @@ class Home extends Component {
         W_kC: '',
         channelContract: '',
         j: '',
+        W_iC_enc:'',
         loadingPage: true,
         loading: false,
         errorMessage: '',
@@ -63,7 +66,7 @@ class Home extends Component {
                     })
                 })
 
-            /*const channels = */await fetch('http://localhost:7000/channels', {
+            await fetch('http://localhost:7000/channels', {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
@@ -76,24 +79,21 @@ class Home extends Component {
                         channels: data
                     })
                 })
-    
 
             this.setState({
                 openChannels: openChannels,
                 accounts: accounts
             })
 
-            //console.log('chn', this.state.channels);
-
             
         return Object.keys(this.state.channels).map((requests, index) => {
             let ret;
-            //console.log('hola')
             if(this.state.channels[index]['customer'] === this.state.accounts[0]){
                 if(parseInt(this.state.channels[index]['T_EXP'],10) != NaN && parseInt(this.state.channels[index]['Δ_TD'],10) != NaN && 
                 parseInt(this.state.channels[index]['Δ_TR'],10)*1000 != NaN && (Date.now() > ((parseInt(this.state.channels[index]['T_EXP'],10)
                  + parseInt(this.state.channels[index]['Δ_TD'],10) + parseInt(this.state.channels[index]['Δ_TR'],10))*1000)) 
                  && this.state.channels[index]['State'] != 'closed'){
+
                     //Popup indicating the automatic refund transaction
                     Swal.fire({
                         title: 'The channel time periods have expired, so a refund of the remaining microcoins will be made.',
@@ -184,7 +184,7 @@ class Home extends Component {
 
     }
 
-    //Funció per transferir part de les micro-monedes de deposit del canal a la wallet del comprador
+    //Function to transfer part of the microcoins that are stored at the channel smart contract to the customer wallet.
     liquidation = async event => {
         event.preventDefault();
         this.setState({ loading: true, errorMessage: '' });
@@ -195,8 +195,6 @@ class Home extends Component {
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress']);
 
             let j = await channelContract.methods.j().call();
-            /*let W_0m = await channelContract.methods.W_jm().call();
-            let W_0c = await channelContract.methods.W_jc().call();*/
 
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: this.state.accounts[0] });
@@ -209,31 +207,6 @@ class Home extends Component {
                 c = ((this.state.k - (parseInt(j,10) - 1))/2);
             }
 
-            /*let j_new = await channelContract.methods.j().call();
-            /*this.state.channels.map( (chn, index) => {
-                if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
-                    id = this.state.channels[index]['id'];
-                }
-            });*/
-
-            //let State; //, index_userChannel; 
-            /*this.state.user_db.map((info, index)=>{
-                if(this.state.user_db[index]['channelID'] === this.state.channels[this.state.ind]['id']){
-                    index_userChannel = index;
-                }
-            });*/
-
-            /*console.log(this.state.channels[this.state.ind]['messages']['i'], j_new);
-
-            if(this.state.channels[this.state.ind]['messages']['i'] === j_new && this.state.channels[this.state.ind]['T_EXP'] < Date.now()){
-                State = "liquidated";
-                console.log('liquidated')
-            }else{
-                State = "opened";
-            }
-
-            alert('');*/
-
             //Update parameter c at the channel json-server data base:
             fetch('http://localhost:7000/channels/' + this.state.channels[this.state.ind]['id'], {
                 method: 'PATCH',
@@ -242,7 +215,6 @@ class Home extends Component {
                 },
                 body: JSON.stringify({
                     "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c),
-                    //"State": State
                 })
             })
 
@@ -276,7 +248,6 @@ class Home extends Component {
            //Update parameter c at the json-server data base:
             this.updateC();
 
-            //this.props.history.push('/');
         } catch (err) {
             this.setState({ errorMessage: err.message });
         } finally {
@@ -315,7 +286,7 @@ class Home extends Component {
             })
 
 
-            //Uptade parameter c at the NEW channel json-server database:
+            //Update parameter c at the NEW channel json-server database:
             fetch('http://localhost:7000/channels/' + id, {
                 method: 'PATCH',
                 headers: {
@@ -339,7 +310,7 @@ class Home extends Component {
         }
     }
 
-    Accept(channel_ID) {
+    Accept = async (channel_ID) => {
         const data = this.state.user_db;
 
         let merchant_ch, channel;
@@ -370,6 +341,11 @@ class Home extends Component {
         W = Buffer.from(W).toString("hex");
 
         const id = merchant_ch.channelID;
+
+        //Creation of user private and public keys for this channel: 
+        const privateKey = elliptic.rand(32);
+        const publicKey = await ecies.getPublic(privateKey);
+
         
         fetch('http://localhost:7000/channels/' + merchant_ch.channelID, {
             method: 'PATCH',
@@ -378,7 +354,8 @@ class Home extends Component {
             },
             body: JSON.stringify({
                 "State": 'accepted',
-                "W_0M": W
+                "W_0M": W,
+                "M Public Key": Buffer.from(publicKey, 'hex').toString('hex')
             })
         })
             .then(res => {
@@ -388,7 +365,6 @@ class Home extends Component {
                 
             })
 
-
         fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'], {
             method: 'PATCH',
             headers: {
@@ -396,7 +372,9 @@ class Home extends Component {
             },
             body: JSON.stringify({
                 "W_LM": W_LM,
-                "j": 0
+                "j": 0,
+                "Public Key": Buffer.from(publicKey, 'hex').toString('hex'),
+                "Private Key": Buffer.from(privateKey, 'hex').toString('hex')
             })
         })
             .then(res => {
@@ -404,8 +382,6 @@ class Home extends Component {
             })
             .then(data => {
             })
-
-            //this.props.history.push('/');
     }
 
     purchaseService = async (data) => {
@@ -415,7 +391,7 @@ class Home extends Component {
             let index_userChannel, i;
 
             function W_nX (n, W_X){
-                var W= Buffer.from(W_X,'hex');//W_X
+                var W= Buffer.from(W_X,'hex');
 
                 var L = 2*(c)+1;
                 for(L; L!= n; L--){
@@ -426,71 +402,38 @@ class Home extends Component {
                 W =  Buffer.from(W).toString("hex");
                 return W;
             };
-    
-          /*const accounts = await web3.eth.getAccounts();
-    
-          let i;
-    
-          await fetch('http://localhost:7000/channels/' + this.state.propsID)
-          .then(res => {
-            return res.json();
-          })
-          .then(data => {
-            console.log('fetch', data);
-            this.setState({
-              channelInfo: data
-            })
-          });*/
 
         this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id'].toString()){
                 index_userChannel = index;
             }
         })
-
-        
-          /*if(this.state.channelInfo['messages']){
-            i = parseInt(this.state.microcoin,10) + this.state.channelInfo['messages']['i'];
-          }else{
-            i = this.state.microcoin;
-          }
-    
-          await fetch('http://localhost:7000/'+ this.state.accounts[0])
-          .then(res => {
-            return res.json();
-          })
-          .then(data => {
-            data.map((ch, index)=>{
-                if(data[index]['channelID'] === this.state.propsID){
-                    this.setState({
-                        channel_C_Info: data[index]
-                    })
-                }
-    
-            })
-          });*/
           
-          if(data['messages']){
+        if(data['messages']){
             i = data['messages']['i']+1;
-          }else{
+        }else{
             i = 1;
-          }
+        }
 
-          var c = data.c_init;
+        var c = data.c_init;
           
-          console.log('c', c, data, 'i', i, this.state.user_db[index_userChannel]['W_LC'], data['id'])
+        const W_iC = W_nX(i, this.state.user_db[index_userChannel]['W_LC']).toString('hex');
 
-          const W_iC = W_nX(i, this.state.user_db[index_userChannel]['W_LC']).toString('hex');
-    
-          await fetch('http://localhost:7000/channels/' + data['id'], {
-              method: 'PATCH',
-              headers: {
+        let M_PublicKey = this.state.channels[data['id']-1]['M Public Key']; 
+        M_PublicKey = Buffer.from(M_PublicKey, 'hex');
+
+        let W_iC_enc = await ecies.encrypt(M_PublicKey, Buffer.from(W_iC));
+        W_iC_enc = Buffer.from(W_iC_enc, 'hex').toString('hex');
+
+        await fetch('http://localhost:7000/channels/' + data['id'], {
+            method: 'PATCH',
+            headers: {
                 "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
+            },
+            body: JSON.stringify({
                 "messages":{
                     "i": i,
-                    "m1": W_iC
+                    "m1": W_iC_enc
                 }, 
                 "State": 'payment'
               })
@@ -501,6 +444,7 @@ class Home extends Component {
               .then(data => {
                 console.log('fetch', data);
               });
+        
               
           // Refresh, using withRouter
           this.props.history.push('/');
@@ -541,9 +485,16 @@ class Home extends Component {
 
         var c = data['c'];
 
-        var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m1'])
+        let M_Private_Key = this.state.user_db[index_userChannel]['Private Key'];
+        M_Private_Key = Buffer.from(M_Private_Key, 'hex');
+
+        let M1_dec = await ecies.decrypt(M_Private_Key, Buffer.from(data['messages']['m1'], 'hex'));
+        M1_dec = M1_dec.toString();
         
-          var W_ic;
+
+        var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], M1_dec);
+        
+        var W_ic;
 
         //Not the first payement
         if(this.state.user_db[index_userChannel]['W_ic']){
@@ -553,10 +504,16 @@ class Home extends Component {
         else{
             W_ic = data['W_0C'];
         }
-        
-        console.log(data['messages']['i'], this.state.user_db[index_userChannel]['j'], hash, W_ic);
 
         if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === W_ic)){
+
+            
+            let C_PublicKey = data['C Public Key']; 
+            C_PublicKey = Buffer.from(C_PublicKey, 'hex');
+
+            let m2_enc = await ecies.encrypt(C_PublicKey, Buffer.from(data['service']));
+            m2_enc = Buffer.from(m2_enc, 'hex').toString('hex');
+
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
                 headers: {
@@ -568,11 +525,10 @@ class Home extends Component {
                     "messages":{
                         "i": data['messages']['i'],
                         "m1": data['messages']['m1'],
-                        "m2": data['service']
+                        "m2": m2_enc
                     }
                 })
-                })
-                .then(res => {
+            }).then(res => {
                     return res.json();
                 }).then(data => {
                     this.setState({
@@ -581,34 +537,31 @@ class Home extends Component {
                 })
     
 
-                fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
-                    method: 'PATCH',
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "W_ic":data['messages']['m1'],
-                        "j": data['messages']['i']
+            fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "W_ic": M1_dec,
+                    "j": data['messages']['i']
+                })
+            }).then(res => {
+                    return res.json();
+                }).then(data => {
+                    this.setState({
+                        channels: data
                     })
-                    })
-                    .then(res => {
-                        return res.json();
-                    }).then(data => {
-                        this.setState({
-                            channels: data
-                        })
-                    })
+                })
         
-           
         }else{
             alert('The micro coin is not valid!')
         }
-        //this.props.history.push('/');
 
     }
 
-    sendProof(data){
-        //TODO: DECRYPT M2
+    sendProof = async (data) =>{
+        
         var index_userChannel;
         this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id'].toString()){
@@ -630,39 +583,49 @@ class Home extends Component {
             return W;
         };
 
+        //Decrypt m2
+        let C_Private_Key = this.state.user_db[index_userChannel]['Private Key'];
+        C_Private_Key = Buffer.from(C_Private_Key, 'hex');
+
+        let M2_dec = await ecies.decrypt(C_Private_Key, Buffer.from(data['messages']['m2'], 'hex'));
+        M2_dec = M2_dec.toString();
+
         var c = data['c_init'];
 
-        var hash = W_nX(parseInt(data['messages']['i'],10)+1, this.state.user_db[index_userChannel]['W_LC'])
+        var hash = W_nX(parseInt(data['messages']['i'],10)+1, this.state.user_db[index_userChannel]['W_LC']);
+        
+        //Encrypt m3
+            let M_PublicKey = data['M Public Key']; 
+            M_PublicKey = Buffer.from(M_PublicKey, 'hex');
+
+            let m3_enc = await ecies.encrypt(M_PublicKey, Buffer.from(hash));
+            m3_enc = Buffer.from(m3_enc, 'hex').toString('hex');
 
         fetch('http://localhost:7000/channels/' + data['id'], {
-                method: 'PATCH',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "State": 'send proof',
-                    "messages":{
-                        "i": (parseInt(data['messages']['i'])+1),
-                        "m1": data['messages']['m1'],
-                        "m2": data['messages']['m2'],
-                        "m3": hash
-                    }
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "State": 'send proof',
+                "messages":{
+                    "i": (parseInt(data['messages']['i'])+1),
+                    "m1": data['messages']['m1'],
+                    "m2": data['messages']['m2'],
+                    "m3": m3_enc
+                }
+            })
+        }).then(res => {
+                return res.json();
+            }).then(data => {
+                this.setState({
+                    channels: data
                 })
-                })
-                .then(res => {
-
-                    return res.json();
-                }).then(data => {
-                    this.setState({
-                        channels: data
-                    })
-                })
-    
-                //this.props.history.push('/');
+            })
     }
 
     //m3 verification by M
-    verify(data){
+    verify = async (data) =>{
         //TODO: DECRYPT m3
         var index_userChannel;
         this.state.user_db.map((info, index)=>{
@@ -675,17 +638,22 @@ class Home extends Component {
             var W= Buffer.from(W_X,'hex');
 
             for(i; i!= j; i--){
-            W = sha256(W);
-            W = Buffer.from(W,'hex');
+                W = sha256(W);
+                W = Buffer.from(W,'hex');
             }
             W = Buffer.from(W).toString("hex");
 
             return W;
         };
 
-        var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], data['messages']['m3'])
-        console.log(hash)
-        console.log(this.state.user_db[index_userChannel]['W_ic']);
+        //Decrypt m3
+        let M_Private_Key = this.state.user_db[index_userChannel]['Private Key'];
+        M_Private_Key = Buffer.from(M_Private_Key, 'hex');
+
+        let M3_dec = await ecies.decrypt(M_Private_Key, Buffer.from(data['messages']['m3'], 'hex'));
+        M3_dec = M3_dec.toString();
+
+        var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], M3_dec)
 
         if(hash === this.state.user_db[index_userChannel]['W_ic']){
            
@@ -697,8 +665,7 @@ class Home extends Component {
                 body: JSON.stringify({
                     "State": 'opened',
                 })
-            })
-            .then(res => {
+            }).then(res => {
                 return res.json();
             }).then(data => {
                 this.setState({
@@ -714,10 +681,9 @@ class Home extends Component {
                 },
                 body: JSON.stringify({
                     "j": data['messages']['i'],
-                    "W_ic":data['messages']['m3']
+                    "W_ic": M3_dec
                 })
-            })
-            .then(res => {
+            }).then(res => {
                 return res.json();
             }).then(data => {
                 this.setState({
@@ -728,12 +694,14 @@ class Home extends Component {
         }else{ 
             alert ('Error!')
         }
-        //this.props.history.push('/');
     }
 
     //Channel refund (Customer)
     refund = async () =>  {
         try{ 
+            
+            this.setState({ loading: true, errorMessage: '' });
+            
             let chn = this.state.channels
             let ind = this.state.index_refund;
             let address = chn[ind-1]['ethAddress']
@@ -743,16 +711,15 @@ class Home extends Component {
                 await channelContract.methods.channelClose().send({ from: this.state.accounts[0] });
                 
                 fetch('http://localhost:7000/channels/' + chn[ind-1]['id'], {
-                        method: 'PATCH',
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            'c': 0,
-                            "State": 'closed'
-                        })
+                    method: 'PATCH',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        'c': 0,
+                        "State": 'closed'
                     })
-                    .then(res => {
+                }).then(res => {
                         return res.json();
                     }).then(data => {
                         this.setState({
@@ -765,7 +732,6 @@ class Home extends Component {
         } finally {
             this.setState({ loading: false });
         }
-       //this.props.history.push('/');
     }
 
     renderChannels() {
@@ -782,8 +748,7 @@ class Home extends Component {
                 }else if(parseInt(this.state.channels[index]['T_EXP'],10)*1000 < Date.now() && Date.now() < 
                 (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000){
                     ret = <div><Label as='a' color='blue' horizontal>Liquidation time</Label></div>
-                }
-                else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
+                }else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
                 && Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
                 + parseInt(this.state.channels[index]['Δ_TR'],10))*1000){
                     ret = <div><Label as='a' color='green' horizontal>Refund time</Label></div>
@@ -954,7 +919,7 @@ class Home extends Component {
 
         return Object.keys(data).map((requests, index) => {
 
-            if (data[index]['merchant'] === this.state.accounts[0] /*&& parseInt(this.state.channels[index]['T_EXP'],10)*1000 < Date.now()*/ && 
+            if (data[index]['merchant'] === this.state.accounts[0] && 
             Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000)  {
                 return(
                     <option>{data[index]['id']}</option>
@@ -980,9 +945,7 @@ class Home extends Component {
                         for(j; j!= 0; j--){
                             coins.push(j)
                         }
-
                     }
-                    
                 })
             }
 
@@ -1000,8 +963,7 @@ class Home extends Component {
         return Object.keys(data).map((requests, index) => {
             if (data[index]['customer'] === this.state.accounts[0] 
             && (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() && 
-            Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) + parseInt(this.state.channels[index]['Δ_TR'],10))*1000){
-                
+            Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) + parseInt(this.state.channels[index]['Δ_TR'],10))*1000){   
                 return(
                     <option>{data[index]['id']}</option>
                 )

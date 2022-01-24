@@ -5,6 +5,12 @@ import web3 from '../ethereum/web3';
 
 import channelSC from '../ethereum/channel';
 
+
+const EC = require('elliptic').ec;
+const elliptic = require('elliptic');
+
+const ecies = require('ecies-geth');
+
 class ChannelShow extends Component {
   state = {
     channel:'',
@@ -13,6 +19,9 @@ class ChannelShow extends Component {
     Δ_TD: '',
     Δ_TR: '',
     ID_userChannel: '',
+    m1_dec: '',
+    m2_dec: '',
+    m3_dec: '',
     balance: '',
     loading: false,
     errorMessage: ''
@@ -62,8 +71,7 @@ class ChannelShow extends Component {
               'Content-Type': 'application/json',
               'Accept': 'application/json'
           }
-      })
-          .then(res => {
+        }).then(res => {
               return res.json();
           }).then(data => {
               this.setState({
@@ -72,22 +80,44 @@ class ChannelShow extends Component {
           });
 
 
-        let ID_userChannel;
+        let ID_userChannel, M1_dec, M2_dec, M3_dec;
 
         this.state.user_db.map((info, index)=>{
 
-          if(parseInt(id, 10) === this.state.user_db[index]['channelID']){
+          if(parseInt(id, 10) === parseInt(this.state.user_db[index]['channelID'],10)){
               ID_userChannel = index;
+              console.log('ID_userChannel ', ID_userChannel);
           }
 
         });
 
-      console.log(ID_userChannel)
+      console.log('ID_userChannel ', ID_userChannel, this.state.user_db, id)
 
+      if(accounts[0] === this.state.channel['merchant']){
+        let M_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
+        M_Private_Key = Buffer.from(M_Private_Key, 'hex');
+
+        M1_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m1'], 'hex'));
+        M1_dec = M1_dec.toString();
+
+        M3_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m3'], 'hex'));
+        M3_dec = M3_dec.toString();
+
+      }else if(accounts[0] === this.state.channel['customer']){
+        let C_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
+        C_Private_Key = Buffer.from(C_Private_Key, 'hex');
+
+        M2_dec = await ecies.decrypt(C_Private_Key, Buffer.from(this.state.channel['messages']['m2'], 'hex'));
+        M2_dec = M2_dec.toString();
+      }
+      
         this.setState({
           T_EXP: T_EXP_format,
           Δ_TD: Δ_TD_format,
           Δ_TR: Δ_TR_format,
+          m1_dec: M1_dec,
+          m2_dec: M2_dec,
+          m3_dec: M3_dec,
           accounts: accounts,
           ID_userChannel: ID_userChannel
         });
@@ -256,13 +286,28 @@ class ChannelShow extends Component {
             </Form.Field>
 
             <Form.Field>
+              <label>m<sub>1</sub> decrypted</label>
+              <Input readOnly value={this.state.m1_dec}/>
+            </Form.Field>
+
+            <Form.Field>
             <label>m<sub>2</sub></label>
             <Input readOnly value={this.state.channel.messages.m2}/>
             </Form.Field>
             <Form.Field>
 
+            <Form.Field>
+              <label>m<sub>2</sub> decrypted</label>
+              <Input readOnly value={this.state.m2_dec}/>
+            </Form.Field>
+
             <label>m<sub>3</sub></label>
             <Input readOnly value={this.state.channel.messages.m3}/>
+          </Form.Field>
+
+          <Form.Field>
+          <label>m<sub>3</sub> decrypted</label>
+            <Input readOnly value={this.state.m3_dec}/>
           </Form.Field>
 
             <Form.Field>

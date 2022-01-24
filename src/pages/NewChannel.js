@@ -10,6 +10,8 @@ import { identifier, throwStatement } from '@babel/types';
 var sha256 = require('js-sha256');
 
 
+
+
 class NewChannel extends Component {
   state = {
     c: '',
@@ -59,8 +61,6 @@ class NewChannel extends Component {
       // Obtain the S_id of the selected service
       const data = this.state.services;
       Object.keys(data).map((merchant, index) => {
-        console.log('S_id: ', data[index].info +' '+ data[index].id);
-        console.log('service' + this.state.service)
         if(data[index].info === this.state.service){
           console.log('S_id: ', data[index].info +' '+ data[index].id);
           this.setState({
@@ -69,7 +69,7 @@ class NewChannel extends Component {
         }
       })
       
-      //Obtain the service selected
+      // Obtain the service selected
       await fetch('http://localhost:7000/services2/'+this.state.S_id, {
         headers:{
           'Content-Type': 'application/json',
@@ -78,7 +78,6 @@ class NewChannel extends Component {
       }).then(res =>{
         return res.json();
       }).then(data =>{
-        console.log('data services2', data);
         this.setState({
           service_data: data,
         })
@@ -86,75 +85,68 @@ class NewChannel extends Component {
 
         //Customer saved
         await fetch('http://localhost:7000/'+accounts[0], {
-        method:'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "channel": "",
-          "merchant": this.state.merchant,
-          "service": this.state.service,
-          "S_id": this.state.S_id
-        })
-      })
-        .then(res => {
+            method:'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "channel": "",
+                "merchant": this.state.merchant,
+                "service": this.state.service,
+                "S_id": this.state.S_id
+            })
+        }).then(res => {
             return res.json();
-        })
-        .then(data => {
-          this.setState({
-            C_channels: data
-          }) 
+        }).then(data => {
+            this.setState({
+              C_channels: data
+            }) 
         });
 
         await fetch('http://localhost:7000/channels', {
-          method:'POST',
-          headers: {
-            "Content-Type": "application/json"
-          },
-        body: JSON.stringify({
-          "customer": accounts[0],
-          "merchant": this.state.merchant,
-          "customer_channel_id": this.state.C_channels.id,
-          "service": this.state.service,
-          "c": parseInt(this.state.c,10) /** this.state.service_data.price*/,
-          "c_init": parseInt(this.state.c,10) /** this.state.service_data.price*/,
-          "service_price": this.state.service_data.price,
-          "S_id": this.state.S_id,
-          "State": 'requested'
-        })
-      })
-        .then(res => {
+            method:'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "customer": accounts[0],
+              "merchant": this.state.merchant,
+              "customer_channel_id": this.state.C_channels.id,
+              "service": this.state.service,
+              "c": parseInt(this.state.c,10) /** this.state.service_data.price*/,
+              "c_init": parseInt(this.state.c,10) /** this.state.service_data.price*/,
+              "service_price": this.state.service_data.price,
+              "S_id": this.state.S_id,
+              "State": 'requested'
+            })
+        }).then(res => {
             return res.json();
-        })
-        .then(data => {
-          this.setState({
-            channelid: data.id
-          })  
+        }).then(data => {
+            this.setState({
+              channelid: data.id
+            })  
         });
 
         //Merchant saved
         await fetch('http://localhost:7000/'+this.state.merchant, {
-        method:'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "channel": "",
-          "customer": accounts[0],
-          "service": this.state.service,
-          "S_id": this.state.S_id,
-          "channelID": this.state.channelid
-        })
-      })
-        .then(res => {
+            method:'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              "channel": "",
+              "customer": accounts[0],
+              "service": this.state.service,
+              "S_id": this.state.S_id,
+              "channelID": this.state.channelid
+            })
+        }).then(res => {
             return res.json();
-        })
-        .then(data => {
+        }).then(data => {
           console.log('fetch',data);  
         });
 
         this.props.history.push('/');
-
     } catch (err) {
         this.setState({
           errorMessage: err.message
@@ -162,23 +154,17 @@ class NewChannel extends Component {
     } finally {
         this.setState({ loading: false });
     }
-
   };
 
   renderMerchants(){
     const data = this.state.services;
-    const difMerchant = [];
-    console.log('renderMerchants')
-    
+    const difMerchant = [];    
 
     Object.keys(data).map((merchant, index1) => {
-      console.log('1', data[index1]['merchant'])
       difMerchant.push(data[index1]['merchant'])
     })
 
     let unics = Array.from(new Set(difMerchant))
-
-    console.log(unics);
     
     return Object.keys(unics).map((merchants, index) =>{
       

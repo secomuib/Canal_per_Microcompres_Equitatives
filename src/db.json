@@ -94,7 +94,7 @@
     }
   ],
   "channels": [
-    
+   
   ],
   "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b": [
     
@@ -105,5 +105,7 @@
   "0x70F6714dCa2f53A17558C5dff99D572959f77D9c": [
     
   ],
-  "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0": []
+  "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0": [
+    
+  ]
 }
