@@ -70,9 +70,9 @@ contract channel{
         TR = _TR;
     }
     
-    function blocktimestamp() public returns(uint256){
+    /*function blocktimestamp() public returns(uint256){
         return block.timestamp;
-    }
+    }*/
 
     //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel liquidation"), 
     //or, to transfer the microcoins to a new channel ("Chanel transference").

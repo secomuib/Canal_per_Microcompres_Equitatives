@@ -17,7 +17,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0xe5949b5d"
     },
     {
       "inputs": [
@@ -41,7 +43,9 @@
         }
       ],
       "stateMutability": "payable",
-      "type": "function"
+      "type": "function",
+      "payable": true,
+      "signature": "0x77b6198f"
     },
     {
       "inputs": [
@@ -60,7 +64,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0xe6359779"
     },
     {
       "inputs": [],
@@ -73,7 +79,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0x502512cb"
     },
     {
       "inputs": [
@@ -92,7 +100,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0xe156b0d0"
     },
     {
       "inputs": [
@@ -111,7 +121,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0x662f2e9d"
     },
     {
       "inputs": [
@@ -135,7 +147,9 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true,
+      "signature": "0xb21bef4d"
     }
   ],
   "devdoc": {
@@ -38923,5 +38937,6 @@
     "kind": "user",
     "methods": {},
     "version": 1
-  }
+  },
+  "address": "0xAD5126dE1791592F36D190225b5Afa4484389129"
 }
