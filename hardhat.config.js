@@ -73,7 +73,7 @@ module.exports = {
     ],
   },
   gasReporter: {
-    currency: 'USD',
+    currency: 'ETH',
     enabled: process.env.GAS_REPORT ? true : true,
   },
   typechain: {
