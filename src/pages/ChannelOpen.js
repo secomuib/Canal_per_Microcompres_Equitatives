@@ -186,6 +186,9 @@ class ChannelOpen extends Component {
 
       let id = this.props.match.params.id;
 
+        //Creation of user customer private and public keys for this channel: 
+        const privateKey = elliptic.rand(32);
+        const publicKey = await ecies.getPublic(privateKey);
 
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
             method: 'PATCH',
@@ -194,7 +197,9 @@ class ChannelOpen extends Component {
             },
             body: JSON.stringify({
                 "W_LC": this.state.W_LC,
-                "channelID": parseInt(id,10)
+                "channelID": id, 
+                "Public Key": Buffer.from(publicKey, 'hex').toString('hex'),
+                "Private Key": Buffer.from(privateKey, 'hex').toString('hex')
             })
           }).then(res => {
             return res.json();
@@ -210,6 +215,7 @@ class ChannelOpen extends Component {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
+                "C Public Key": Buffer.from(publicKey, 'hex').toString('hex'),
                 'T_EXP': T_EXP, 
                 'Δ_TD': T_D, 
                 'Δ_TR': T_R,
@@ -254,6 +260,10 @@ class ChannelOpen extends Component {
 
         let id = this.props.match.params.id;
 
+        //Creation of user customer private and public keys for this channel: 
+        const privateKey = elliptic.rand(32);
+        const publicKey = await ecies.getPublic(privateKey);
+
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
             method: 'PATCH',
             headers: {
@@ -261,7 +271,9 @@ class ChannelOpen extends Component {
             },
             body: JSON.stringify({
                 "W_LC": this.state.W_LC,
-                "channelID": id
+                "channelID": id, 
+                "Public Key": Buffer.from(publicKey, 'hex').toString('hex'),
+                "Private Key": Buffer.from(privateKey, 'hex').toString('hex')
             })
         }).then(res => {
             return res.json();
@@ -277,6 +289,7 @@ class ChannelOpen extends Component {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
+                "C Public Key": Buffer.from(publicKey, 'hex').toString('hex'),
                 "W_0C": this.state.W_0C,
                 "ethAddress": channelAddr,
                 "State": 'opened- waiting configuration'

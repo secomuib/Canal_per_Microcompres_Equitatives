@@ -12,6 +12,7 @@ describe("Channel contract", function (){
   let W_LM, W_0M, W_LC, W_0C; 
   let T_exp, T_D, T_R;
 
+  //Fuction that calculates the hash chains, as parameters we have the hash (sha256), the 'c' value and finally the 'k'.
   function W (W_X, c, k){
 
     var W= Buffer.from(W_X,'hex'); 
@@ -25,19 +26,19 @@ describe("Channel contract", function (){
     return W;
   };
   
+  //Function used when we need to wait a time period to execute some transaction.
   function sleep(milliseconds) {
     const date = Date.now();
-    console.log(date);
     let currentDate = null;
     do {
       currentDate = Date.now();
     } while (currentDate - date < milliseconds);
     console.log(Date.now());
-  }
+  };
 
   it("Address assignment", async function(){
     [user1, user2, user3] = await ethers.getSigners();
-  })
+  });
 
   it("Deploys channelFactory smart contract", async function () {
     //Deploy the channelFactory smart contract
@@ -54,7 +55,8 @@ describe("Channel contract", function (){
     const value = (_c*_v).toString();
 
     //Create a new channel owned by user1, deployed from the channel smart contract
-    await channelFactory.connect(user1).createChannel(_c, _v, { value: value});
+    const ch = await channelFactory.connect(user1).createChannel(_c, _v, { value: value});
+    console.log('gasPrice createChannel',await ch.gasPrice)
 
     const user1Channels = await channelFactory.getOwnerChannels(user1.address);
     const channelAddress = await channelFactory.getChannels(0);
@@ -97,7 +99,9 @@ describe("Channel contract", function (){
     T_R = 30;
 
     //Execute setChannelParams()
-    await channel1.connect(user1).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
+    const setChParams = await channel1.connect(user1).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
+    console.log('gasPrice setChParams',await setChParams.gasPrice)
+    
   })
 
 
@@ -134,6 +138,7 @@ describe("Channel contract", function (){
 
     //Execute liquidation
     const liquidation = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
+    console.log('gasPrice liquidation',await liquidation.gasPrice)
     
     //console.log('transaction receipt',await ethers.provider.getTransactionReceipt(liquidation.hash))
     //console.log('liquidation ', await ethers.provider.getTransactionReceipt(liquidation.hash).gasUsed)
@@ -159,6 +164,7 @@ describe("Channel contract", function (){
     const _v = ethers.utils.parseEther("0.002");
 
     const ch = await channelFactory.connect(user2).createChannel(_c, _v);
+    console.log('gasPrice createChannel',await ch.gasPrice)
     
     const user2Channels = await channelFactory.getOwnerChannels(user2.address);
 
@@ -178,14 +184,23 @@ describe("Channel contract", function (){
     //console.log('T_exp + T_D + T_R ', T_exp + T_D + T_R);
 
     //Spend time (30s), because we only can do the channel transfer when the channel state is at refund time.
-    sleep(30000);
+    //sleep(30000);
 
     expect(await ethers.provider.getBalance(channel1.address)).to.not.be.equal(0);
     expect(await ethers.provider.getBalance(channel2.address)).to.be.equal(0);
     
+    const balance1 = await ethers.provider.getBalance(user2.address)
+    console.log('Transfer deposit transaction: ');
+    console.log('User2 balance', balance1)
     //User2 execute the transferDeposit function of the channel1 smart contract, sending the value to the channel2 smart contract.
-    await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, channel2.address);
-    //console.log('user2 balance', await ethers.provider.getBalance(user2.address));
+    const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, channel2.address);
+    const balance2 = await ethers.provider.getBalance(user2.address)
+    console.log('User2 balance', balance2);
+    console.log('Balance difference', balance1 - balance2);
+    console.log('gasUsed ', (await ethers.provider.getTransactionReceipt(transfer.hash)).gasUsed)
+    console.log('gasPrice ',await transfer.gasPrice)
+    console.log('gasPrice*gasUsed: ', (await ethers.provider.getTransactionReceipt(transfer.hash)).gasUsed * (await transfer.gasPrice))
+
 
     expect(await ethers.provider.getBalance(channel2.address)).to.not.be.equal(0);
     expect(await ethers.provider.getBalance(channel1.address)).to.be.equal(0);
@@ -213,8 +228,10 @@ describe("Channel contract", function (){
     T_R = 30;
 
     //User2 configure the channel2 params, executing setChannelParams()
-    await channel2.connect(user2).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
+    const setChParams = await channel2.connect(user2).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
     console.log('user2 balance', await ethers.provider.getBalance(user2.address));
+    console.log('gasPrice setChParams',await setChParams.gasPrice)
+
   }); 
 
   it("Refund channel2", async function(){
@@ -223,7 +240,8 @@ describe("Channel contract", function (){
 
     expect(await ethers.provider.getBalance(channel2.address)).to.be.equal(2000000000000000);
 
-    await channel2.connect(user2).channelClose();
+    const refund = await channel2.connect(user2).channelClose();
+    console.log('gasPrice refund',await refund.gasPrice)
     expect(await ethers.provider.getBalance(channel2.address)).to.be.equal(0);
   });
 

@@ -33,15 +33,14 @@ contract channel{
     address public customer;
 
     //Channel parameters
-    bytes32 public W_jm;
-    bytes32 public W_jc; 
+    bytes32 public W_jm; //Hash of the last microcoin used by the user merchant
+    bytes32 public W_jc; //Hash of the last microcoin used by the user merchant that the user customer has sent to him
     string public S_id; //Service identifier
     uint256 public c; //Microcoins number
     uint256 public v; //Microcoins value
     uint256 public T_exp; //Expiration time
     uint256 public TD; //Deposit period
     uint256 public TR; //Refund period
-    //uint256 public start; 
 
     constructor(uint256 _c, uint256 _v, address _customer) payable {
         customer = _customer;
@@ -64,21 +63,15 @@ contract channel{
         S_id = _S_id;
         c = _c;
         v = _v;
-        //start = block.timestamp;
-        //T_exp = start + _T_exp;
         T_exp = _T_exp;
         TD = _TD;
         TR = _TR;
     }
-    
-    /*function blocktimestamp() public returns(uint256){
-        return block.timestamp;
-    }*/
 
     //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel liquidation"), 
     //or, to transfer the microcoins to a new channel ("Chanel transference").
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
-        require (((block.timestamp < (T_exp + TD)) && (newChannelAddress == 0x0000000000000000000000000000000000000000)) || ((T_exp + TD) < block.timestamp && (block.timestamp < (T_exp + TD + TR)) && newChannelAddress != 0x0000000000000000000000000000000000000000), "Time error"  );
+        require ((block.timestamp < (T_exp + TD)), "Time error"  );
         require (k > j, "k <= j");
             
         uint256 balance;
@@ -109,34 +102,20 @@ contract channel{
 
         //Update params: 
         //c = c - balance;
-        
         j = k;
         W_jm = bytes32 (_W_km);
         W_jc = bytes32 (_W_kc);
     }
     
-    //Funció per a tancar el canal i retorn del balaç que queda al propietari (selfdestruct de l'smart contract) 
+    //Function to close the channel and return the balance stored to the channel owner (customer), also it's made the selfdestruct of the smart contract
     function channelClose() public payable onlyOwner{
-        
         //T_exp + TD < now < T_exp + TD + TR
-        require(((T_exp + TD < block.timestamp) /*&& (block.timestamp < T_exp + TD + TR)*/));
+        require((T_exp + TD < block.timestamp), "Time error");
         selfdestruct(payable(msg.sender));
     }
     
-    /*function merchantChange(bytes32 _W_0m, string memory _S_id, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner(){
-        
-        //T_exp + TD < now < T_exp + TD + TR
-        require(((T_exp + TD < block.timestamp) && (block.timestamp < T_exp + TD + TR)));
-        
-        W_jm = _W_0m;
-        S_id = _S_id;
-        T_exp = _T_exp;
-        TD = _TD;
-        TR = _TR;
-        start = block.timestamp; 
-    }*/
     
-     // Function to receive Ether. msg.data must be empty
+     // Function to receive Ether, msg.data must be empty
     receive() external payable {
         //c = address(this).balance;
     }

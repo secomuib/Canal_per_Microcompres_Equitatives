@@ -389,8 +389,9 @@ class Home extends Component {
 
         try {
             let index_userChannel, i;
-
+            
             function W_nX (n, W_X){
+
                 var W= Buffer.from(W_X,'hex');
 
                 var L = 2*(c)+1;
@@ -403,7 +404,7 @@ class Home extends Component {
                 return W;
             };
 
-        this.state.user_db.map((info, index)=>{
+            this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id'].toString()){
                 index_userChannel = index;
             }
@@ -416,7 +417,10 @@ class Home extends Component {
         }
 
         var c = data.c_init;
-          
+          console.log('i', i);
+          console.log('WLC', index_userChannel)
+          console.log('W_LC', this.state.user_db[index_userChannel]['W_LC']);
+
         const W_iC = W_nX(i, this.state.user_db[index_userChannel]['W_LC']).toString('hex');
 
         let M_PublicKey = this.state.channels[data['id']-1]['M Public Key']; 
@@ -424,6 +428,7 @@ class Home extends Component {
 
         let W_iC_enc = await ecies.encrypt(M_PublicKey, Buffer.from(W_iC));
         W_iC_enc = Buffer.from(W_iC_enc, 'hex').toString('hex');
+        
 
         await fetch('http://localhost:7000/channels/' + data['id'], {
             method: 'PATCH',

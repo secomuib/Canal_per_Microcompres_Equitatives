@@ -52,13 +52,13 @@ class ChannelShow extends Component {
 
       if(this.state.channel.ethAddress){
         let channelContract = channelSC(this.state.channel.ethAddress)
-        let start = await channelContract.methods.start().call();
+        //let start = await channelContract.methods.start().call();
         let T_EXP = await channelContract.methods.T_exp().call();
         let Δ_TD = await channelContract.methods.TD().call();
         let Δ_TR = await channelContract.methods.TR().call();
-        let blocktimestamp = await channelContract.methods.blocktimestamp().call();
+        //let blocktimestamp = await channelContract.methods.blocktimestamp().call();
 
-        let start_format = new Date(start*1000);
+        //let start_format = new Date(start*1000);
 
         let T_EXP_format = new Date(T_EXP*1000);
 
@@ -93,7 +93,7 @@ class ChannelShow extends Component {
 
       console.log('ID_userChannel ', ID_userChannel, this.state.user_db, id)
 
-      if(accounts[0] === this.state.channel['merchant']){
+      if(accounts[0] === this.state.channel['merchant'] && this.state.channel['messages']){
         let M_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
         M_Private_Key = Buffer.from(M_Private_Key, 'hex');
 
@@ -103,14 +103,13 @@ class ChannelShow extends Component {
         M3_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m3'], 'hex'));
         M3_dec = M3_dec.toString();
 
-      }else if(accounts[0] === this.state.channel['customer']){
+      }else if(accounts[0] === this.state.channel['customer'] && this.state.channel['messages']){
         let C_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
         C_Private_Key = Buffer.from(C_Private_Key, 'hex');
 
         M2_dec = await ecies.decrypt(C_Private_Key, Buffer.from(this.state.channel['messages']['m2'], 'hex'));
         M2_dec = M2_dec.toString();
       }
-      
         this.setState({
           T_EXP: T_EXP_format,
           Δ_TD: Δ_TD_format,
@@ -122,8 +121,8 @@ class ChannelShow extends Component {
           ID_userChannel: ID_userChannel
         });
       }
-      let balance;
 
+      let balance;
       web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {
           console.log(err)

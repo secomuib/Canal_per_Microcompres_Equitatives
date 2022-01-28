@@ -33,9 +33,10 @@ module.exports = {
   networks: {
     hardhat: {
       accounts: {
-        mnemonic: MNEMONIC,
+        mnemonic: MNEMONIC
       },
       chainId: chainIds.hardhat,
+      gasPrice: 1000000000,
     },
     ropsten: {
       url: getInfuraURL('ropsten'),
