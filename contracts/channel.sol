@@ -49,13 +49,14 @@ contract channel{
         v = _v;
 
         if(msg.value != 0){
-            require(msg.value == _c*_v);
+            require(msg.value == _c*_v, 'balance error');
         }
     }
     
     //Configuration channel params function
     function setChannelParams(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner {
         require(address(this).balance == _c * _v);
+        require((T_exp == 0 && TD == 0 && TR == 0 && (T_exp + TD) < block.timestamp) || ((T_exp + TD) < block.timestamp && (block.timestamp < (T_exp + TD + TR))));
         j = 0;
         
         W_jm = _W_jm;
@@ -77,9 +78,7 @@ contract channel{
     //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel liquidation"), 
     //or, to transfer the microcoins to a new channel ("Chanel transference").
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
-        
-        require ( block.timestamp < (T_exp + TD) , "Time error");
-        
+        require (((block.timestamp < (T_exp + TD)) && (newChannelAddress == 0x0000000000000000000000000000000000000000)) || ((T_exp + TD) < block.timestamp && (block.timestamp < (T_exp + TD + TR)) && newChannelAddress != 0x0000000000000000000000000000000000000000), "Time error"  );
         require (k > j, "k <= j");
             
         uint256 balance;
@@ -105,11 +104,11 @@ contract channel{
            
             payable(newChannelAddress).call{value: balance*v}("");
         }else{
-            payable(msg.sender).transfer(balance*v /* *(1 ether)*/);
+            payable(msg.sender).transfer(balance*v);
         }
 
         //Update params: 
-        c = c - balance;
+        //c = c - balance;
         
         j = k;
         W_jm = bytes32 (_W_km);
@@ -139,12 +138,12 @@ contract channel{
     
      // Function to receive Ether. msg.data must be empty
     receive() external payable {
-        c = address(this).balance;
+        //c = address(this).balance;
     }
 
     // Fallback function is called when msg.data is not empty
     fallback() external payable {
-        c = address(this).balance;
+        //c = address(this).balance;
     }
 
 

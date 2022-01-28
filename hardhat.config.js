@@ -29,7 +29,7 @@ const getInfuraURL = (network) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  defaultNetwork: 'hardhat',
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {
       accounts: {
@@ -63,18 +63,25 @@ module.exports = {
       gasPrice: 20000000000,
       accounts: { mnemonic: MNEMONIC },
     },
+    matic: {
+      url: 'https://rpc-mumbai.maticvigil.com',
+      accounts: { mnemonic: MNEMONIC},
+    }
   },
   solidity: {
     compilers: [
       {
         version: '0.8.7',
-        settings: { optimizer: { enabled: true, runs: 200 } },
+        settings: { optimizer: { enabled: true, runs: 1 } },
       },
     ],
   },
   gasReporter: {
-    currency: 'ETH',
+    currency: 'usd',
+    coinmarketcap: '69906080-75f3-4f48-8689-268ba8b4480b',
     enabled: process.env.GAS_REPORT ? true : true,
+    gasPrice: 1,
+    showTimeSpent: true,
   },
   typechain: {
     outDir: 'src/typechain',
