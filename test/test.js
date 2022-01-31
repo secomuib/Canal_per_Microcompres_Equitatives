@@ -12,7 +12,7 @@ describe("Channel contract", function (){
   let W_LM, W_0M, W_LC, W_0C; 
   let T_exp, T_D, T_R;
 
-  //Fuction that calculates the hash chains, as parameters we have the hash (sha256), the 'c' value and finally the 'k'.
+  //Function that calculates the hash chains, as parameters we have the hash (sha256), the 'c' value and finally the 'k'.
   function W (W_X, c, k){
 
     var W= Buffer.from(W_X,'hex'); 
@@ -56,7 +56,6 @@ describe("Channel contract", function (){
 
     //Create a new channel owned by user1, deployed from the channel smart contract
     const ch = await channelFactory.connect(user1).createChannel(_c, _v, { value: value});
-    console.log('gasPrice createChannel',await ch.gasPrice)
 
     const user1Channels = await channelFactory.getOwnerChannels(user1.address);
     const channelAddress = await channelFactory.getChannels(0);
@@ -99,9 +98,7 @@ describe("Channel contract", function (){
     T_R = 30;
 
     //Execute setChannelParams()
-    const setChParams = await channel1.connect(user1).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
-    console.log('gasPrice setChParams',await setChParams.gasPrice)
-    
+    await channel1.connect(user1).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
   })
 
 
@@ -133,19 +130,24 @@ describe("Channel contract", function (){
     //Calculate W_kc
     let W_kc = W(W_LC, c, k);
 
-    //const balance1 = await ethers.provider.getBalance(user2.address);
-    //console.log(balance1);
-
     //Execute liquidation
-    const liquidation = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
-    console.log('gasPrice liquidation',await liquidation.gasPrice)
-    
-    //console.log('transaction receipt',await ethers.provider.getTransactionReceipt(liquidation.hash))
-    //console.log('liquidation ', await ethers.provider.getTransactionReceipt(liquidation.hash).gasUsed)
-    //console.log('gasPrice ',await liquidation.gasPrice)
-    //console.log(await ethers.provider.getBalance(user2.address))
-    //console.log(balance1 - await ethers.provider.getBalance(user2.address));
-    //console.log(await ethers.provider.getBalance(channel1.address));
+    await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
+
+    //Try to execut a bad liquidation with a bad k (repeating the same)
+    await expect( channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000')).to.be.reverted;
+
+    //Try to execut a bad liquidation with a bad W_km
+    //Generate a random W_LM element that will be sent to the liquidation method
+    let W_LM_rand = Buffer.from(elliptic.rand(16)).toString("hex");
+    W_LM_rand = W(W_LM_rand, c, 4);
+    await expect( channel1.connect(user2).transferDeposit('0x'+W_LM_rand, '0x'+W_kc, 4, '0x0000000000000000000000000000000000000000')).to.be.reverted;
+
+    //Try to execut a bad liquidation with a bad W_kc
+    //Generate a random W_LC element that will be sent to the liquidation method
+    let W_LC_rand = Buffer.from(elliptic.rand(16)).toString("hex");
+    W_km = W(W_LM, c, 4);
+    W_LC_rand = W(W_LM_rand, c, 4);
+    await expect( channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_LC_rand, 4, '0x0000000000000000000000000000000000000000')).to.be.reverted;
   });
   
   it("Transfer channel", async function (){
@@ -163,8 +165,7 @@ describe("Channel contract", function (){
     const _c = 1;
     const _v = ethers.utils.parseEther("0.002");
 
-    const ch = await channelFactory.connect(user2).createChannel(_c, _v);
-    console.log('gasPrice createChannel',await ch.gasPrice)
+    await channelFactory.connect(user2).createChannel(_c, _v);
     
     const user2Channels = await channelFactory.getOwnerChannels(user2.address);
 
@@ -175,32 +176,25 @@ describe("Channel contract", function (){
     expect(user2Channels[0]).to.be.equal(channel2.address);
     expect(await channel2.connect(user2).c()).to.not.be.undefined;
 
-    //console.log('gasPrice',ethers.utils.formatEther(await ch.gasPrice));
-    //console.log(await ethers.provider.getBalance(channel2.address));
-    //console.log('user2 balance', await ethers.provider.getBalance(user2.address));
+    //Try to execut a bad transference with a bad W_km
+    //Generate a random W_LM element that will be sent to the liquidation method
+    let W_LM_rand = Buffer.from(elliptic.rand(16)).toString("hex");
+    W_LM_rand = W(W_LM_rand, c, k);
+    await expect( channel1.connect(user2).transferDeposit('0x'+W_LM_rand, '0x'+W_kc, k, channel2.address)).to.be.reverted;
 
-    //console.log('T_exp', T_exp, await channel1.connect(user1).T_exp());
-    //console.log('T_exp + T_D ', T_exp + T_D);
-    //console.log('T_exp + T_D + T_R ', T_exp + T_D + T_R);
+    //Try to execut a bad transference with a bad W_kc
+    //Generate a random W_LC element that will be sent to the liquidation method
+    let W_LC_rand = Buffer.from(elliptic.rand(16)).toString("hex");
+    W_km = W(W_LM, c, k);
+    W_LC_rand = W(W_LM_rand, c, k);
+    await expect( channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_LC_rand, 4, channel2.address)).to.be.reverted;
 
-    //Spend time (30s), because we only can do the channel transfer when the channel state is at refund time.
-    //sleep(30000);
-
+    //Check channel1 and channel2 balance
     expect(await ethers.provider.getBalance(channel1.address)).to.not.be.equal(0);
     expect(await ethers.provider.getBalance(channel2.address)).to.be.equal(0);
     
-    const balance1 = await ethers.provider.getBalance(user2.address)
-    console.log('Transfer deposit transaction: ');
-    console.log('User2 balance', balance1)
     //User2 execute the transferDeposit function of the channel1 smart contract, sending the value to the channel2 smart contract.
-    const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, channel2.address);
-    const balance2 = await ethers.provider.getBalance(user2.address)
-    console.log('User2 balance', balance2);
-    console.log('Balance difference', balance1 - balance2);
-    console.log('gasUsed ', (await ethers.provider.getTransactionReceipt(transfer.hash)).gasUsed)
-    console.log('gasPrice ',await transfer.gasPrice)
-    console.log('gasPrice*gasUsed: ', (await ethers.provider.getTransactionReceipt(transfer.hash)).gasUsed * (await transfer.gasPrice))
-
+    await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, channel2.address);
 
     expect(await ethers.provider.getBalance(channel2.address)).to.not.be.equal(0);
     expect(await ethers.provider.getBalance(channel1.address)).to.be.equal(0);
@@ -227,21 +221,32 @@ describe("Channel contract", function (){
     //Define T_R = 10s --> it would be T_exp + T_D + T_R
     T_R = 30;
 
-    //User2 configure the channel2 params, executing setChannelParams()
-    const setChParams = await channel2.connect(user2).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
-    console.log('user2 balance', await ethers.provider.getBalance(user2.address));
-    console.log('gasPrice setChParams',await setChParams.gasPrice)
+    
+    expect(await channel2.connect(user2).W_jm()).to.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+    expect(await channel2.connect(user2).W_jc()).to.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+    expect(await channel2.connect(user2).S_id()).to.be.equal('');
+    expect(await channel2.connect(user2).T_exp()).to.be.equal(0);
+    expect(await channel2.connect(user2).TD()).to.be.equal(0);
+    expect(await channel2.connect(user2).TR()).to.be.equal(0);
 
+    //User2 configure the channel2 params, executing setChannelParams()
+    await channel2.connect(user2).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
+
+    expect(await channel2.connect(user2).W_jm()).to.be.equal('0x'+W_0M);
+    expect(await channel2.connect(user2).W_jc()).to.be.equal('0x'+W_0C);
+    expect(await channel2.connect(user2).S_id()).to.be.equal('Access to a newspaper for one day');
+    expect(await channel2.connect(user2).T_exp()).to.be.equal(T_exp);
+    expect(await channel2.connect(user2).TD()).to.be.equal(T_D);
+    expect(await channel2.connect(user2).TR()).to.be.equal(T_R);
   }); 
 
   it("Refund channel2", async function(){
-    //Spend time (30s), to reach the refund time.
-    sleep(30000);
+    //Spend time (35s), to reach the refund time.
+    sleep(35000);
 
     expect(await ethers.provider.getBalance(channel2.address)).to.be.equal(2000000000000000);
 
-    const refund = await channel2.connect(user2).channelClose();
-    console.log('gasPrice refund',await refund.gasPrice)
+    await channel2.connect(user2).channelClose();
     expect(await ethers.provider.getBalance(channel2.address)).to.be.equal(0);
   });
 
@@ -306,11 +311,11 @@ describe("Channel contract", function (){
     const v = await channel3.connect(user1).v(); 
 
     //Create W_LM, W_LC and respectives W_0M, W_0C
-    W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
-    W_0M = W(W_LM, c, 0);
+    const W_LM_3 = Buffer.from(elliptic.rand(16)).toString("hex");
+    const W_0M_3 = W(W_LM_3, c, 0);
 
-    W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
-    W_0C = W(W_LC, c, 0);
+    const W_LC_3 = Buffer.from(elliptic.rand(16)).toString("hex");
+    const W_0C_3 = W(W_LC_3, c, 0);
     
     //Define T_exp = now + 15s
     T_exp = Date.now() + 15000; // Date.now() represents the hour in milliseconds since 00:00:00 UTC of 1 of January of 1970. 
@@ -323,7 +328,10 @@ describe("Channel contract", function (){
     T_R = 30;
 
     //user1 reset the channel3 params to reuse this same channel. 
-    await channel3.connect(user1).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for two days', c, v, T_exp, T_D, T_R);
+    await channel3.connect(user1).setChannelParams('0x'+W_0M_3, '0x'+W_0C_3, 'Access to a newspaper for two days', c, v, T_exp, T_D, T_R);
     expect(await ethers.provider.getBalance(channel3.address)).to.be.equal((c*v).toString());
+    expect(await channel3.connect(user1).W_jm()).to.not.be.equal('0x'+W_0M);
+    expect(await channel3.connect(user1).W_jm()).to.be.equal('0x'+W_0M_3);
+
   })
 })

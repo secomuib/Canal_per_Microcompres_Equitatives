@@ -117,12 +117,12 @@ contract channel{
     
      // Function to receive Ether, msg.data must be empty
     receive() external payable {
-        //c = address(this).balance;
+        
     }
 
     // Fallback function is called when msg.data is not empty
     fallback() external payable {
-        //c = address(this).balance;
+
     }
 
 
