@@ -202,21 +202,24 @@ class Home extends Component {
         this.setState({ loading: true, errorMessage: '' });
 
         try {
+            //Execute the prepare_W function
             await this.prepare_W();
 
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress']);
 
             let j = await channelContract.methods.j().call();
-            console.log(j);
-            console.log('0x'+ this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000");
+
+            //Execute the smart contract transferDeposit function
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: this.state.accounts[0] });
             
-            let c, id;
-
+            let c;
+            //If the chain item selected by the user (k) is even
             if(this.state.k % 2 == 0){
                 c = parseInt(this.state.channels[this.state.ind]['c'],10) - ((this.state.k - parseInt(j,10))/2);
-            }else{
+            }
+            //If the chain item is odd
+            else{
                 c = this.state.channels[this.state.ind]['c'];
             }
             
@@ -239,18 +242,21 @@ class Home extends Component {
         }
     }
 
+    //Function to transfer part of the microcoins that are stored at the channel smart contract to another channel 
+    //already deployed by the customer user.
     transfer = async (event) => {
         event.preventDefault();
         this.setState({ loading: true, errorMessage: '' });
 
         try {
+            //Execute the prepare_W function
             await this.prepare_W();
 
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
 
             let j = await channelContract.methods.j().call();
 
-
+            //Execute the transferDeposit smart contract function, indicating the address of the new smart contract where the funds will be send
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, this.state.newChnAddr)
             .send({ from: this.state.accounts[0] });
 
@@ -268,16 +274,20 @@ class Home extends Component {
         }
     }
 
+    //Function used on the transference method, to update the c parameter of the two channels that are involved on the transference
     updateC = async (event) => {
         //event.preventDefault();
         //this.setState({ loading: true, errorMessage: '' });
 
         try{
-            let c, ind, id;
+            let c, id;
 
+            //If the chain item selected by the user (k) is even
             if(this.state.k % 2 == 0){
                 c = ((this.state.k - parseInt(this.state.j,10))/2);
-            }else{
+            }
+            //If the chain item selected by the user (k) is odd
+            else{
                 c = ((this.state.k - (parseInt(this.state.j,10) - 1))/2);
             }
 
@@ -323,6 +333,7 @@ class Home extends Component {
         }
     }
 
+    //Function used by the merchant, when he/she receives a new channel creation request. 
     Accept = async (channel_ID) => {
         const data = this.state.user_db;
 
@@ -334,18 +345,21 @@ class Home extends Component {
             }
         })
         
+        //Merchant generates an W_LM parameter, that would define the merchant hash chain
         const W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
         
         let W = Buffer.from(W_LM,'hex');
         
+        //Obtain the channel information of the channel DB. 
         this.state.channels.map((ch, index) => {
-            
             if (channel_ID === this.state.channels[index]['id']) {
                 channel = this.state.channels[index];
             }
         })
 
+        //Determine the L parameter, from the c parameter stored on the channel DB
         let L = 2 * (channel.c) + 1;
+        //Execute L times the hash of W_LM, to obtain the W_0M parameter, that will be entered to the channel DB
         for (L; L != 0; L--) {
             W = sha256(W);
             W = Buffer.from(W, 'hex');
@@ -359,7 +373,7 @@ class Home extends Component {
         const privateKey = elliptic.rand(32);
         const publicKey = await ecies.getPublic(privateKey);
 
-        
+        //Send to the channel DB the W_0M and M Public Key parameters, and also update the state to 'accepted'
         fetch('http://localhost:7000/channels/' + merchant_ch.channelID, {
             method: 'PATCH',
             headers: {
@@ -378,6 +392,7 @@ class Home extends Component {
                 
             })
 
+        //Send to the channel DB the W_LM, j, Public Key and Private Key parameters. 
         fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + merchant_ch['id'], {
             method: 'PATCH',
             headers: {
@@ -397,14 +412,15 @@ class Home extends Component {
             })
     }
 
+    //Function used to purchase a new service, i.e. send a new microcoin hash to the merchant user
     purchaseService = async (data) => {
         this.setState({ loading: true, errorMessage: '' });
 
         try {
             let index_userChannel, i;
-            
-            function W_nX (n, W_X){
 
+            //Function used to execute L-n times the hash over the hash W_X passed, and finally return the hex hash
+            function W_nX (n, W_X){
                 var W= Buffer.from(W_X,'hex');
 
                 var L = 2*(c)+1;
@@ -412,61 +428,64 @@ class Home extends Component {
                   W = sha256(W);
                   W = Buffer.from(W,'hex');
                 }
-    
+
                 W =  Buffer.from(W).toString("hex");
                 return W;
             };
 
+            
             this.state.user_db.map((info, index)=>{
-            if(this.state.user_db[index]['channelID'] === data['id'].toString()){
-                index_userChannel = index;
-            }
-        })
-          
-        if(data['messages']){
-            i = data['messages']['i']+1;
-        }else{
-            i = 1;
-        }
-
-        var c = data.c_init;
-          console.log('i', i);
-          console.log('WLC', index_userChannel)
-          console.log('W_LC', this.state.user_db[index_userChannel]['W_LC']);
-
-        const W_iC = W_nX(i, this.state.user_db[index_userChannel]['W_LC']).toString('hex');
-
-        let M_PublicKey = this.state.channels[data['id']-1]['M Public Key']; 
-        M_PublicKey = Buffer.from(M_PublicKey, 'hex');
-
-        let W_iC_enc = await ecies.encrypt(M_PublicKey, Buffer.from(W_iC));
-        W_iC_enc = Buffer.from(W_iC_enc, 'hex').toString('hex');
-        
-
-        await fetch('http://localhost:7000/channels/' + data['id'], {
-            method: 'PATCH',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "messages":{
-                    "i": i,
-                    "m1": W_iC_enc
-                }, 
-                "State": 'payment'
-              })
+                if(this.state.user_db[index]['channelID'] === data['id'].toString()){
+                    index_userChannel = index;
+                }
             })
-              .then(res => {
-                return res.json();
-              })
-              .then(data => {
-                console.log('fetch', data);
-              });
-        
-              
-          // Refresh, using withRouter
-          this.props.history.push('/');
+            
+            //If isn't the first time the customer purchase a service the parameter 'i' increase in 1 unit
+            if(data['messages']){
+                i = data['messages']['i']+1;
+            }
+            //If is the first time the customer purchase a service the 'i' parameter will be 1
+            else{
+                i = 1;
+            }
 
+            var c = data.c_init;
+
+            //Calculate the W_iC value, hash of the microcoin to send to the merchant user, as the m1 message
+            const W_iC = W_nX(i, this.state.user_db[index_userChannel]['W_LC']).toString('hex');
+
+            //Prepare to encrypt the W_iC parameter, to send it to the merchant
+            let M_PublicKey = this.state.channels[data['id']-1]['M Public Key']; 
+            M_PublicKey = Buffer.from(M_PublicKey, 'hex');
+
+            let W_iC_enc = await ecies.encrypt(M_PublicKey, Buffer.from(W_iC));
+            W_iC_enc = Buffer.from(W_iC_enc, 'hex').toString('hex');
+            
+            //Fetch to the channel DB, introducing the messages object that contains the 'i' and 'm1' parameters, and then on this same object
+            //will be stored the 'm2' and 'm3' messages. Also, it's updated the state parameter to payment.
+            await fetch('http://localhost:7000/channels/' + data['id'], {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "messages":{
+                        "i": i,
+                        "m1": W_iC_enc
+                    }, 
+                    "State": 'payment'
+                })
+                })
+                .then(res => {
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('fetch', data);
+                });
+            
+                
+            // Refresh, using withRouter
+            this.props.history.push('/');
         } catch (err) {
           this.setState({ errorMessage: err.message });
         } finally {
@@ -474,21 +493,18 @@ class Home extends Component {
         };
       }
 
-    //Send m2
+    //Function used to send the service from the merchant user to the customer.
     send = async (data) => {
         
         var index_userChannel;
-
-        let address = data['ethAddress']
-        
-        let channelContract = channel(address);
         
         this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id']){
                 index_userChannel = index;
             }
         })
-
+        
+        //Function used to execute i-j times the hash over the hash W_X passed, and finally return the hex hash
         function W_nX (i, j, W_X){
             var W= Buffer.from(W_X,'hex');
             
@@ -501,8 +517,7 @@ class Home extends Component {
             return W;
         };
 
-        var c = data['c'];
-
+        //Decrypt the missage received from the customer 'm1' to verify it
         let M_Private_Key = this.state.user_db[index_userChannel]['Private Key'];
         M_Private_Key = Buffer.from(M_Private_Key, 'hex');
 
@@ -523,15 +538,17 @@ class Home extends Component {
             W_ic = data['W_0C'];
         }
 
+        //If 'i' parameter is larger than 'j' and the calculated hash from 'm1' is equal to W_ic, the microcoin received is valid, 
+        //then, the merchant can send the service to the customer.
         if((data['messages']['i'] > this.state.user_db[index_userChannel]['j']) && (hash === W_ic)){
-
-            
+            //Prepare the customer public key to encrypt the service
             let C_PublicKey = data['C Public Key']; 
             C_PublicKey = Buffer.from(C_PublicKey, 'hex');
-
+            //Encrypt the service m2
             let m2_enc = await ecies.encrypt(C_PublicKey, Buffer.from(data['service']));
             m2_enc = Buffer.from(m2_enc, 'hex').toString('hex');
 
+            //Send to the channel DB the service encrypted, and also update the channel stat to 'send service'.
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
                 headers: {
@@ -554,7 +571,7 @@ class Home extends Component {
                     })
                 })
     
-
+            //Update the user merchant DB, introduce the W_ic value and update the 'j' value. 
             fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
                 method: 'PATCH',
                 headers: {
@@ -578,6 +595,7 @@ class Home extends Component {
 
     }
 
+    //Function used by the customer user to send the microcoin proof hash item to the merchant user.
     sendProof = async (data) =>{
         
         var index_userChannel;
@@ -586,7 +604,8 @@ class Home extends Component {
                 index_userChannel = index;
             }
         })
-
+        
+        //Function used to execute L-n times the hash over the hash W_X passed, and finally return the hex hash
         function W_nX (n, W_X){
             
             var W = Buffer.from(W_X,'hex');
@@ -601,24 +620,27 @@ class Home extends Component {
             return W;
         };
 
-        //Decrypt m2
+        //Prepare the Customer Private Key to decrypt the 'm2' service received from the merchant
         let C_Private_Key = this.state.user_db[index_userChannel]['Private Key'];
         C_Private_Key = Buffer.from(C_Private_Key, 'hex');
-
+        //Decrypt the 'm2' service received
         let M2_dec = await ecies.decrypt(C_Private_Key, Buffer.from(data['messages']['m2'], 'hex'));
         M2_dec = M2_dec.toString();
 
         var c = data['c_init'];
 
+        //Prepare the proof hash to send it to the merchant
         var hash = W_nX(parseInt(data['messages']['i'],10)+1, this.state.user_db[index_userChannel]['W_LC']);
         
-        //Encrypt m3
-            let M_PublicKey = data['M Public Key']; 
-            M_PublicKey = Buffer.from(M_PublicKey, 'hex');
+        //Prepare the merchant public key to encrypt the proof hash
+        let M_PublicKey = data['M Public Key']; 
+        M_PublicKey = Buffer.from(M_PublicKey, 'hex');
 
-            let m3_enc = await ecies.encrypt(M_PublicKey, Buffer.from(hash));
-            m3_enc = Buffer.from(m3_enc, 'hex').toString('hex');
+        //Encrypt the proof hash as message m3
+        let m3_enc = await ecies.encrypt(M_PublicKey, Buffer.from(hash));
+        m3_enc = Buffer.from(m3_enc, 'hex').toString('hex');
 
+        //Send to the channel DB the message 'm3' encrypted, and also, update the 'i' parameter and the channel state to 'send proof'
         fetch('http://localhost:7000/channels/' + data['id'], {
             method: 'PATCH',
             headers: {
@@ -642,9 +664,8 @@ class Home extends Component {
             })
     }
 
-    //m3 verification by M
+    //Function used by the merchant to verify that the data received ('m3') from the customer is valid
     verify = async (data) =>{
-        //TODO: DECRYPT m3
         var index_userChannel;
         this.state.user_db.map((info, index)=>{
             if(this.state.user_db[index]['channelID'] === data['id']){
@@ -652,6 +673,7 @@ class Home extends Component {
             }
         });
 
+        //Function used to execute L-n times the hash over the hash W_X passed, and finally return the hex hash
         function W_nX (i, j, W_X){
             var W= Buffer.from(W_X,'hex');
 
@@ -664,17 +686,20 @@ class Home extends Component {
             return W;
         };
 
-        //Decrypt m3
+        //Prepare the merchant private key to decrypt the proof hash received (m3)
         let M_Private_Key = this.state.user_db[index_userChannel]['Private Key'];
         M_Private_Key = Buffer.from(M_Private_Key, 'hex');
-
+        //Decrypt m3
         let M3_dec = await ecies.decrypt(M_Private_Key, Buffer.from(data['messages']['m3'], 'hex'));
         M3_dec = M3_dec.toString();
 
+        //Calculate the hash to compare it with the hash saved on the DB
         var hash = W_nX(data['messages']['i'], this.state.user_db[index_userChannel]['j'], M3_dec)
 
+        //If the hash calculated from m3 results is the same as the W_ic saved on the user DB
         if(hash === this.state.user_db[index_userChannel]['W_ic']){
-           
+            
+            //Update the channel DB, changing the channel state to 'opened'
             fetch('http://localhost:7000/channels/' + data['id'], {
                 method: 'PATCH',
                 headers: {
@@ -691,7 +716,7 @@ class Home extends Component {
                 })
             })
 
-            //Update j and W_ic
+            //Update the user merchant DB updating the j and W_ic parameters
             fetch('http://localhost:7000/' + this.state.accounts[0] + '/' + (index_userChannel+1), {
                 method: 'PATCH',
                 headers: {
@@ -714,7 +739,7 @@ class Home extends Component {
         }
     }
 
-    //Channel refund (Customer)
+    //Function used by the customer to obtain the refund of the channel and close it
     refund = async () =>  {
         try{ 
             
@@ -726,8 +751,11 @@ class Home extends Component {
             let channelContract = channel(address);
 
             if(this.state.accounts[0] === chn[ind-1]['customer']){
+
+                //Execute the channel smart contract method channelClose
                 await channelContract.methods.channelClose().send({ from: this.state.accounts[0] });
                 
+                //Update the channel DB, with c = 0 and state = 'closed'
                 fetch('http://localhost:7000/channels/' + chn[ind-1]['id'], {
                     method: 'PATCH',
                     headers: {
