@@ -1,13 +1,9 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from "react-router-dom";
-import { Form, Button, Message, Input, Dimmer, Loader, FormSelect } from 'semantic-ui-react';
+import { Form, Button, Message, Input, Dimmer, Loader } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 
 import channelSC from '../ethereum/channel';
-
-
-const EC = require('elliptic').ec;
-const elliptic = require('elliptic');
 
 const ecies = require('ecies-geth');
 
@@ -51,11 +47,15 @@ class ChannelShow extends Component {
       const accounts = await web3.eth.getAccounts();
 
       if(this.state.channel.ethAddress){
-        let channelContract = channelSC(this.state.channel.ethAddress)
-        //let start = await channelContract.methods.start().call();
-        let T_EXP = await channelContract.methods.T_exp().call();
-        let Δ_TD = await channelContract.methods.TD().call();
-        let Δ_TR = await channelContract.methods.TR().call();
+        let T_EXP, Δ_TD, Δ_TR;
+
+        if(this.state.channel.State != "closed"){
+          let channelContract = channelSC(this.state.channel.ethAddress)
+          //let start = await channelContract.methods.start().call();
+          T_EXP = await channelContract.methods.T_exp().call();
+          Δ_TD = await channelContract.methods.TD().call();
+          Δ_TR = await channelContract.methods.TR().call();
+        }
         //let blocktimestamp = await channelContract.methods.blocktimestamp().call();
 
         //let start_format = new Date(start*1000);
@@ -65,6 +65,7 @@ class ChannelShow extends Component {
         let Δ_TD_format = new Date((parseInt(T_EXP,10) + parseInt(Δ_TD,10))*1000);
 
         let Δ_TR_format = new Date((parseInt(T_EXP,10) + parseInt(Δ_TD,10) + parseInt(Δ_TR,10))*1000);
+        
 
         await fetch('http://localhost:7000/' + accounts[0], {
           headers: {
@@ -93,7 +94,7 @@ class ChannelShow extends Component {
 
       console.log('ID_userChannel ', ID_userChannel, this.state.user_db, id)
 
-      if(accounts[0] === this.state.channel['merchant'] && this.state.channel['messages']){
+      if(accounts[0] === this.state.channel['merchant'] && this.state.channel['messages'] && this.state.channel.State != "closed"){
         let M_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
         M_Private_Key = Buffer.from(M_Private_Key, 'hex');
 
@@ -123,7 +124,7 @@ class ChannelShow extends Component {
       }
 
       let balance;
-      web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
+      if(this.state.channel.State != "closed"){web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {
           console.log(err)
         } else {
@@ -134,7 +135,7 @@ class ChannelShow extends Component {
             balance: balance
           })
       });
-
+    }
     } catch (err) {
       this.setState({ errorMessage: err.message });
     } finally {

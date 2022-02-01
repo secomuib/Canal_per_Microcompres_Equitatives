@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from "react-router-dom";
-import { Form, Button, Message, Input, Dimmer, Loader, Checkbox} from 'semantic-ui-react';
+import { Form, Button, Message, Input, Dimmer, Loader } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 import factory from '../ethereum/factory';
 import channel from '../ethereum/channel';

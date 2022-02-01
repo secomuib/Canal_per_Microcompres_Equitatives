@@ -1,17 +1,14 @@
 import React, { Component } from 'react';
-import { Icon, Button, Dimmer, Loader, Segment, Table, Form, Input, Message, TableRow, TableCell, TableHeader, Label } from 'semantic-ui-react';
+import { Icon, Button, Dimmer, Loader, Segment, Table, Form, Input, Message, Label } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import factory from '../ethereum/factory';
 import channel from '../ethereum/channel';
-import variables from '../ethereum/variables';
 import Swal from 'sweetalert2';
 import web3 from '../ethereum/web3';
-import DeliveryRow from '../components/DeliveryRow';
 import db from '../db.json';
 
 var sha256 = require('js-sha256');
 
-const EC = require('elliptic').ec;
 const elliptic = require('elliptic');
 
 const ecies = require('ecies-geth');
@@ -38,9 +35,6 @@ class Home extends Component {
 
     componentDidMount = async () => {
         try {
-            let T_EXP =[];
-            let T_D = [];
-            let T_R = [];
 
             const accounts = await web3.eth.getAccounts();
             const channelsCount = await factory.methods.getChannelsCount().call();
@@ -51,6 +45,7 @@ class Home extends Component {
                 })
             );
 
+            //Request the user DB information
             fetch('http://localhost:7000/' + accounts[0], {
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,7 +60,8 @@ class Home extends Component {
                         accounts: accounts
                     })
                 })
-
+            
+            //Request the channels DB information
             await fetch('http://localhost:7000/channels', {
                 headers: {
                     'Content-Type': 'application/json',
@@ -85,9 +81,10 @@ class Home extends Component {
                 accounts: accounts
             })
 
-            
+        //Review all channels, and in case some of them has arrived to the expiration time, the DApp impose to 
+        //compulsory execute the refund method, to finish the channel. 
         return Object.keys(this.state.channels).map((requests, index) => {
-            let ret;
+            //It would only be done in cas the user that executes the DApp is the channel customer.
             if(this.state.channels[index]['customer'] === this.state.accounts[0]){
                 if(parseInt(this.state.channels[index]['T_EXP'],10) != NaN && parseInt(this.state.channels[index]['Δ_TD'],10) != NaN && 
                 parseInt(this.state.channels[index]['Δ_TR'],10)*1000 != NaN && (Date.now() > ((parseInt(this.state.channels[index]['T_EXP'],10)
@@ -125,25 +122,26 @@ class Home extends Component {
         }
     }
 
+    //Function used to prepare the W_kC and W_kM hashes used by the liquidation and transference functions
     prepare_W = async event => {
         let channel_info;
         let W_kC, W_kM;
         let L;
 
+        //Function used to execute i-j times the hash over the hash W_X passed, and finally return the hex hash
         function W_nX (i, j, W_X){
 
             var W= Buffer.from(W_X,'hex'); 
-
+            
             for(i; i!= j; i--){
               W = sha256(W);
-
               W = Buffer.from(W,'hex');
             }
             W = Buffer.from(W).toString("hex");
             return W;
           };
 
-
+        //Review the user DB to identify the channel
         this.state.user_db.map((chns, index)=>{
             if(this.state.user_db[index]['channelID'] === parseInt(this.state.channelID)){
                 channel_info = this.state.user_db[index]
@@ -151,30 +149,44 @@ class Home extends Component {
         });
 
         let ind; 
-
+        
+        //Review the channel DB to identify the channel
         this.state.channels.map((chn, index) => {
             if(this.state.channels[index]['id'] === parseInt(this.state.channelID,10)){
                 ind = index;
             }
-        })
+        });
 
+        //If the user microcoin selected to liquidate is the last microcoin received (not the proof), directly 
+        //determine W_kC as the message m1 received from the customer 
         if(parseInt(this.state.k, 10) === (channel_info['j']-1)){
-            W_kC = this.state.channels[ind]['messages']['m1'];
-        }else{
+            let m1 = this.state.channels[ind]['messages']['m1'];
+            
+            //Decrypt the m1 message
+            let M_Private_Key = channel_info['Private Key'];
+            console.log(ind , M_Private_Key);
+
+            M_Private_Key = Buffer.from(M_Private_Key, 'hex');
+
+            let M1_dec = await ecies.decrypt(M_Private_Key, Buffer.from(m1, 'hex'));
+
+            M1_dec = M1_dec.toString();
+
+            W_kC = M1_dec;
+        }
+        //Otherwise, calculate W_kC from the W_ic parameter saved on the user channel DB
+        else{
             W_kC = W_nX(channel_info['j'], this.state.k, channel_info.W_ic)
         }
 
-        L = 2*(this.state.channels[ind]['c'])+1;
-
-        //Determine the number of microcoins between the last microcoin liquideted and the last 
-        //microcoin that the user wants to liquidate/transfer now (k-j).
-        let channelContract = channel(this.state.channels[ind]['ethAddress']);
-        let j = await channelContract.methods.j().call();
+        L = 2*(this.state.channels[ind]['c_init'])+1;
         
-        console.log('this.state.k', this.state.k, 'j', j);
-        let microcoinNumber = this.state.k - j;
+        let microcoinNumber = this.state.k;
 
+        //Execute the bucle of hashes function, sending to it the L value, the microcoinNumber selected
+        //by the user and the W_LM, saved on the user DB
         W_kM = W_nX(L, microcoinNumber, channel_info['W_LM']);
+        console.log('W_kM', W_kM, 'W_kC', W_kC);
 
         this.setState({
             ind: ind,
@@ -195,18 +207,19 @@ class Home extends Component {
             let channelContract = channel(this.state.channels[this.state.ind]['ethAddress']);
 
             let j = await channelContract.methods.j().call();
-
+            console.log(j);
+            console.log('0x'+ this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000");
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: this.state.accounts[0] });
             
             let c, id;
 
             if(this.state.k % 2 == 0){
-                c = ((this.state.k - parseInt(j,10))/2);
+                c = parseInt(this.state.channels[this.state.ind]['c'],10) - ((this.state.k - parseInt(j,10))/2);
             }else{
-                c = ((this.state.k - (parseInt(j,10) - 1))/2);
+                c = this.state.channels[this.state.ind]['c'];
             }
-
+            
             //Update parameter c at the channel json-server data base:
             fetch('http://localhost:7000/channels/' + this.state.channels[this.state.ind]['id'], {
                 method: 'PATCH',
@@ -214,7 +227,7 @@ class Home extends Component {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c),
+                    "c": c,
                 })
             })
 

@@ -119,6 +119,26 @@ describe("Channel contract", function (){
     expect(tr).to.be.equal(T_R);
   });
 
+  //Try to liquidate channel sending only the microcoin hash, without sending the proof hash
+  it("Liquidate without proof ", async function (){
+    //Consider that k = 1: 
+    const k = 1; 
+    let c = await channel1.connect(user1).c();
+
+    //Calculate W_km
+    let W_km = W(W_LM, c, k);
+
+    //Calculate W_kc
+    let W_kc = W(W_LC, c, k);
+
+    //Execute liquidation
+    expect(await channel1.connect(user2).c()).to.be.equal(2);
+    const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
+    expect(await channel1.connect(user2).c()).to.be.equal(2);
+    console.log(await ethers.provider.getBalance(channel1.address));
+
+  })
+
   it("Channel liquidation", async function () {
     //Consider that k = 2: 
     const k = 2; 
@@ -131,7 +151,8 @@ describe("Channel contract", function (){
     let W_kc = W(W_LC, c, k);
 
     //Execute liquidation
-    await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
+    const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
+    console.log(await ethers.provider.getBalance(channel1.address));
 
     //Try to execut a bad liquidation with a bad k (repeating the same)
     await expect( channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000')).to.be.reverted;
@@ -149,6 +170,8 @@ describe("Channel contract", function (){
     W_LC_rand = W(W_LM_rand, c, 4);
     await expect( channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_LC_rand, 4, '0x0000000000000000000000000000000000000000')).to.be.reverted;
   });
+
+  
   
   it("Transfer channel", async function (){
     //Consider that now k = 4: 
@@ -195,6 +218,7 @@ describe("Channel contract", function (){
     
     //User2 execute the transferDeposit function of the channel1 smart contract, sending the value to the channel2 smart contract.
     await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, channel2.address);
+    console.log(await ethers.provider.getBalance(channel1.address));
 
     expect(await ethers.provider.getBalance(channel2.address)).to.not.be.equal(0);
     expect(await ethers.provider.getBalance(channel1.address)).to.be.equal(0);

@@ -1,16 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from "react-router-dom";
-import { Form, Button, Message, Input, Table } from 'semantic-ui-react';
+import { Form, Button, Message, Input } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
-import variables from '../ethereum/variables';
-import db from '../db.json';
-import { readFile } from 'fs';
-import { identifier, throwStatement } from '@babel/types';
-
-var sha256 = require('js-sha256');
-
-
-
 
 class NewChannel extends Component {
   state = {
@@ -35,7 +26,7 @@ class NewChannel extends Component {
   };
 
   componentDidMount(){
-    fetch('http://localhost:7000/services2', {
+    fetch('http://localhost:7000/services', {
         headers:{
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -70,7 +61,7 @@ class NewChannel extends Component {
       })
       
       // Obtain the service selected
-      await fetch('http://localhost:7000/services2/'+this.state.S_id, {
+      await fetch('http://localhost:7000/services/'+this.state.S_id, {
         headers:{
           'Content-Type': 'application/json',
           'Accept': 'application/json'

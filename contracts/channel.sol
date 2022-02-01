@@ -89,12 +89,15 @@ contract channel{
         
         if(k%2 == 0){
             balance = ((k-j)/2);
+            j = k;
+            
+            W_jm = bytes32 (_W_km);
+            W_jc = bytes32 (_W_kc);
         }else{
             balance = ((k-j-1)/2);
         }
         
         if(newChannelAddress != 0x0000000000000000000000000000000000000000){
-           
             payable(newChannelAddress).call{value: balance*v}("");
         }else{
             payable(msg.sender).transfer(balance*v);
@@ -102,9 +105,7 @@ contract channel{
 
         //Update params: 
         //c = c - balance;
-        j = k;
-        W_jm = bytes32 (_W_km);
-        W_jc = bytes32 (_W_kc);
+        
     }
     
     //Function to close the channel and return the balance stored to the channel owner (customer), also it's made the selfdestruct of the smart contract
@@ -122,9 +123,8 @@ contract channel{
 
     // Fallback function is called when msg.data is not empty
     fallback() external payable {
-
+        
     }
-
 
     modifier onlyOwner(){
         require (msg.sender == customer, "Only customer of the delivery can set the channel params.");
