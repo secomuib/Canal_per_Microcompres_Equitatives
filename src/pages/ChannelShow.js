@@ -30,7 +30,8 @@ class ChannelShow extends Component {
     try {
       let id = this.props.match.params.id;
 
-      var channel = await fetch('http://localhost:7000/channels/'+id, {
+      //Request the channel DB information
+      await fetch('http://localhost:7000/channels/'+id, {
         headers:{
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -45,28 +46,27 @@ class ChannelShow extends Component {
        })
 
       const accounts = await web3.eth.getAccounts();
-
+      
+      //In case the channel is opened and already has an ethereum address, consult some more information that also will be provided to the user
       if(this.state.channel.ethAddress){
         let T_EXP, Δ_TD, Δ_TR;
-
+        //In case the channel isn't closed, can obtain the parameters from the SC. 
         if(this.state.channel.State != "closed"){
+          //Obtain the SC of the channel
           let channelContract = channelSC(this.state.channel.ethAddress)
-          //let start = await channelContract.methods.start().call();
+
+          //Request the timeout parameters T_EXP, TD and TR
           T_EXP = await channelContract.methods.T_exp().call();
           Δ_TD = await channelContract.methods.TD().call();
           Δ_TR = await channelContract.methods.TR().call();
         }
-        //let blocktimestamp = await channelContract.methods.blocktimestamp().call();
 
-        //let start_format = new Date(start*1000);
-
+        //Reformat the timeout parameters to date format
         let T_EXP_format = new Date(T_EXP*1000);
-
         let Δ_TD_format = new Date((parseInt(T_EXP,10) + parseInt(Δ_TD,10))*1000);
-
         let Δ_TR_format = new Date((parseInt(T_EXP,10) + parseInt(Δ_TD,10) + parseInt(Δ_TR,10))*1000);
         
-
+        //Request the user channel DB information
         await fetch('http://localhost:7000/' + accounts[0], {
           headers: {
               'Content-Type': 'application/json',
@@ -79,21 +79,19 @@ class ChannelShow extends Component {
                   user_db: data,
               })
           });
-
-
+        
+        //Define some useful variables
         let ID_userChannel, M1_dec, M2_dec, M3_dec;
-
+        
+        //Obtain the ID of the user channel DB that has the channel object
         this.state.user_db.map((info, index)=>{
-
           if(parseInt(id, 10) === parseInt(this.state.user_db[index]['channelID'],10)){
               ID_userChannel = index;
               console.log('ID_userChannel ', ID_userChannel);
           }
-
         });
-
-      console.log('ID_userChannel ', ID_userChannel, this.state.user_db, id)
-
+      //In case the user connected is the merchant, the users has exchanged some messages and the channel is not closed 
+      //Obtain the merchant privateKey from their DB and decrypt the m1 and m3 messages. 
       if(accounts[0] === this.state.channel['merchant'] && this.state.channel['messages'] && this.state.channel.State != "closed"){
         let M_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
         M_Private_Key = Buffer.from(M_Private_Key, 'hex');
@@ -104,7 +102,10 @@ class ChannelShow extends Component {
         M3_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m3'], 'hex'));
         M3_dec = M3_dec.toString();
 
-      }else if(accounts[0] === this.state.channel['customer'] && this.state.channel['messages']){
+      }
+      //in case the usert connected is the customer and the users has exchanged some messages, obtain the customer private key and 
+      //decrypt the m2 message.
+      else if(accounts[0] === this.state.channel['customer'] && this.state.channel['messages']){
         let C_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
         C_Private_Key = Buffer.from(C_Private_Key, 'hex');
 
@@ -124,6 +125,8 @@ class ChannelShow extends Component {
       }
 
       let balance;
+
+      //In case the channel isn't closed, check the channel smart contract balance
       if(this.state.channel.State != "closed"){web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {
           console.log(err)

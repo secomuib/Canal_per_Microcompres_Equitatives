@@ -26,6 +26,8 @@ class NewChannel extends Component {
   };
 
   componentDidMount(){
+    //Request the services DB information, where is stored all the services provided in the system jointly with the 
+    //merchant information and the service price
     fetch('http://localhost:7000/services', {
         headers:{
           'Content-Type': 'application/json',
@@ -43,6 +45,8 @@ class NewChannel extends Component {
 
   }
 
+  //Function used by the merchant to submit the information selected, and send it to the channels DB, and also make the 
+  //request to the merchant user, waiting the channel opening acceptance
   onSubmit = async event => {
     event.preventDefault();
     this.setState({ loading: true, errorMessage: '' });
@@ -74,7 +78,7 @@ class NewChannel extends Component {
         })
        })
 
-        //Customer saved
+        //Generate a new object to the customer DB introducing the merchant, service and the service ID information
         await fetch('http://localhost:7000/'+accounts[0], {
             method:'POST',
             headers: {
@@ -94,6 +98,8 @@ class NewChannel extends Component {
             }) 
         });
 
+        //Open a new object to the channel DB introducing to it the customer, merchant, customer channel ID (to identify the customer's channel),
+        // the service selected, the c value selected by the customer, the service price, the service ID and define the state param to 'requested'
         await fetch('http://localhost:7000/channels', {
             method:'POST',
             headers: {
@@ -104,8 +110,8 @@ class NewChannel extends Component {
               "merchant": this.state.merchant,
               "customer_channel_id": this.state.C_channels.id,
               "service": this.state.service,
-              "c": parseInt(this.state.c,10) /** this.state.service_data.price*/,
-              "c_init": parseInt(this.state.c,10) /** this.state.service_data.price*/,
+              "c": parseInt(this.state.c,10),
+              "c_init": parseInt(this.state.c,10),
               "service_price": this.state.service_data.price,
               "S_id": this.state.S_id,
               "State": 'requested'
@@ -118,7 +124,8 @@ class NewChannel extends Component {
             })  
         });
 
-        //Merchant saved
+        //Send to the merchan DB the request of the channel, indicating to the user the customer account, the service selected, the service ID and 
+        //finally the channel ID of the channel DB.
         await fetch('http://localhost:7000/'+this.state.merchant, {
             method:'POST',
             headers: {

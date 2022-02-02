@@ -33,7 +33,8 @@ class ChannelOpen extends Component {
 
       const accounts = await web3.eth.getAccounts();
 
-      var channel = await fetch('http://localhost:7000/channels/' + id, {
+      //Request the channel information from the channels DB using the id send by props
+      await fetch('http://localhost:7000/channels/' + id, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -46,17 +47,19 @@ class ChannelOpen extends Component {
           })
         });
 
+      //The customer generates his/her W_LC parameter, from an elliptic random number
       const W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
       var W = Buffer.from(W_LC, 'hex');
+      //Define the L parameter
       var L = 2*(this.state.channel.c)+1;
-      
+      //Bucle to calculate the W_0C parameter, passing the W_LC through a sha256 hash function and iterate L times the result
       for (L; L != 0; L--) {
         W = sha256(W);
         W = Buffer.from(W,'hex');
       }
 
       W = Buffer.from(W).toString("hex");
-
+      //Saves the result on the state variables
       this.setState({
         W_LC: W_LC,
         W_0C: W,
@@ -69,7 +72,7 @@ class ChannelOpen extends Component {
       this.setState({ loading: false });
     }
   }
-
+  //Function used to submit the parameters selected by the customer and from it open the new channel in normal way
   onSubmit = async event => {
     /*event.preventDefault();*/
     this.setState({ loading: true, errorMessage: '' });
@@ -90,14 +93,16 @@ class ChannelOpen extends Component {
 
       //If channel open successfull then we have to set the channel params configuration:
       if (addressChannel) {
-
-        let channelContract = channel(channelAddr)
+        //Obtain the channel smart contract of the addressChannel address
+        let channelContract = channel(channelAddr);
+        //Execute the setChannelParams of the channel SC
         await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
         .send({ from: accounts[0] });
 
         let id = this.props.match.params.id;
 
-        const customerInfo = await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
+        //Request the customer channel information to the user DB
+        await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id)
           .then(res => {
             return res.json();
           }).then(data => {
@@ -110,7 +115,7 @@ class ChannelOpen extends Component {
         const privateKey = elliptic.rand(32);
         const publicKey = await ecies.getPublic(privateKey);
 
-
+        //Save the W_LC, the channelID and the public and private key params to the user DB
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
             method: 'PATCH',
             headers: {
@@ -130,6 +135,8 @@ class ChannelOpen extends Component {
             })
           });
 
+        //Save in the channel DB the customer public key, the time parameters, the W_0C, the channel ethereum address and update the channel
+        //state to 'opened' 
         await fetch('http://localhost:7000/channels/' + id, {
             method: 'PATCH',
             headers: {
@@ -161,6 +168,7 @@ class ChannelOpen extends Component {
     };
   }
 
+  //Function used when the customer wants to reuse the channel, it only be reused when the channel 
   reuseChannel = async event => {
     /*event.preventDefault();*/
     this.setState({ loading: true, errorMessage: '' });
@@ -168,28 +176,32 @@ class ChannelOpen extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
 
-      let channelContract = channel(this.state.ethChAddr)
-
-      let T_EXP = await channelContract.methods.T_exp().call();
+      let channelContract = channel(this.state.ethChAddr);
       
-      //T_EXP = new Date(parseInt(T_EXP,10));
+      //Obtain the time params defined in the smart contract
+      let T_EXP = await channelContract.methods.T_exp().call();
       let T_R = await channelContract.methods.TR().call();
       let T_D = await channelContract.methods.TD().call();
 
+      //In case the channel state is at the refund phase, permits the customer reuse the channel, setting new params
       if((Date.now() > (parseInt(T_EXP,10) + parseInt(T_D,10))*1000) && (Date.now() < (parseInt(T_EXP,10) + parseInt(T_D,10) + parseInt(T_R,10))*1000)){
+        //Obtain the new defined time params
         let T_EXP = new Date(this.state.T_EXP).getTime() / 1000; //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
         let T_D = (new Date(this.state.Δ_TD).getTime() / 1000) - T_EXP; 
         let T_R = (new Date(this.state.Δ_TR).getTime() / 1000) - T_EXP - T_D;
-      
+        
+        //Execute the setChannelParams transaction
         await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
         .send({ from: accounts[0] });
 
-      let id = this.props.match.params.id;
+        let id = this.props.match.params.id;
 
         //Creation of user customer private and public keys for this channel: 
         const privateKey = elliptic.rand(32);
         const publicKey = await ecies.getPublic(privateKey);
 
+        //Send to the customer DB the W_LC, channel ID and Public and Private Keys new parameters of the reused channel
+        //on the new channel object.
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
             method: 'PATCH',
             headers: {
@@ -208,7 +220,9 @@ class ChannelOpen extends Component {
               data: data
             })
           });
-
+        
+        //Send to the channel DB the new params that defines it: Customer public key, time params, W_0C, ethereum address of the channel. And
+        //update the channel state to 'opened'
         await fetch('http://localhost:7000/channels/' + id, {
             method: 'PATCH',
             headers: {
@@ -242,7 +256,7 @@ class ChannelOpen extends Component {
   }
 
   //Function used when the user customer wants to open a new channel, that would be used to transfer the 
-  //microcoins received from another channel, where the customer represents de merchant.
+  //microcoins received from another channel, where the customer represents the merchant.
   openChannel = async event =>{
     this.setState({ loading: true, errorMessage: '' });
     try {
@@ -252,6 +266,7 @@ class ChannelOpen extends Component {
       const addressChannel = await factory.methods.createChannel(this.state.channel.c, parseInt(this.state.channel.service_price,10))
             .send({ from: accounts[0] });
 
+      //In case the transaction goes well
       if(addressChannel){
 
         //Obtain the channel SC address
@@ -260,10 +275,11 @@ class ChannelOpen extends Component {
 
         let id = this.props.match.params.id;
 
-        //Creation of user customer private and public keys for this channel: 
+        //Creation of user customer private and public keys for the new channel: 
         const privateKey = elliptic.rand(32);
         const publicKey = await ecies.getPublic(privateKey);
 
+        //Send the W_LC, channel ID and public / private keys channel params to the user DB
         await fetch('http://localhost:7000/' + accounts[0] + '/' + this.state.channel.customer_channel_id, {
             method: 'PATCH',
             headers: {
@@ -283,6 +299,9 @@ class ChannelOpen extends Component {
             })
           });
 
+        //Send the customer public key, the W_0C and the ethereum address parameters to the channel DB, and update the channel state to 
+        //'opened- waiting configuration'. Determines that the channel is already open, but it won't be able until the customer set the channel
+        //parameters configuration of the channel
         await fetch('http://localhost:7000/channels/' + id, {
             method: 'PATCH',
             headers: {
@@ -319,17 +338,21 @@ class ChannelOpen extends Component {
     try {
 
         const accounts = await web3.eth.getAccounts();
+
+        //Obtain the new defined time params
         let T_EXP = new Date(this.state.T_EXP).getTime() / 1000; //https://ethereum.stackexchange.com/questions/32173/how-to-handle-dates-in-solidity-and-web3
         let T_D = (new Date(this.state.Δ_TD).getTime() / 1000) - T_EXP; 
         let T_R = (new Date(this.state.Δ_TR).getTime() / 1000) - T_EXP - T_D;
 
         let channelContract = channel(this.state.channel.ethAddress);
 
+        //Execute the setChannelParams transaction
         await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.channel.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
         .send({ from: accounts[0] });
 
         let id = this.props.match.params.id;
 
+        //Send the new channel timeout parameters (T_EXP, TD and TR) to the channel DB and update the channel state to 'opened'. 
         await fetch('http://localhost:7000/channels/' + id, {
             method: 'PATCH',
             headers: {
@@ -346,7 +369,6 @@ class ChannelOpen extends Component {
           }).then(data => {
             console.log('fetch', data);
           });
-      
       
       // Refresh, using withRouter
       this.props.history.push('/');
