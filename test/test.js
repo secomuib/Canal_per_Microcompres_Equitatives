@@ -33,7 +33,6 @@ describe("Channel contract", function (){
     do {
       currentDate = Date.now();
     } while (currentDate - date < milliseconds);
-    console.log(Date.now());
   };
 
   it("Address assignment", async function(){
@@ -66,6 +65,7 @@ describe("Channel contract", function (){
     //Review user1Channel customer: 
     const channelSC = await ethers.getContractFactory('channel');
     channel1 = channelSC.attach(user1Channels[0]);
+
     expect(await channel1.connect(user1).customer()).to.be.equal(user1.address);
 
     //Review user1Channel parameters (c & v)
@@ -135,8 +135,6 @@ describe("Channel contract", function (){
     expect(await channel1.connect(user2).c()).to.be.equal(2);
     const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
     expect(await channel1.connect(user2).c()).to.be.equal(2);
-    console.log(await ethers.provider.getBalance(channel1.address));
-
   })
 
   it("Channel liquidation", async function () {
@@ -152,7 +150,6 @@ describe("Channel contract", function (){
 
     //Execute liquidation
     const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
-    console.log(await ethers.provider.getBalance(channel1.address));
 
     //Try to execut a bad liquidation with a bad k (repeating the same)
     await expect( channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000')).to.be.reverted;
@@ -218,7 +215,6 @@ describe("Channel contract", function (){
     
     //User2 execute the transferDeposit function of the channel1 smart contract, sending the value to the channel2 smart contract.
     await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, channel2.address);
-    console.log(await ethers.provider.getBalance(channel1.address));
 
     expect(await ethers.provider.getBalance(channel2.address)).to.not.be.equal(0);
     expect(await ethers.provider.getBalance(channel1.address)).to.be.equal(0);
