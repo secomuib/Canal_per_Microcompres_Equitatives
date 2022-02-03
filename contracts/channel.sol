@@ -95,6 +95,19 @@ contract channel{
             W_jc = bytes32 (_W_kc);
         }else{
             balance = ((k-j-1)/2);
+            j = k-1;
+            bytes32 hash_m = bytes32(_W_km);
+            bytes32 hash_c = bytes32(_W_kc);
+            uint256 i = k-j;
+        
+            for (i; i!= 0; i--){
+                hash_m = sha256(abi.encodePacked(hash_m));
+                hash_c = sha256(abi.encodePacked(hash_c)); 
+            }
+             
+            j = k-1;
+            W_jm = bytes32 (hash_m);
+            W_jc = bytes32 (hash_c);
         }
         
         if(newChannelAddress != 0x0000000000000000000000000000000000000000){
