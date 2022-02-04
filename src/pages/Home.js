@@ -209,6 +209,10 @@ class Home extends Component {
 
             let j = await channelContract.methods.j().call();
 
+            console.log('0x'+this.state.W_kM);
+            console.log('0x'+this.state.W_kC);
+            console.log(this.state.k);
+            alert();
             //Execute the smart contract transferDeposit function
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: this.state.accounts[0] });
@@ -216,12 +220,12 @@ class Home extends Component {
             let c;
             //If the chain item selected by the user (k) is even
             if(this.state.k % 2 == 0){
-                c = parseInt(this.state.channels[this.state.ind]['c'],10) - ((this.state.k - parseInt(j,10))/2);
+                c = parseInt(this.state.channels[this.state.ind]['c'],10) - ((parseInt(this.state.k,10) - parseInt(j,10))/2);
             }
-            //If the chain item is odd
+            //If the chain item selected by the user (k) is odd
             else{
-                if(parseInt(this.state.k, 10) === 1) {
-                    c = parseInt(this.state.channels[this.state.ind]['c'],10)
+                if(parseInt(this.state.k, 10) === (parseInt(j, 10)+1)) {
+                    c = parseInt(this.state.channels[this.state.ind]['c'],10);
                 }else {
                     c = parseInt(this.state.channels[this.state.ind]['c'],10) - (this.state.k - (this.state.k - 1));
                 }
@@ -288,13 +292,16 @@ class Home extends Component {
 
             //If the chain item selected by the user (k) is even
             if(this.state.k % 2 == 0){
-                c = ((this.state.k - parseInt(this.state.j,10))/2);
+                c = parseInt(this.state.channels[this.state.ind]['c'],10) - ((this.state.k - parseInt(this.state.j,10))/2);
             }
             //If the chain item selected by the user (k) is odd
             else{
-                c = ((this.state.k - (parseInt(this.state.j,10) - 1))/2);
+                if(parseInt(this.state.k, 10) === parseInt(this.state.j, 10)+1) {
+                    c = parseInt(this.state.channels[this.state.ind]['c'],10);
+                }else {
+                    c = parseInt(this.state.channels[this.state.ind]['c'],10) - (this.state.k - (this.state.k - 1));
+                }
             }
-
             this.state.channels.map((chn, index) => {
                 if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
                     id = this.state.channels[index]['id'];
@@ -308,13 +315,13 @@ class Home extends Component {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "c": (parseInt(this.state.channels[this.state.ind]['c'],10)-c),
+                    "c": c,
                 })
             })
 
 
             //Update parameter c at the NEW channel json-server database:
-            fetch('http://localhost:7000/channels/' + id, {
+            /*fetch('http://localhost:7000/channels/' + id, {
                 method: 'PATCH',
                 headers: {
                     "Content-Type": "application/json"
@@ -327,7 +334,7 @@ class Home extends Component {
                 return res.json();
             })
             .then(data => {
-            })
+            })*/
 
 
         }catch (err) {

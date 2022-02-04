@@ -6,7 +6,6 @@ import Home from './pages/Home';
 import NewChannel from './pages/NewChannel';
 import ChannelShow from './pages/ChannelShow';
 import ChannelOpen from './pages/ChannelOpen';
-import ChannelPurchase from './pages/ChannelPurchase';
 import 'semantic-ui-css/semantic.min.css';
 
 class App extends Component {
@@ -20,7 +19,6 @@ class App extends Component {
                         <Route exact path='/channels/new' component={NewChannel}/>
                         <Route exact path='/channels/:id' component={ChannelShow}/>
                         <Route exact path='/channels/open/:id' component={ChannelOpen}></Route>
-                        <Route exact path='/channels/purchase/:id' component={ChannelPurchase}></Route>
                     </Switch>
                 </main>
             </Container>
