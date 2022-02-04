@@ -110,9 +110,6 @@ class Home extends Component {
                             this.refund();
                         }
                       })
-
-                    
-
                 }
             }
         });
@@ -220,7 +217,11 @@ class Home extends Component {
             }
             //If the chain item is odd
             else{
-                c = this.state.channels[this.state.ind]['c'];
+                if(parseInt(this.state.k, 10) === 1) {
+                    c = parseInt(this.state.channels[this.state.ind]['c'],10)
+                }else {
+                    c = parseInt(this.state.channels[this.state.ind]['c'],10) - (this.state.k - (this.state.k - 1));
+                }
             }
             
             //Update parameter c at the channel json-server data base:
@@ -288,7 +289,11 @@ class Home extends Component {
             }
             //If the chain item selected by the user (k) is odd
             else{
-                c = ((this.state.k - (parseInt(this.state.j,10) - 1))/2);
+                if(parseInt(this.state.k, 10) === 1) {
+                    c = parseInt(this.state.channels[this.state.ind]['c'],10)
+                }else {
+                    c = parseInt(this.state.channels[this.state.ind]['c'],10) - (this.state.k - (this.state.k - 1));
+                }
             }
 
             this.state.channels.map((chn, index) => {

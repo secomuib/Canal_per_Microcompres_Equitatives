@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\Usuario\\Documents\\UIB\\SECOM\\micropagaments\\micropayments-channel\\contracts\\channel.sol": {
-      "lastModificationDate": 1643911551019,
-      "contentHash": "348018569def86e1ac19a00a553e5de1",
+      "lastModificationDate": 1643974069522,
+      "contentHash": "b67ef64d05a08750597caea6aefb28dd",
       "sourceName": "contracts/channel.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -28,11 +28,9 @@
           }
         }
       },
-      "imports": [
-        "@openzeppelin/contracts/proxy/Clones.sol"
-      ],
+      "imports": [],
       "versionPragmas": [
-        ">=0.7.0 <0.9.0"
+        ">0.4.23 <0.9.0"
       ],
       "artifacts": [
         "channel",
@@ -72,6 +70,41 @@
       ],
       "artifacts": [
         "Clones"
+      ]
+    },
+    "C:\\Users\\Usuario\\Documents\\UIB\\SECOM\\micropagaments\\micropayments-channel\\contracts\\cloneFactory.sol": {
+      "lastModificationDate": 1643972393830,
+      "contentHash": "8504308330b68cfae55415c2c0a73aec",
+      "sourceName": "contracts/cloneFactory.sol",
+      "solcConfig": {
+        "version": "0.8.7",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">0.4.23"
+      ],
+      "artifacts": [
+        "CloneFactory"
       ]
     }
   }

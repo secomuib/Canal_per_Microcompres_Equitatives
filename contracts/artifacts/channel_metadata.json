@@ -150,6 +150,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "isBase",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "j",
 				"outputs": [
 					{
@@ -291,10 +304,10 @@
 			]
 		},
 		"contracts/channel.sol": {
-			"keccak256": "0x5fae6f1c8ffa3b5de81c5a74228d653c3c97b6752317ecca1d5d27bb482ac486",
+			"keccak256": "0xe786eb489e8af34a3658112d62f0742d1a0371e6e71b7fb3ce05968fd1ec698f",
 			"urls": [
-				"bzz-raw://3dd287132307c095140b588d82efe21565488ad500bc44b97919da10c107705b",
-				"dweb:/ipfs/QmNfBKtjdxrTHc9UrTgDdf2jjuVjb1iWu2crR5g51B5Wec"
+				"bzz-raw://2deae7c9998dfbb85aaa220de00dab0f520bdd5bfbceaf782ef774d7d970af10",
+				"dweb:/ipfs/QmUa7iB9sF3X9PEUdYB5VPDdAd85nFYnbr1fxBKXJLEW21"
 			]
 		}
 	},
