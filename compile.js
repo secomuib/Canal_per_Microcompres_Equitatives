@@ -34,7 +34,6 @@ try {
   // Ensure that build path exists
   fs.ensureDirSync(buildPath);
 
-  console.log(output);
   // For each compiled smart contract, save it to build folder
   for (let contract in output.contracts[CONTRACT_FILE_NAME]) {
 
