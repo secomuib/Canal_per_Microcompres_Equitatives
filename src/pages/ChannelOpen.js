@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from "react-router-dom";
-import { Form, Button, Message, Input, Dimmer, Loader } from 'semantic-ui-react';
+import { Form, Button, Message, Input, Dimmer, Loader, Checkbox } from 'semantic-ui-react';
 import web3 from '../ethereum/web3';
 import factory from '../ethereum/factory';
 import channel from '../ethereum/channel';
@@ -18,7 +18,7 @@ class ChannelOpen extends Component {
     W_LC: '',
     W_0C: '',
     customerInfo: '',
-    channel: '',
+    channel: '',      
     accounts: '',
     loading: false,
     errorMessage: ''
@@ -168,7 +168,7 @@ class ChannelOpen extends Component {
     };
   }
 
-  //Function used when the customer wants to reuse the channel, it only be reused when the channel 
+  //Function used when the customer wants to reuse the channel
   reuseChannel = async event => {
     /*event.preventDefault();*/
     this.setState({ loading: true, errorMessage: '' });
@@ -428,7 +428,6 @@ class ChannelOpen extends Component {
 
         <Form error={!!this.state.errorMessage} hidden={this.state.loading}>
           <h3>Reuse Channel</h3>
-
           <Form.Field>
             <label>Ethereum channel address</label>
             <Input

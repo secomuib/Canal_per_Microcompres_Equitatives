@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Icon, Button, Dimmer, Loader, Segment, Table, Form, Input, Message, Label } from 'semantic-ui-react';
+import { Icon, Button, Dimmer, Loader, Segment, Table, Form, Input, Message, Label, Checkbox } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import factory from '../ethereum/factory';
 import channel from '../ethereum/channel';
@@ -27,6 +27,7 @@ class Home extends Component {
         channelContract: '',
         j: '',
         W_iC_enc:'',
+        oldChannel: false,
         loadingPage: true,
         loading: false,
         errorMessage: '',
@@ -281,7 +282,7 @@ class Home extends Component {
         //this.setState({ loading: true, errorMessage: '' });
 
         try{
-            let c, id;
+            let c, id, previousC;
 
             //If the chain item selected by the user (k) is even
             if(this.state.k % 2 == 0){
@@ -295,9 +296,11 @@ class Home extends Component {
                     c = parseInt(this.state.channels[this.state.ind]['c'],10) - (this.state.k - (this.state.k - 1));
                 }
             }
+
             this.state.channels.map((chn, index) => {
                 if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
                     id = this.state.channels[index]['id'];
+                    previousC = this.state.channels[index]['c'];
                 }
             });
 
@@ -314,20 +317,20 @@ class Home extends Component {
 
 
             //Update parameter c at the NEW channel json-server database:
-            /*fetch('http://localhost:7000/channels/' + id, {
+            fetch('http://localhost:7000/channels/' + id, {
                 method: 'PATCH',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "c": c
+                    "c": c + previousC,
                 })
             })
             .then(res => {
                 return res.json();
             })
             .then(data => {
-            })*/
+            })
 
 
         }catch (err) {
@@ -800,6 +803,17 @@ class Home extends Component {
                     ret = <div><Label as='a' color='blue' horizontal>Liquidation time</Label></div>
                 }else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
                 && Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
+                + parseInt(this.state.channels[index]['Δ_TR'],10))*1000 && this.state.channels[index]['c'] != 0){
+                    ret =   <div><Link to={"/channels/open/" + data[index]['id']}>
+                                    <Button animated='vertical' color='blue'>
+                                        <Button.Content hidden>Transfer from channel</Button.Content>
+                                        <Button.Content visible>
+                                            <Icon name='exchange'/>
+                                        </Button.Content>
+                                    </Button>
+                                </Link></div>
+                }else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
+                && Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
                 + parseInt(this.state.channels[index]['Δ_TR'],10))*1000){
                     ret = <div><Label as='a' color='green' horizontal>Refund time</Label></div>
                 }else if(parseInt(this.state.channels[index]['T_EXP'],10) != NaN && parseInt(this.state.channels[index]['Δ_TD'],10) != NaN && 
@@ -1102,7 +1116,6 @@ class Home extends Component {
 
                         <h3>Channel transference</h3>
                         <Form onSubmit={this.transfer} error={!!this.state.errorMessage}>
-
                             <Form.Field>
                                 <label>Channel ID:</label>
                                 <select value={this.state.channelID} onChange={event =>  {

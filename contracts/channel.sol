@@ -1,4 +1,3 @@
-
 pragma solidity >0.4.23 <0.9.0;
 
 contract factoryChannel {
@@ -51,6 +50,8 @@ contract factoryChannel {
 }
 
 contract channel{
+
+    //Channel variables definition
     uint256 public j;
     address public customer;
 
