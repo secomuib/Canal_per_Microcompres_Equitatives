@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\Usuario\\Documents\\UIB\\SECOM\\micropagaments\\micropayments-channel\\contracts\\channel.sol": {
-      "lastModificationDate": 1643974069522,
-      "contentHash": "b67ef64d05a08750597caea6aefb28dd",
+      "lastModificationDate": 1643912590700,
+      "contentHash": "f7d03870fc2520e481544d5b6bd6d55d",
       "sourceName": "contracts/channel.sol",
       "solcConfig": {
         "version": "0.8.7",
