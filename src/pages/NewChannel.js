@@ -199,7 +199,6 @@ class NewChannel extends Component {
         return(data[index].price)
       }
     })
-    
   }
 
   render() {

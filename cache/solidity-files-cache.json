@@ -30,11 +30,81 @@
       },
       "imports": [],
       "versionPragmas": [
-        ">=0.7.0 <0.9.0"
+        ">0.4.23 <0.9.0"
       ],
       "artifacts": [
         "channel",
         "factoryChannel"
+      ]
+    },
+    "C:\\Users\\Usuario\\Documents\\UIB\\SECOM\\micropagaments\\micropayments-channel\\node_modules\\@openzeppelin\\contracts\\proxy\\Clones.sol": {
+      "lastModificationDate": 1643827201982,
+      "contentHash": "f741efede98f234458f02f818f80c7f3",
+      "sourceName": "@openzeppelin/contracts/proxy/Clones.sol",
+      "solcConfig": {
+        "version": "0.8.7",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Clones"
+      ]
+    },
+    "C:\\Users\\Usuario\\Documents\\UIB\\SECOM\\micropagaments\\micropayments-channel\\contracts\\cloneFactory.sol": {
+      "lastModificationDate": 1643972393830,
+      "contentHash": "8504308330b68cfae55415c2c0a73aec",
+      "sourceName": "contracts/cloneFactory.sol",
+      "solcConfig": {
+        "version": "0.8.7",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">0.4.23"
+      ],
+      "artifacts": [
+        "CloneFactory"
       ]
     }
   }

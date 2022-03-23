@@ -127,7 +127,7 @@ class ChannelShow extends Component {
       let balance;
 
       //In case the channel isn't closed, check the channel smart contract balance
-      if(this.state.channel.State != "closed"){web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
+      if(this.state.channel.State != "closed" && this.state.channel.ethAddress){web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {
           console.log(err)
         } else {

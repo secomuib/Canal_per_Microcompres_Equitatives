@@ -4,6 +4,11 @@
   "sourceName": "contracts/channel.sol",
   "abi": [
     {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -38,7 +43,7 @@
       "name": "createChannel",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "address payable",
           "name": "",
           "type": "address"
         }

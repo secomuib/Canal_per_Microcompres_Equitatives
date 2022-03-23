@@ -31,12 +31,12 @@ console.log('Compiling '+contractPath+'...');
 try {
   const output = JSON.parse(solc.compile(JSON.stringify(input)));
   
-
   // Ensure that build path exists
   fs.ensureDirSync(buildPath);
 
   // For each compiled smart contract, save it to build folder
   for (let contract in output.contracts[CONTRACT_FILE_NAME]) {
+
     console.log('Exporting '+contract+' contract...');
     
     // Save generated compiled output to json file

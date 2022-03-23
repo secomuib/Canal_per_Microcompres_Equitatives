@@ -4,24 +4,8 @@
   "sourceName": "contracts/channel.sol",
   "abi": [
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_c",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_v",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "_customer",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "payable",
+      "inputs": [],
+      "stateMutability": "nonpayable",
       "type": "constructor"
     },
     {
@@ -134,6 +118,42 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_c",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_v",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_customer",
+          "type": "address"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "isBase",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

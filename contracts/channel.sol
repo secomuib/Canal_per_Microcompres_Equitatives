@@ -1,14 +1,35 @@
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity >0.4.23 <0.9.0;
 
-contract factoryChannel{
+contract factoryChannel {
     mapping(address => address[]) public ownerChannels;
     address[] public channels;
     
-    function createChannel( uint256 _c, uint256 _v) public payable returns(address){
-        address newChannel = address((new channel){value: msg.value}(_c, _v, msg.sender));
-        channels.push(newChannel);
-        ownerChannels[msg.sender].push(newChannel);
-        return newChannel;
+    address immutable newChannel;
+
+    constructor() {
+        newChannel = address(new channel());
+    }
+
+    function createChannel( uint256 _c, uint256 _v) public payable returns(address payable){
+        address channelClone = createClone(newChannel);
+        address payable channelAddr = payable (address(channelClone));
+        channel ch = channel(channelAddr);
+        ch.initialize{value: msg.value}(_c,_v, msg.sender);
+        channels.push(channelClone);
+        ownerChannels[msg.sender].push(channelClone);
+        return channelAddr;
+    }
+
+    
+    function createClone(address target) internal returns (address result) {
+        bytes20 targetBytes = bytes20(target);
+        assembly {
+        let clone := mload(0x40)
+        mstore(clone, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000000000000000000000)
+        mstore(add(clone, 0x14), targetBytes)
+        mstore(add(clone, 0x28), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
+        result := create(0, clone, 0x37)
+        }
     }
 
     function getChannels(uint index) public view returns(address){
@@ -29,6 +50,8 @@ contract factoryChannel{
 }
 
 contract channel{
+
+    //Channel variables definition
     uint256 public j;
     address public customer;
 
@@ -42,7 +65,15 @@ contract channel{
     uint256 public TD; //Deposit period
     uint256 public TR; //Refund period
 
-    constructor(uint256 _c, uint256 _v, address _customer) payable {
+    bool public isBase; 
+
+    constructor(){
+        //To ensure that the base contract cannot be initialized
+        isBase = true;
+    }
+
+    function initialize(uint256 _c, uint256 _v, address _customer) external payable{
+        require(isBase == false);
         customer = _customer;
         c = _c;
         v = _v;
