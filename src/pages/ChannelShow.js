@@ -215,7 +215,7 @@ class ChannelShow extends Component {
           </Form.Field>
         {(this.state.channel.State === 'accepted' || this.state.channel.State === 'opened- waiting configuration' || 
         this.state.channel.State === 'opened' ||  this.state.channel.State === 'payment' || 
-        this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof') && (
+        this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof' || this.state.channel.State === 'Reused') && (
         <Form.Field>
             <label>W<sub>0M</sub></label>
             <Input
@@ -225,7 +225,7 @@ class ChannelShow extends Component {
           </Form.Field>)}
           {(this.state.channel.State === 'opened- waiting configuration' || this.state.channel.State === 'opened' || 
           this.state.channel.State === 'payment' || this.state.channel.State === 'send service'|| 
-          this.state.channel.State === 'send proof') && (
+          this.state.channel.State === 'send proof' || this.state.channel.State === 'Reused') && (
             <Form>
             <Form.Field>
             <label>ethAddress</label>
@@ -247,7 +247,7 @@ class ChannelShow extends Component {
           </Form>
           )}
           {(this.state.channel.State === 'opened' || this.state.channel.State === 'payment' || 
-          this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof') && (
+          this.state.channel.State === 'send service'|| this.state.channel.State === 'send proof' || this.state.channel.State === 'send proof') && (
           <Form>
           <Form.Field>
           <label>T<sub>EXP</sub></label>
@@ -273,7 +273,7 @@ class ChannelShow extends Component {
           </Form>
         )}
            {((this.state.channel.State === 'opened' && this.state.channel.messages) || this.state.channel.State === 'payment' || 
-           this.state.channel.State === 'send service' || this.state.channel.State === 'send proof') && (
+           this.state.channel.State === 'send service' || this.state.channel.State === 'send proof' || this.state.channel.State === 'Reused') && (
           <Form>
           <Form.Field>
             <label>W<sub>0C</sub></label>
@@ -324,6 +324,13 @@ class ChannelShow extends Component {
               <Input readOnly value={this.state.user_db[this.state.ID_userChannel]['W_ic']}/>
             </Form.Field>
             )}
+
+            {(this.state.channel.State === 'Reused') && (
+              <Form.Field>
+              <label>ID new channel</label>
+              <Input readOnly value={this.state.channel.newDBEntryID}/>
+            </Form.Field>
+            )}  
           </Form>
             
           )}

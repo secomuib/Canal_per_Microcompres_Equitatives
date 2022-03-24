@@ -207,15 +207,13 @@ class Home extends Component {
 
             let j = await channelContract.methods.j().call();
 
-            console.log('0x'+this.state.W_kM);
-            console.log('0x'+this.state.W_kC);
-            console.log(this.state.k);
-            alert();
             //Execute the smart contract transferDeposit function
             await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, "0x0000000000000000000000000000000000000000")
             .send({ from: this.state.accounts[0] });
             
             let c;
+
+
             //If the chain item selected by the user (k) is even
             if(this.state.k % 2 == 0){
                 c = parseInt(this.state.channels[this.state.ind]['c'],10) - ((parseInt(this.state.k,10) - parseInt(j,10))/2);
@@ -286,24 +284,26 @@ class Home extends Component {
         //this.setState({ loading: true, errorMessage: '' });
 
         try{
-            let c, id, previousC;
+            let c, id, sendC;
 
             //If the chain item selected by the user (k) is even
             if(this.state.k % 2 == 0){
                 c = parseInt(this.state.channels[this.state.ind]['c'],10) - ((this.state.k - parseInt(this.state.j,10))/2);
+                sendC = ((this.state.k - parseInt(this.state.j,10))/2);
             }
             //If the chain item selected by the user (k) is odd
             else{
                 if(parseInt(this.state.k, 10) === parseInt(this.state.j, 10)+1) {
                     c = parseInt(this.state.channels[this.state.ind]['c'],10);
+                    sendC = 0;
                 }else {
                     c = parseInt(this.state.channels[this.state.ind]['c'],10) - (this.state.k - (this.state.k - 1));
+                    sendC = (this.state.k - (this.state.k - 1));
                 }
             }
             this.state.channels.map((chn, index) => {
                 if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
                     id = this.state.channels[index]['id'];
-                    previousC = this.state.channels[index]['c'];
                 }
             });
 
@@ -320,20 +320,20 @@ class Home extends Component {
 
 
             //Update parameter c at the NEW channel json-server database:
-            /*fetch('http://localhost:7000/channels/' + id, {
+            fetch('http://localhost:7000/channels/' + id, {
                 method: 'PATCH',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "c": c + previousC,
+                    "c": c + sendC,
                 })
             })
             .then(res => {
                 return res.json();
             })
             .then(data => {
-            })*/
+            })
 
 
         }catch (err) {
@@ -801,10 +801,12 @@ class Home extends Component {
 
                 if(data[index]['State'] === 'closed'){
                     ret = <div><Label as='a' color='green' horizontal>Channel closed</Label></div>
+                }else if(data[index]['State'] === 'Reused'){
+                    ret =   <div><Label as='a' color='yellow' horizontal>Channel Reused</Label></div>
                 }else if(parseInt(this.state.channels[index]['T_EXP'],10)*1000 < Date.now() && Date.now() < 
                 (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000){
                     ret = <div><Label as='a' color='blue' horizontal>Liquidation time</Label></div>
-                }else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
+                }/*else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
                 && Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
                 + parseInt(this.state.channels[index]['Δ_TR'],10))*1000 && this.state.channels[index]['c'] != 0){
                     ret =   <div><Link to={"/channels/open/" + data[index]['id']}>
@@ -815,7 +817,7 @@ class Home extends Component {
                                         </Button.Content>
                                     </Button>
                                 </Link></div>
-                }else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
+                }*/else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
                 && Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
                 + parseInt(this.state.channels[index]['Δ_TR'],10))*1000){
                     ret = <div><Label as='a' color='green' horizontal>Refund time</Label></div>
@@ -846,7 +848,7 @@ class Home extends Component {
                                     </Button>
                                 </Link></div>
                     }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000){
-                        if(data[index]['messages'] != undefined && data[index]['messages']['i'] === 2*data[index]['c_init']){
+                        if(data[index]['messages'] != undefined && data[index]['messages']['i'] === 2*data[index]['c_init'] && data[index]['c'] !== 0){
                             //if(data[index]['messages']['i'] === 2*data[index]['c_init']){
                                 ret = <div><Label as='a' color='green' horizontal>Deposit ended</Label></div>
                             //}

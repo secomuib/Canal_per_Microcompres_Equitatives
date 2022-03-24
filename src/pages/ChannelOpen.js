@@ -18,7 +18,8 @@ class ChannelOpen extends Component {
     W_LC: '',
     W_0C: '',
     customerInfo: '',
-    channel: '',      
+    channel: '',   
+    channels: '',   
     accounts: '',
     loading: false,
     errorMessage: ''
@@ -176,8 +177,30 @@ class ChannelOpen extends Component {
     try {
       const accounts = await web3.eth.getAccounts();
 
+      //Obtain old channel DB infromation
+      let idOldChannel;
+      //Request all channels information
+      await fetch('http://localhost:7000/channels/', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }).then(res => {
+          return res.json();
+        }).then(data => {
+          this.setState({
+            channels: data,
+          })
+        });
+
+      this.state.channels.map((chn, index) => {
+        if(this.state.channels[index]['ethAddress'] === this.state.ethChAddr){
+            idOldChannel = this.state.channels[index]['id'];
+        }
+      });
+
       let channelContract = channel(this.state.ethChAddr);
-      
+
       //Obtain the time params defined in the smart contract
       let T_EXP = await channelContract.methods.T_exp().call();
       let T_R = await channelContract.methods.TR().call();
@@ -236,6 +259,21 @@ class ChannelOpen extends Component {
                 "W_0C": this.state.W_0C,
                 "ethAddress": this.state.ethChAddr,
                 "State": 'opened'
+            })
+        }).then(res => {
+            return res.json();
+          }).then(data => {
+          });
+
+          // Change the state of the old channel and introduce a poiter to the new DB entry of the channel
+          await fetch('http://localhost:7000/channels/' + idOldChannel, {
+            method: 'PATCH',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "State": 'Reused',
+                "newDBEntryID": id,
             })
         }).then(res => {
             return res.json();
