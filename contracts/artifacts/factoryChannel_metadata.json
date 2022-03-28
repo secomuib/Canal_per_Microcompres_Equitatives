@@ -40,6 +40,60 @@
 						"internalType": "uint256",
 						"name": "_v",
 						"type": "uint256"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "_W_jm",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "_W_jc",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "string",
+						"name": "_S_id",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_T_exp",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_TD",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_TR",
+						"type": "uint256"
+					}
+				],
+				"name": "createChannel",
+				"outputs": [
+					{
+						"internalType": "address payable",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_c",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_v",
+						"type": "uint256"
 					}
 				],
 				"name": "createChannel",
@@ -175,19 +229,11 @@
 		"remappings": []
 	},
 	"sources": {
-		"@openzeppelin/contracts/proxy/Clones.sol": {
-			"keccak256": "0x1cc0efb01cbf008b768fd7b334786a6e358809198bb7e67f1c530af4957c6a21",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://af407aa35f7602a9047a27803bfd98c372479474f77f7aaf833166bdd952f2fd",
-				"dweb:/ipfs/QmZgo1P3RM4Gn5CJKkNRn3tQDHotWPw9H7p7vC1hm4XkZv"
-			]
-		},
 		"contracts/channel.sol": {
-			"keccak256": "0xe786eb489e8af34a3658112d62f0742d1a0371e6e71b7fb3ce05968fd1ec698f",
+			"keccak256": "0xfd45a70a74c48bc0789eed123cdc00fc11dbde48de7a9736d8e8baa976eee03a",
 			"urls": [
-				"bzz-raw://2deae7c9998dfbb85aaa220de00dab0f520bdd5bfbceaf782ef774d7d970af10",
-				"dweb:/ipfs/QmUa7iB9sF3X9PEUdYB5VPDdAd85nFYnbr1fxBKXJLEW21"
+				"bzz-raw://7594dc9c7635fa6faa0bca3084cf562ee87dcb3f40f58152f798262a9636f5d7",
+				"dweb:/ipfs/QmUHrswwaLcd7fB6q8aWMTg8WRw2eGxQrKjSNzctjyMyFw"
 			]
 		}
 	},

@@ -30,6 +30,7 @@ class ChannelOpen extends Component {
     this.setState({ loading: true, errorMessage: '' });
 
     try {
+
       let id = this.props.match.params.id;
 
       const accounts = await web3.eth.getAccounts();
@@ -65,12 +66,19 @@ class ChannelOpen extends Component {
         W_LC: W_LC,
         W_0C: W,
         accounts: accounts
-      })
+      });
+
+      const now = new Date(); 
+      now.setMinutes((now.getMinutes() + 525600) - now.getTimezoneOffset());
+      document.getElementById('TR_open').value = now.toISOString().slice(0,16);
+      document.getElementById('TR_reuse').value = now.toISOString().slice(0,16);
+      document.getElementById('TR_transfer').value = now.toISOString().slice(0,16);
 
     } catch (err) {
       this.setState({ errorMessage: err.message });
     } finally {
-      this.setState({ loading: false });
+      this.setState({ loading: false, 
+        });
     }
   }
   //Function used to submit the parameters selected by the customer and from it open the new channel in normal way
@@ -451,7 +459,7 @@ class ChannelOpen extends Component {
           <Form.Field>
             <label>Δ<sub>TR</sub></label>
             <Input
-              value={this.state.Δ_TR}
+              id = "TR_open"
               type="datetime-local"
               onChange={event => this.setState({ Δ_TR: event.target.value })}
             />
@@ -495,7 +503,7 @@ class ChannelOpen extends Component {
           <Form.Field>
             <label>Δ<sub>TR</sub></label>
             <Input
-              value={this.state.Δ_TR}
+              id = "TR_reuse"
               type="datetime-local"
               onChange={event => this.setState({ Δ_TR: event.target.value })}
             />
@@ -543,7 +551,7 @@ class ChannelOpen extends Component {
           <Form.Field>
             <label>Δ<sub>TR</sub></label>
             <Input
-              value={this.state.Δ_TR}
+              id = "TR_transfer"
               type="datetime-local"
               onChange={event => this.setState({ Δ_TR: event.target.value })}
             />

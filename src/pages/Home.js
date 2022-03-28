@@ -36,7 +36,7 @@ class Home extends Component {
 
     componentDidMount = async () => {
         try {
-
+            
             const accounts = await web3.eth.getAccounts();
             const channelsCount = await factory.methods.getChannelsCount().call();
             
@@ -253,23 +253,47 @@ class Home extends Component {
         this.setState({ loading: true, errorMessage: '' });
 
         try {
-            //Execute the prepare_W function
-            await this.prepare_W();
 
-            let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
+            //Check if the the channel where transfers the microcoins is corresponds to an old channel. At this case, it will be only 
+            //transferable if the old channel is at the refund periodç
+            let ind;
 
-            let j = await channelContract.methods.j().call();
+            console.log(this.state.newChnAddr);
 
-            //Execute the transferDeposit smart contract function, indicating the address of the new smart contract where the funds will be send
-            await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, this.state.newChnAddr)
-            .send({ from: this.state.accounts[0] });
+            this.state.channels.map((chn, index) => {
+                console.log(index)
+                console.log(this.state.channels[index]['ethAddress']); 
+                if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
+                    ind = this.state.channels[index]['id'];
+                    console.log('ind', ind);
+                }
+            });
+            console.log('index', ind)
+            alert('index', ind)
+            
+            if(this.state.channels[ind]['messages'] != undefined && !((parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10))*1000 < Date.now() 
+            && Date.now() < (parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10) 
+            + parseInt(this.state.channels[ind]['Δ_TR'],10))*1000)){
+                alert('The channel cannot be transferred. The destination channel is not in the refund period');
+            }else{
+                //Execute the prepare_W function
+                await this.prepare_W();
 
-            this.setState({
-                j: j
-            })
+                let channelContract = channel(this.state.channels[this.state.ind]['ethAddress'])
 
-           //Update parameter c at the json-server data base:
-            this.updateC();
+                let j = await channelContract.methods.j().call();
+
+                //Execute the transferDeposit smart contract function, indicating the address of the new smart contract where the funds will be send
+                await channelContract.methods.transferDeposit("0x" + this.state.W_kM, "0x" + this.state.W_kC, this.state.k, this.state.newChnAddr)
+                .send({ from: this.state.accounts[0] });
+
+                this.setState({
+                    j: j
+                })
+
+                //Update parameter c at the json-server data base:
+                this.updateC();
+            }
 
         } catch (err) {
             this.setState({ errorMessage: err.message });

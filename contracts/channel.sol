@@ -20,6 +20,18 @@ contract factoryChannel {
         return channelAddr;
     }
 
+    function createChannel( uint256 _c, uint256 _v, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _T_exp, 
+        uint256 _TD, uint256 _TR) public payable returns(address payable){
+        
+        address channelClone = createClone(newChannel);
+        address payable channelAddr = payable (address(channelClone));
+        channel ch = channel(channelAddr);
+        ch.initialize{value: msg.value}(_c,_v, msg.sender, _W_jm, _W_jc, _S_id, _T_exp, _TD, _TR);
+        channels.push(channelClone);
+        ownerChannels[msg.sender].push(channelClone);
+        return channelAddr;
+    }
+
     
     function createClone(address target) internal returns (address result) {
         bytes20 targetBytes = bytes20(target);
@@ -81,6 +93,29 @@ contract channel{
         if(msg.value != 0){
             require(msg.value == _c*_v, 'balance error');
         }
+    }
+
+    function initialize(uint256 _c, uint256 _v, address _customer, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, 
+    uint256 _T_exp, uint256 _TD, uint256 _TR) external payable{
+        require(isBase == false);
+        require(msg.value == _c*_v, 'balance error');
+        require((T_exp == 0 && TD == 0 && TR == 0 && (T_exp + TD) < block.timestamp) || ((T_exp + TD) < block.timestamp 
+        && (block.timestamp < (T_exp + TD + TR))));
+        
+        customer = _customer;
+        c = _c;
+        v = _v;
+
+        j = 0;
+        
+        W_jm = _W_jm;
+        W_jc = _W_jc;
+        S_id = _S_id;
+        c = _c;
+        v = _v;
+        T_exp = _T_exp;
+        TD = _TD;
+        TR = _TR;
     }
     
     //Configuration channel params function
