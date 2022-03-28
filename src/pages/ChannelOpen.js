@@ -73,6 +73,9 @@ class ChannelOpen extends Component {
       document.getElementById('TR_open').value = now.toISOString().slice(0,16);
       document.getElementById('TR_reuse').value = now.toISOString().slice(0,16);
       document.getElementById('TR_transfer').value = now.toISOString().slice(0,16);
+      this.setState({
+        Δ_TR: document.getElementById('TR_open').value
+      })
 
     } catch (err) {
       this.setState({ errorMessage: err.message });
@@ -92,9 +95,13 @@ class ChannelOpen extends Component {
       let T_D = (new Date(this.state.Δ_TD).getTime() / 1000) - T_EXP; 
       let T_R = (new Date(this.state.Δ_TR).getTime() / 1000) - T_EXP - T_D; 
 
+      console.log('c ', this.state.channel.c, 'v ', parseInt(this.state.channel.service_price,10), 
+      'W_0M ', "0x" + this.state.channel.W_0M, 'W_0C ', "0x" + this.state.W_0C, 'S_id ',this.state.channel.S_id, 'T_EXP ', T_EXP, 'T_D ', T_D, 'T_R ', T_R);
+
       //Smart contract deployment: (v = service_price)
-      const addressChannel = await factory.methods.createChannel(this.state.channel.c, parseInt(this.state.channel.service_price,10))
-            .send({ from: accounts[0], value: this.state.channel.c * parseInt(this.state.channel.service_price,10), gas: 6000000 });
+      const addressChannel = await factory.methods.createChannel(this.state.channel.c, parseInt(this.state.channel.service_price,10), 
+      "0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, T_EXP, T_D, T_R).send({ from: accounts[0], 
+        value: this.state.channel.c * parseInt(this.state.channel.service_price,10), gas: 6000000 });
       
       //Obtain the channel SC address
       const addresses = await factory.methods.getOwnerChannels(accounts[0]).call();
@@ -105,8 +112,8 @@ class ChannelOpen extends Component {
         //Obtain the channel smart contract of the addressChannel address
         let channelContract = channel(channelAddr);
         //Execute the setChannelParams of the channel SC
-        await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
-        .send({ from: accounts[0] });
+        /*await channelContract.methods.setChannelParams("0x" + this.state.channel.W_0M, "0x" + this.state.W_0C, this.state.channel.S_id, this.state.channel.c, parseInt(this.state.channel.service_price,10), T_EXP, T_D, T_R)
+        .send({ from: accounts[0] });*/
 
         let id = this.props.match.params.id;
 
