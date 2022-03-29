@@ -144,7 +144,7 @@ class NewChannel extends Component {
           console.log('fetch',data);  
         });
 
-        //this.props.history.push('/');
+        this.props.history.push('/');
     } catch (err) {
         this.setState({
           errorMessage: err.message

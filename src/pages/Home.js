@@ -255,7 +255,7 @@ class Home extends Component {
         try {
 
             //Check if the the channel where transfers the microcoins is corresponds to an old channel. At this case, it will be only 
-            //transferable if the old channel is at the refund periodç
+            //transferable if the old channel is at the refund period
             let ind;
 
             console.log(this.state.newChnAddr);
@@ -265,16 +265,34 @@ class Home extends Component {
                 console.log(this.state.channels[index]['ethAddress']); 
                 if(this.state.channels[index]['ethAddress'] === this.state.newChnAddr){
                     ind = this.state.channels[index]['id'];
+                    ind = index
                     console.log('ind', ind);
                 }
+                console.log('ind ',ind)
             });
-            console.log('index', ind)
-            alert('index', ind)
+            console.log(this.state.channels[ind]);
+            console.log(this.state.channels[ind]['messages'] != undefined);
+            console.log((parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10))*1000)
+            console.log((parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10) 
+            + parseInt(this.state.channels[ind]['Δ_TR'],10))*1000);
+            console.log(Date.now());
+
+            console.log((parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10))*1000 < Date.now());
+            console.log(Date.now() < (parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10) 
+            + parseInt(this.state.channels[ind]['Δ_TR'],10))*1000)
             
+            console.log(!((parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10))*1000 < Date.now() 
+            && Date.now() < (parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10) 
+            + parseInt(this.state.channels[ind]['Δ_TR'],10))*1000));
+
             if(this.state.channels[ind]['messages'] != undefined && !((parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10))*1000 < Date.now() 
             && Date.now() < (parseInt(this.state.channels[ind]['T_EXP'],10) + parseInt(this.state.channels[ind]['Δ_TD'],10) 
             + parseInt(this.state.channels[ind]['Δ_TR'],10))*1000)){
-                alert('The channel cannot be transferred. The destination channel is not in the refund period');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text:'The channel cannot be transferred. The destination channel is not in the refund period'
+                });
             }else{
                 //Execute the prepare_W function
                 await this.prepare_W();
@@ -624,7 +642,10 @@ class Home extends Component {
                 })
         
         }else{
-            alert('The micro coin is not valid!')
+            Swal.fire({
+             icon: 'error',
+             title: 'The micro coin is not valid!'
+            })
         }
 
     }
@@ -769,7 +790,10 @@ class Home extends Component {
             })
 
         }else{ 
-            alert ('Error!')
+            Swal.fire ({
+                icon: 'error',
+                text:'Error!'
+            })
         }
     }
 
@@ -872,7 +896,9 @@ class Home extends Component {
                                     </Button>
                                 </Link></div>
                     }else if(data[index]['State'] === 'opened' && Date.now() < parseInt(this.state.channels[index]['T_EXP'],10)*1000){
-                        if(data[index]['messages'] != undefined && data[index]['messages']['i'] === 2*data[index]['c_init'] && data[index]['c'] !== 0){
+                        
+                        
+                        if(data[index]['messages'] != undefined && data[index]['messages']['i'] == 2*data[index]['c_init'] /*&& data[index]['c'] == 0*/){
                             //if(data[index]['messages']['i'] === 2*data[index]['c_init']){
                                 ret = <div><Label as='a' color='green' horizontal>Deposit ended</Label></div>
                             //}

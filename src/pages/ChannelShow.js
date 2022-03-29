@@ -90,28 +90,37 @@ class ChannelShow extends Component {
               console.log('ID_userChannel ', ID_userChannel);
           }
         });
-      //In case the user connected is the merchant, the users has exchanged some messages and the channel is not closed 
-      //Obtain the merchant privateKey from their DB and decrypt the m1 and m3 messages. 
-      if(accounts[0] === this.state.channel['merchant'] && this.state.channel['messages'] && this.state.channel.State != "closed"){
-        let M_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
-        M_Private_Key = Buffer.from(M_Private_Key, 'hex');
 
-        M1_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m1'], 'hex'));
-        M1_dec = M1_dec.toString();
+        console.log(this.state.channel['merchant'])
+        console.log(this.state.channel['messages'] )
+        console.log(this.state.channel.State)
+        //In case the user connected is the merchant, the users has exchanged some messages and the channel is not closed 
+        //Obtain the merchant privateKey from their DB and decrypt the m1 and m3 messages. 
+        if(accounts[0] == this.state.channel['merchant'] && this.state.channel['messages'] && this.state.channel.State != "closed"){
+          let M_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
+          
+          M_Private_Key = Buffer.from(M_Private_Key, 'hex');
 
-        M3_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m3'], 'hex'));
-        M3_dec = M3_dec.toString();
+          M1_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m1'], 'hex'));
+          M1_dec = M1_dec.toString();
 
-      }
-      //in case the usert connected is the customer and the users has exchanged some messages, obtain the customer private key and 
-      //decrypt the m2 message.
-      else if(accounts[0] === this.state.channel['customer'] && this.state.channel['messages']){
-        let C_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
-        C_Private_Key = Buffer.from(C_Private_Key, 'hex');
+          if(this.state.channel['messages']['m3']){
+            M3_dec = await ecies.decrypt(M_Private_Key, Buffer.from(this.state.channel['messages']['m3'], 'hex'));
+            M3_dec = M3_dec.toString();
+          }
+          
+        }
+        //in case the usert connected is the customer and the users has exchanged some messages, obtain the customer private key and 
+        //decrypt the m2 message.
+        else if(accounts[0] === this.state.channel['customer'] && this.state.channel['messages']){
+          if(this.state.channel['messages']['m2']){
+            let C_Private_Key = this.state.user_db[ID_userChannel]['Private Key'];
+            C_Private_Key = Buffer.from(C_Private_Key, 'hex');
 
-        M2_dec = await ecies.decrypt(C_Private_Key, Buffer.from(this.state.channel['messages']['m2'], 'hex'));
-        M2_dec = M2_dec.toString();
-      }
+            M2_dec = await ecies.decrypt(C_Private_Key, Buffer.from(this.state.channel['messages']['m2'], 'hex'));
+            M2_dec = M2_dec.toString();
+          }
+        }
         this.setState({
           T_EXP: T_EXP_format,
           Δ_TD: Δ_TD_format,
@@ -123,11 +132,12 @@ class ChannelShow extends Component {
           ID_userChannel: ID_userChannel
         });
       }
-
+      
       let balance;
 
       //In case the channel isn't closed, check the channel smart contract balance
-      if(this.state.channel.State != "closed" && this.state.channel.ethAddress){web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
+      if(this.state.channel.State != "closed" && this.state.channel.ethAddress){
+        web3.eth.getBalance(this.state.channel.ethAddress, function(err, result) {
         if (err) {
           console.log(err)
         } else {
