@@ -22,7 +22,6 @@ contract factoryChannel {
 
     function createChannel( uint256 _c, uint256 _v, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _T_exp, 
         uint256 _TD, uint256 _TR) public payable returns(address payable){
-        
         address channelClone = createClone(newChannel);
         address payable channelAddr = payable (address(channelClone));
         channel ch = channel(channelAddr);
@@ -31,6 +30,7 @@ contract factoryChannel {
         ownerChannels[msg.sender].push(channelClone);
         return channelAddr;
     }
+    
 
     
     function createClone(address target) internal returns (address result) {

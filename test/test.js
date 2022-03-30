@@ -54,7 +54,7 @@ describe("Channel contract", function (){
     const value = (_c*_v).toString();
 
     //Create a new channel owned by user1, deployed from the channel smart contract
-    const ch = await channelFactory.connect(user1).createChannel(_c, _v, { value: value});
+    await channelFactory.connect(user1)["createChannel(uint256,uint256)"](_c, _v, { value: value});
 
     const user1Channels = await channelFactory.getOwnerChannels(user1.address);
     const channelAddress = await channelFactory.getChannels(0);
@@ -99,7 +99,7 @@ describe("Channel contract", function (){
 
     //Execute setChannelParams()
     await channel1.connect(user1).setChannelParams('0x'+W_0M, '0x'+W_0C, 'Access to a newspaper for one day', c, v, T_exp, T_D, T_R);
-  })
+  });
 
 
   it("Review channel params configuration", async function(){
@@ -185,7 +185,7 @@ describe("Channel contract", function (){
     const _c = 1;
     const _v = ethers.utils.parseEther("0.002");
 
-    await channelFactory.connect(user2).createChannel(_c, _v);
+    await channelFactory.connect(user2)["createChannel(uint256,uint256)"](_c, _v);
     
     const user2Channels = await channelFactory.getOwnerChannels(user2.address);
 
@@ -277,7 +277,7 @@ describe("Channel contract", function (){
     const value = (_c*_v).toString();
 
     //Create a new channel owned by user1
-    await channelFactory.connect(user1).createChannel(_c, _v, { value: value});
+    await channelFactory.connect(user1)["createChannel(uint256,uint256)"](_c, _v, { value: value});
 
     const user1Channels = await channelFactory.getOwnerChannels(user1.address);
     const channelAddress = await channelFactory.getChannels(2);
@@ -352,6 +352,52 @@ describe("Channel contract", function (){
     expect(await ethers.provider.getBalance(channel3.address)).to.be.equal((c*v).toString());
     expect(await channel3.connect(user1).W_jm()).to.not.be.equal('0x'+W_0M);
     expect(await channel3.connect(user1).W_jm()).to.be.equal('0x'+W_0M_3);
+  })
+  
+  it("CreateChannel and cofigure channel parameters in a single transaction", async function(){
+    //CHANNEL PARAMETERS DEFINITION
+    const _c = 2;
+    const _v = ethers.utils.parseEther("0.002");
+    const value = (_c*_v).toString();
 
+    //Create W_LM, W_LC and respectives W_0M, W_0C
+    W_LM = Buffer.from(elliptic.rand(16)).toString("hex");
+    W_0M = W(W_LM, _c, 0);
+
+    W_LC = Buffer.from(elliptic.rand(16)).toString("hex");
+    W_0C = W(W_LC, _c, 0);
+    
+    //Define T_exp = now + 15s
+    T_exp = Date.now() + 15000; // Date.now() represents the hour in milliseconds since 00:00:00 UTC of 1 of January of 1970. 
+    T_exp = Math.trunc(T_exp / 1000) // Solidity timestamp units are in seconds.
+
+    //Define T_D = 10s --> it would be T_exp + TD
+    T_D = 10;
+
+    //Define T_R = 30s --> it would be T_exp + TD + TR
+    T_R = 30;
+
+    //Create a new channel owned by user1, deployed from the channel smart contract using a single transaction to do the open and the parameters
+    //configuration
+    await channelFactory.connect(user1)["createChannel(uint256,uint256,bytes32,bytes32,string,uint256,uint256,uint256)"](_c, _v, '0x' + W_0M, '0x' + W_0C, 'Access to a newspaper for one day', T_exp, T_D, T_R, { value: value});
+
+    const user1Channels = await channelFactory.getOwnerChannels(user1.address);
+    const channelAddress = await channelFactory.getChannels(3);
+    
+    expect(user1Channels[2]).to.not.be.undefined;
+    expect(user1Channels[2]).to.be.equal(channelAddress);
+
+    //Review user1Channel customer: 
+    const channelSC = await ethers.getContractFactory('channel');
+    channel1 = channelSC.attach(user1Channels[2]);
+
+    expect(await channel1.connect(user1).customer()).to.be.equal(user1.address);
+
+    //Review user1Channel parameters (c & v)
+    expect(await channel1.connect(user1).c()).to.be.equal(_c);
+    expect(await channel1.connect(user1).v()).to.be.equal(_v);
+
+    //Review user1Channel balance
+    expect(await ethers.provider.getBalance(channel1.address)).to.be.equal((_c*_v).toString());
   })
 })
