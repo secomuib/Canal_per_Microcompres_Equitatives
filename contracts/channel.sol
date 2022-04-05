@@ -22,6 +22,7 @@ contract factoryChannel {
 
     function createChannel( uint256 _c, uint256 _v, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _T_exp, 
         uint256 _TD, uint256 _TR) public payable returns(address payable){
+        
         address channelClone = createClone(newChannel);
         address payable channelAddr = payable (address(channelClone));
         channel ch = channel(channelAddr);
@@ -30,7 +31,6 @@ contract factoryChannel {
         ownerChannels[msg.sender].push(channelClone);
         return channelAddr;
     }
-    
 
     
     function createClone(address target) internal returns (address result) {
@@ -188,10 +188,11 @@ contract channel{
     }
     
     //Function to close the channel and return the balance stored to the channel owner (customer), also it's made the selfdestruct of the smart contract
-    function channelClose() public payable onlyOwner{
+    function channelClose(address refundAddress) public payable onlyOwner{
         //T_exp + TD < now < T_exp + TD + TR
         require((T_exp + TD < block.timestamp), "Time error");
-        selfdestruct(payable(msg.sender));
+
+        selfdestruct(payable(refundAddress));
     }
     
     
