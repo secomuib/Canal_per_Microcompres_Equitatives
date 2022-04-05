@@ -74,7 +74,7 @@
       "c_init": 1,
       "service_price": 1,
       "S_id": 1,
-      "State": "opened",
+      "State": "Reused",
       "id": 2,
       "W_0M": "6e779410fba6c61118c5b5a264f405ed739f9a5bde89c2ddce82965f0264408f",
       "M Public Key": "0417f67b8af0ba9fae4bdd2fb2f5cfcebe5adfee8d316898ca535d23596b24386c866691443ca4650eccb21447ca48dc917a32a4b611fcee3a006f2026fab15c2b",
@@ -89,7 +89,8 @@
         "m1": "048a097d81db1edd681310d7a991df6ec9298da479e487851c6483e6f8caefe8d1e6b81da34908c9cb0e608ea9231e2a643b59af48fe1aa398ed66ca3b54163c9cb17e06d8764217dddf82fa08d59e6eb44dce07a99291eb43c84dc4ca32a6333d9b48064d2f24f69847c9c1702573a4c31c393883360541f5f785d251773c07b3079aba5e1688db944628436385dc164e5183ef265602c940b3962e92d698d916c83974062ec6787327f05c0f6cd4dfc3",
         "m2": "04d3f8edd19ffd454a41cae7dca0ad06b64a50a51856282c152329c1fbc9c45bf6b38166f45054daee342b76b6a6bf1395cdbd6ceb1702abaa2a25b6675d317bf50669f08e8389e91f90dbe591b658d8c827f0f5a0ad30423c8eaae043f252bd7d197e70d93fe6d940d286d4d5d3ac38b109757d348c286d5c4c94739c94970d254250f04540f9836b567630c7e8",
         "m3": "048a6c32bd7c8b14463f20f79dd5d6120530826f9247fe41da93a10d89a04fd480bd6765d2813b8d36fea05adf5a85ecaaace093146f1986cd4664bdf94566e9074161d729b91215aab8375a9fb39a5a920b93a24e1e28855ee4663853e5105b8f110dea27204962d07f8a9f9608446e36362c5d3fc0255f474228ca6c17d8c1b5cf7b9883968d9cb3208f6bc0ad68d9d3ba4a3f2ce27f119a5a9daff980b947c9eb746d5a81592beb7076a6573943d377"
-      }
+      },
+      "newDBEntryID": "5"
     },
     {
       "customer": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
@@ -115,6 +116,76 @@
         "m1": "04db055f238c2e7943e306187f9329bc0f853f0cab67a7074bcf34c20bed38a9669f9c45684adb6aeaa36aaf1da9a2be09f537a5ac724dcffddde788a76e43fd2ba1cc8d56a2bca8596a1fefc2be664f5981af5eeb9e3255be2431bf79c3c5cde07de36c9904d1ef627469a3b6009acd83ddbe705080c0b81b67e0a37d345c1e37a855794fa23e343ca7e79453479347997a41c4b39c6d6a7822d515e02f7be76e90b1cd0772624c33ede3be619f0cc249",
         "m2": "049a43267ac7679ebca13eb9ffa2556fdc03afb3001da3f78eadd77bff50941b3b323b18205100e591d66030f6537d5d9b639ff21a2cf0879f0a8520ec74166a3984b8908bdc6ac8f36ec2d559a32785d5f4d0307815fb733329d8f729a461824ac7803bd159f61c32c316da63edd24c9ccf4c254d50d39075fe054a73897598052fc751962c773759af118f1b520b50e244f6ed52031d3c9946",
         "m3": "04c1e0d0b3b495f3a3ac7f8832e36b99439b53e8f216ba65d78727a45e5f77d4211f438c3ec98c34633704d64dbffb37f4509174c5e1eda3691db633ad683682c7721fcf5d5b289e4e8b4a75695cb89faa387b8e838e78dff02c0263d259a72ebfbfdbfa5dff8ecff90f5968782ff597b82b7bc4b04d85744f4026d65dfbb1da58bf207865e08c74db29a62d04c8848a15a8d8902fc0d843804bd62ee99285bab0b347253937f081c5f11fd04b4ada53b5"
+      }
+    },
+    {
+      "customer": "0x70F6714dCa2f53A17558C5dff99D572959f77D9c",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 2,
+      "service": "Access to a newspaper article",
+      "c": 0,
+      "c_init": 1,
+      "service_price": 1,
+      "S_id": 1,
+      "State": "closed",
+      "id": 4,
+      "W_0M": "0d91aa1641d69d41f6d30d59bf46e20aa0ef84e8a40d0402ceed3c3c1b95a906",
+      "M Public Key": "0449949e7d15e7fea14eef5565ca4f6e833d8ec2e4761a36d28ee98d5444fe0d36b30904d02543dd0257efccad7257adc5d27ec16df222633a5cfc4baa029a7b79",
+      "C Public Key": "048cbc0dcec118c874048177c59eacb60999123d2e3eee184375b37b8e1a6403286bfade1ee2b4ec2e22708ca9bd6aa16f0237447e4b85ea15e89fb634d36dd375",
+      "T_EXP": 1649155800,
+      "Δ_TD": 60,
+      "Δ_TR": 31535880,
+      "W_0C": "ea17b6ce07e5a9ee4e6ed5edddd492a2e09b833f48568fc325882b435c407377",
+      "ethAddress": "0xC5337E4B569737BE034794C4892Cb9F15a67be33"
+    },
+    {
+      "customer": "0x70F6714dCa2f53A17558C5dff99D572959f77D9c",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "customer_channel_id": 3,
+      "service": "Access to a documentary film for 24 hours",
+      "c": 0,
+      "c_init": 1,
+      "service_price": 1,
+      "S_id": 5,
+      "State": "opened",
+      "id": 5,
+      "W_0M": "6838c732faee64598f4e72368b2272bdcf14c27144aa703693decd10ef905ae3",
+      "M Public Key": "04531d606446c8d62a2d6d442afa3577f7d571a9ca845d4201be3570cd37d961e0fcfbb35af7444a9d758752023bc5b798ff12d60db5858b00520154fb96b06a8b",
+      "C Public Key": "0470a0ecb2f146db5625a983e1b5e50abc6b30084c8ca34e41ff3dd652fce65fd30e13e62374cebd876f5ef09e639f37f5abe1489c75f70892fdd15f3e6e10af96",
+      "T_EXP": 1649156220,
+      "Δ_TD": 120,
+      "Δ_TR": 31535700,
+      "W_0C": "1a9527c28c577a959996efe8a61cf5e10e19f5de5432ceb56ff7fa9ed14486c3",
+      "ethAddress": "0xfC287Ae450363f74dd4293C9CB1DAF6DeE155543",
+      "messages": {
+        "i": 2,
+        "m1": "04b66da843125949fc2af41b3fb37e7944a760dba4a9c5fe38c387c69d1a0216dbad996722d11e457c0afad35d5a734f4b9bf7f282669b505f10bbe4b8f130e0361f25138c107b60f5966881dd0e45f2c99942f651e40fbe0f35447d67123757b5e60fdff87757bcfa55eeb843608c1d485bb72a46872691c7843789e21f7bb21ddedd24e5d6231ae6cef7dab883696f0667cff0584d92b2bf0813ca8d2c7414501fd6b2607b99b1007897a74ac84a7a7d",
+        "m2": "0442e4dea712c5d57248174752edd264abb9bb54616483aefb463f8d12cf49c08ef73077c0de4541a2d5de9da45f62edf027a444354a5fc26e4ed4e9bbda50119339699f683e389c9e9c19ab5af14d15520674bcf9aecf01327298f9cf352e8a045d93df4132bd631f17b2cf72d9f6bfd5659766d2e8567aca8b2dbb728a9be8a382e43a42a3ec29568f44e49878caefefb799f1d3e1dfebe4f7",
+        "m3": "04269e594369bdf01c84da9d87755305f585baa5403248ba6bec4e3d8c148b4e5850554f7daf0a9d2edb5e0a1426be775f9d6790f516f61524d33d7722053710d6b0c8c93ed7498b53e2144ccf54c37346c5191924073a2ba05a97e4e92a6d9b7a3ca208d5c151ee87375295c8bf3520744d167a2bcfdb79cbee9de60333c29310d5549df295a3e356c38683dbc972a82a5b1e5824e1f96b8c657e61b0a6b52cc58f8ba73d8190f427f26af8bb47ed5327"
+      }
+    },
+    {
+      "customer": "0x70F6714dCa2f53A17558C5dff99D572959f77D9c",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "customer_channel_id": 4,
+      "service": "Access to a newspaper article",
+      "c": 1,
+      "c_init": 1,
+      "service_price": 1,
+      "S_id": 1,
+      "State": "payment",
+      "id": 6,
+      "W_0M": "648861affe267be78d1b5ec5f1ff726d3e336821f9ec3f9abc57e7fc69637be4",
+      "M Public Key": "0468cfabe06091b16ae034d773cb6126a57df67a4fc0bad57ebd936d9f45f389fcb0ad8283251a4d6c7724c8ae29f2b67b036ff237a3ad17c5eb602e2cc18385d7",
+      "C Public Key": "049c0370ad819f7e83e98a4659be5b2bc22721f3531f1c39fd4ec5a152f1a255390f82478b0aec5a8f528ed6109cbb3947240dbb2f69287f545ceab7eb27ff36f3",
+      "T_EXP": 1649156640,
+      "Δ_TD": 120,
+      "Δ_TR": 31535760,
+      "W_0C": "57f63457abaae9a72ed1ba40d17de23cc6d058ec38d8abc6c205ebb5fbc46506",
+      "ethAddress": "0x12EfD11c1896a002b75b50D3681f6FAE9d41c354",
+      "messages": {
+        "i": 1,
+        "m1": "044a56120758752d2f44fe7f6c5cee50394bf5359612a67b0d9d928f71067eb825908d68da441a19a79a4367a2688c89bffe6981539194e55e23a98767e5503e4f35b3eeba5c873ecd8cee91966c813b60ae40005f80059f79e507616052b90f3fa9c4692e3581c4fb50e4327a5bfafee27a3fab5264383934e7fadd7b3e771a8b2cfc5293f0cbba5ad12a66bbe4575243d03b6890bba664f9d11eb46c139503d83bbfb05f92b76a821338523746b3286c"
       }
     }
   ],
@@ -153,6 +224,30 @@
       "channelID": "3",
       "Public Key": "04e5c9f790a19e3d77778b6c86ce3d0fbf976cccf4977581bbe3fc2a415bc1afa24a4f4385eaa7c056660ad36cb6e2ea9bb698b886389c1b781b63a93c5db2f480",
       "Private Key": "db48866213124ef45a0f70b7a3ac36868bc9842aa5c6fb2d4af98e88aa1ca5f5"
+    },
+    {
+      "channel": "",
+      "customer": "0x70F6714dCa2f53A17558C5dff99D572959f77D9c",
+      "service": "Access to a newspaper article",
+      "S_id": 1,
+      "channelID": 4,
+      "id": 4,
+      "W_LM": "e7615c70451dd942b0e5c52b2d3aa31b",
+      "j": 0,
+      "Public Key": "0449949e7d15e7fea14eef5565ca4f6e833d8ec2e4761a36d28ee98d5444fe0d36b30904d02543dd0257efccad7257adc5d27ec16df222633a5cfc4baa029a7b79",
+      "Private Key": "f7ba8b5fd6d52586a726102646778ed448e5f866d1a0a2cf0ce98848b96e17ff"
+    },
+    {
+      "channel": "",
+      "customer": "0x70F6714dCa2f53A17558C5dff99D572959f77D9c",
+      "service": "Access to a newspaper article",
+      "S_id": 1,
+      "channelID": 6,
+      "id": 5,
+      "W_LM": "f54c0ab808a89b4fb8a058746215fa0d",
+      "j": 0,
+      "Public Key": "0468cfabe06091b16ae034d773cb6126a57df67a4fc0bad57ebd936d9f45f389fcb0ad8283251a4d6c7724c8ae29f2b67b036ff237a3ad17c5eb602e2cc18385d7",
+      "Private Key": "53d918ae4b50ee39c244873e2d591f236c34f1957742a741fd664fac3c3af449"
     }
   ],
   "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec": [
@@ -181,6 +276,19 @@
       "Public Key": "045f94bbaf978aa5318a1caedd98ac7d6ea07abcab81497f2e443c52ae36e5e4f44e02268689ddabfb7e68d4eb3ec448e424d3753747179bfa64ad8cebb4b09104",
       "Private Key": "0391c19fa47485969c10f7b13a431eea4982982d2df21992e32c8df562bb0e34",
       "W_ic": "9ca9da5c29594f15cd019bcf5b4bb615a3a8cba37582f9429495305b7585f124"
+    },
+    {
+      "channel": "",
+      "customer": "0x70F6714dCa2f53A17558C5dff99D572959f77D9c",
+      "service": "Access to a documentary film for 24 hours",
+      "S_id": 5,
+      "channelID": 5,
+      "id": 3,
+      "W_LM": "7498fc65fcd4d8ce4afa322482028fce",
+      "j": 2,
+      "Public Key": "04531d606446c8d62a2d6d442afa3577f7d571a9ca845d4201be3570cd37d961e0fcfbb35af7444a9d758752023bc5b798ff12d60db5858b00520154fb96b06a8b",
+      "Private Key": "3f9135115cfde65a004cf71cc6cfff4cf4a9d31b2889fc5f36ea7acaf03fda6d",
+      "W_ic": "21a3155a3cef24d114d0e9d154b5bbe67e5304d29afdf37ae2539c0b0fda453c"
     }
   ],
   "0x70F6714dCa2f53A17558C5dff99D572959f77D9c": [
@@ -194,6 +302,39 @@
       "channelID": "2",
       "Public Key": "04b746f0d6ef367c18889f2a055462cb51574b0206b0fca5826b875199d1e8fac19465ebabe6dc7eb80dfb5c2579259600a614b7bfcaf9f3047f36ba83503b5f4c",
       "Private Key": "ce2f82bcaaf777aa98117c2e50f6ab3a6ed049f2710588f4bd74cea254c932de"
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper article",
+      "S_id": 1,
+      "id": 2,
+      "W_LC": "731d79ceda0c0ff2e43de2624f1b8f2a",
+      "channelID": "4",
+      "Public Key": "048cbc0dcec118c874048177c59eacb60999123d2e3eee184375b37b8e1a6403286bfade1ee2b4ec2e22708ca9bd6aa16f0237447e4b85ea15e89fb634d36dd375",
+      "Private Key": "26abe2cc9e8b95ef97a07760744d14394a246478e77bf642a722b2040bcda3b3"
+    },
+    {
+      "channel": "",
+      "merchant": "0x3118A7E49C42fe7D53a12f1485744a35Fcf5B0Ec",
+      "service": "Access to a documentary film for 24 hours",
+      "S_id": 5,
+      "id": 3,
+      "W_LC": "693fbfad2d315a4b6cb4994b7c09e85a",
+      "channelID": "5",
+      "Public Key": "0470a0ecb2f146db5625a983e1b5e50abc6b30084c8ca34e41ff3dd652fce65fd30e13e62374cebd876f5ef09e639f37f5abe1489c75f70892fdd15f3e6e10af96",
+      "Private Key": "a748dde288b942e87482a5ffd8c6be8504191150dc714b067e7bc76c6aa542af"
+    },
+    {
+      "channel": "",
+      "merchant": "0xb24ed1Fa8b2b8b9103516A1a2d49bb2B39d6926b",
+      "service": "Access to a newspaper article",
+      "S_id": 1,
+      "id": 4,
+      "W_LC": "ac9cfcea0fcf99a2df10c565f730606b",
+      "channelID": "6",
+      "Public Key": "049c0370ad819f7e83e98a4659be5b2bc22721f3531f1c39fd4ec5a152f1a255390f82478b0aec5a8f528ed6109cbb3947240dbb2f69287f545ceab7eb27ff36f3",
+      "Private Key": "ce7acf7f95143fca37f87457ff85f393129490ad0fad4db4026b9384795e1dac"
     }
   ],
   "0x603dD1801a453c626fF3FA9658B320DaF4FCa3E0": []

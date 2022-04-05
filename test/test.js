@@ -131,13 +131,13 @@ describe("Channel contract", function (){
     //Calculate W_kc
     let W_kc = W(W_LC, c, k);
 
-    //Execute liquidation
+    //Execute redeem
     expect(await channel1.connect(user2).c()).to.be.equal(2);
     const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
     expect(await channel1.connect(user2).c()).to.be.equal(2);
   })
 
-  it("Channel liquidation", async function () {
+  it("Channel redeem", async function () {
     //Consider that k = 2: 
     const k = 2; 
     let c = await channel1.connect(user1).c();
@@ -148,20 +148,20 @@ describe("Channel contract", function (){
     //Calculate W_kc
     let W_kc = W(W_LC, c, k);
 
-    //Execute liquidation
+    //Execute redeem
     const transfer = await channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000');
 
-    //Try to execut a bad liquidation with a bad k (repeating the same)
+    //Try to execut a bad redeem with a bad k (repeating the same)
     await expect( channel1.connect(user2).transferDeposit('0x'+W_km, '0x'+W_kc, k, '0x0000000000000000000000000000000000000000')).to.be.reverted;
 
-    //Try to execut a bad liquidation with a bad W_km
-    //Generate a random W_LM element that will be sent to the liquidation method
+    //Try to execut a bad redeem with a bad W_km
+    //Generate a random W_LM element that will be sent to the redeem method
     let W_LM_rand = Buffer.from(elliptic.rand(16)).toString("hex");
     W_LM_rand = W(W_LM_rand, c, 4);
     await expect( channel1.connect(user2).transferDeposit('0x'+W_LM_rand, '0x'+W_kc, 4, '0x0000000000000000000000000000000000000000')).to.be.reverted;
 
-    //Try to execut a bad liquidation with a bad W_kc
-    //Generate a random W_LC element that will be sent to the liquidation method
+    //Try to execut a bad redeem with a bad W_kc
+    //Generate a random W_LC element that will be sent to the redeem method
     let W_LC_rand = Buffer.from(elliptic.rand(16)).toString("hex");
     W_km = W(W_LM, c, 4);
     W_LC_rand = W(W_LM_rand, c, 4);
@@ -197,13 +197,13 @@ describe("Channel contract", function (){
     expect(await channel2.connect(user2).c()).to.not.be.undefined;
 
     //Try to execut a bad transference with a bad W_km
-    //Generate a random W_LM element that will be sent to the liquidation method
+    //Generate a random W_LM element that will be sent to the redeem method
     let W_LM_rand = Buffer.from(elliptic.rand(16)).toString("hex");
     W_LM_rand = W(W_LM_rand, c, k);
     await expect( channel1.connect(user2).transferDeposit('0x'+W_LM_rand, '0x'+W_kc, k, channel2.address)).to.be.reverted;
 
     //Try to execut a bad transference with a bad W_kc
-    //Generate a random W_LC element that will be sent to the liquidation method
+    //Generate a random W_LC element that will be sent to the redeem method
     let W_LC_rand = Buffer.from(elliptic.rand(16)).toString("hex");
     W_km = W(W_LM, c, k);
     W_LC_rand = W(W_LM_rand, c, k);

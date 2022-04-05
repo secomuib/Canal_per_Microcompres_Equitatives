@@ -134,7 +134,7 @@ contract channel{
         TR = _TR;
     }
 
-    //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel liquidation"), 
+    //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel redeem"), 
     //or, to transfer the microcoins to a new channel ("Chanel transference").
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
         require ((block.timestamp < (T_exp + TD)), "Time error"  );

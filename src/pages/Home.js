@@ -27,6 +27,7 @@ class Home extends Component {
         channelContract: '',
         j: '',
         W_iC_enc:'',
+        refundAddress:'',
         oldChannel: false,
         loadingPage: true,
         loading: false,
@@ -120,7 +121,7 @@ class Home extends Component {
         }
     }
 
-    //Function used to prepare the W_kC and W_kM hashes used by the liquidation and transference functions
+    //Function used to prepare the W_kC and W_kM hashes used by the redeem and transference functions
     prepare_W = async event => {
         let channel_info;
         let W_kC, W_kM;
@@ -195,7 +196,7 @@ class Home extends Component {
     }
 
     //Function to transfer part of the microcoins that are stored at the channel smart contract to the customer wallet.
-    liquidation = async event => {
+    redeem = async event => {
         event.preventDefault();
         this.setState({ loading: true, errorMessage: '' });
 
@@ -811,7 +812,12 @@ class Home extends Component {
             if(this.state.accounts[0] === chn[ind-1]['customer']){
 
                 //Execute the channel smart contract method channelClose
-                await channelContract.methods.channelClose().send({ from: this.state.accounts[0] });
+                if(this.state.refundAddress === ''){
+                    this.setState({
+                        refundAddress: this.state.accounts[0]
+                    })
+                }
+                await channelContract.methods.channelClose(this.state.refundAddress).send({ from: this.state.accounts[0] });
                 
                 //Update the channel DB, with c = 0 and state = 'closed'
                 fetch('http://localhost:7000/channels/' + chn[ind-1]['id'], {
@@ -853,7 +859,7 @@ class Home extends Component {
                     ret =   <div><Label as='a' color='yellow' horizontal>Channel Reused</Label></div>
                 }else if(parseInt(this.state.channels[index]['T_EXP'],10)*1000 < Date.now() && Date.now() < 
                 (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000){
-                    ret = <div><Label as='a' color='blue' horizontal>Liquidation time</Label></div>
+                    ret = <div><Label as='a' color='blue' horizontal>Redeem time</Label></div>
                 }/*else if((parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10))*1000 < Date.now() 
                 && Date.now() < (parseInt(this.state.channels[index]['T_EXP'],10) + parseInt(this.state.channels[index]['Δ_TD'],10) 
                 + parseInt(this.state.channels[index]['Δ_TR'],10))*1000 && this.state.channels[index]['c'] != 0){
@@ -1033,7 +1039,7 @@ class Home extends Component {
         })
     }
 
-    renderOwnedChannelsLiquidation(){
+    renderOwnedChannelsRedeem(){
         const data = this.state.channels;
 
         return Object.keys(data).map((requests, index) => {
@@ -1138,8 +1144,8 @@ class Home extends Component {
                             <Table.Body>{this.renderRequests()}</Table.Body>
                         </Table>
 
-                        <h3>Channel liquidation</h3>
-                        <Form onSubmit={this.liquidation} error={!!this.state.errorMessage}>
+                        <h3>Channel Redeem</h3>
+                        <Form onSubmit={this.redeem} error={!!this.state.errorMessage}>
 
                             <Form.Field>
                                 <label>Channel ID:</label>
@@ -1148,7 +1154,7 @@ class Home extends Component {
                                 }
                                 }>
                                 <option></option>
-                                    {this.renderOwnedChannelsLiquidation()}
+                                    {this.renderOwnedChannelsRedeem()}
                                 </select>
                             </Form.Field>
 
@@ -1178,7 +1184,7 @@ class Home extends Component {
                                 }
                                 }>
                                 <option></option>
-                                    {this.renderOwnedChannelsLiquidation()}
+                                    {this.renderOwnedChannelsRedeem()}
                                 </select>
                             </Form.Field>
 
@@ -1219,6 +1225,14 @@ class Home extends Component {
                                 <option></option>
                                     {this.renderOwnedChannelsRefund()}
                                 </select>
+                            </Form.Field>
+                            <Form.Field>
+                            <label>Refund Address:</label>
+                            <Input
+                                value={this.state.refundAddress}
+                                onChange={event => this.setState({ refundAddress: event.target.value })}
+                                placeholder = "If no address is entered, the refund will be made to the customer's address"
+                            />
                             </Form.Field>
                             <Message error header="ERROR" content={this.state.errorMessage} />
                             <Button primary loading={this.state.loading} style={{"margin-bottom":20}}>
