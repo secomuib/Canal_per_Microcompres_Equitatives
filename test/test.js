@@ -239,7 +239,7 @@ describe("Channel contract", function (){
     T_D = 10;
 
     //Define T_R = 10s --> it would be T_exp + T_D + T_R
-    T_R = 30;
+    T_R = 10;
 
     
     expect(await channel2.connect(user2).W_jm()).to.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
@@ -262,7 +262,7 @@ describe("Channel contract", function (){
 
   it("Refund channel2", async function(){
     //Spend time (35s), to reach the refund time.
-    sleep(35000);
+    sleep(20000);
 
     expect(await ethers.provider.getBalance(channel2.address)).to.be.equal(2000000000000000);
 

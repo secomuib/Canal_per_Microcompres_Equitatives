@@ -11,7 +11,7 @@
   "scripts": {
     "ethereum_compile": "node compile.js",
     "ethereum_deploy": "node deploy.js",
-    "ethereum_test": "mocha",
+    "ethereum_test": "mocha --timeout 40000",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",

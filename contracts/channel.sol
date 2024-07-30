@@ -21,12 +21,12 @@ contract factoryChannel {
     }
 
     function createChannel( uint256 _c, uint256 _v, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _T_exp, 
-        uint256 _TD, uint256 _TR) public payable returns(address payable){
+        uint256 _TD, uint256 _TR, address _merchant) public payable returns(address payable){
         
         address channelClone = createClone(newChannel);
         address payable channelAddr = payable (address(channelClone));
         channel ch = channel(channelAddr);
-        ch.initialize{value: msg.value}(_c,_v, msg.sender, _W_jm, _W_jc, _S_id, _T_exp, _TD, _TR);
+        ch.initialize{value: msg.value}(_c,_v, msg.sender, _merchant, _W_jm, _W_jc, _S_id, _T_exp, _TD, _TR);
         channels.push(channelClone);
         ownerChannels[msg.sender].push(channelClone);
         return channelAddr;
@@ -66,6 +66,7 @@ contract channel{
     //Channel variables definition
     uint256 public j;
     address public customer;
+    address public merchant;
 
     //Channel parameters
     bytes32 public W_jm; //Hash of the last microcoin used by the user merchant
@@ -95,7 +96,7 @@ contract channel{
         }
     }
 
-    function initialize(uint256 _c, uint256 _v, address _customer, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, 
+    function initialize(uint256 _c, uint256 _v, address _customer, address _merchant, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, 
     uint256 _T_exp, uint256 _TD, uint256 _TR) external payable{
         require(isBase == false);
         require(msg.value == _c*_v, 'balance error');
@@ -103,6 +104,7 @@ contract channel{
         && (block.timestamp < (T_exp + TD + TR))));
         
         customer = _customer;
+        merchant = _merchant;
         c = _c;
         v = _v;
 
@@ -119,9 +121,11 @@ contract channel{
     }
     
     //Configuration channel params function
-    function setChannelParams(bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner {
+    function setChannelParams(address _merchant, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _c, uint256 _v, uint256 _T_exp, uint256 _TD, uint256 _TR) public onlyOwner {
         require(address(this).balance == _c * _v);
         require((T_exp == 0 && TD == 0 && TR == 0 && (T_exp + TD) < block.timestamp) || ((T_exp + TD) < block.timestamp && (block.timestamp < (T_exp + TD + TR))));
+        merchant = _merchant;
+        
         j = 0;
         
         W_jm = _W_jm;
@@ -137,6 +141,7 @@ contract channel{
     //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel redeem"), 
     //or, to transfer the microcoins to a new channel ("Chanel transference").
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
+        require(msg.sender == merchant, "Caller address doesn't correspond to merchant address set");
         require ((block.timestamp < (T_exp + TD)), "Time error"  );
         require (k > j, "k <= j");
             
