@@ -11,23 +11,30 @@ contract factoryChannel {
     }
 
     function createChannel( uint256 _c, uint256 _v) public payable returns(address payable){
+        //Clone of a new channel
         address channelClone = createClone(newChannel);
         address payable channelAddr = payable (address(channelClone));
         channel ch = channel(channelAddr);
+        //Initialize the new channel without setting the parameters
         ch.initialize{value: msg.value}(_c,_v, msg.sender);
+        //Store address of the new channel
         channels.push(channelClone);
+        //Store owner address of the channel
         ownerChannels[msg.sender].push(channelClone);
         return channelAddr;
     }
 
     function createChannel( uint256 _c, uint256 _v, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, uint256 _T_exp, 
         uint256 _TD, uint256 _TR, address _merchant) public payable returns(address payable){
-        
+        //Clone of a new channel
         address channelClone = createClone(newChannel);
         address payable channelAddr = payable (address(channelClone));
         channel ch = channel(channelAddr);
+        //Initialize the channel setting all the parameters
         ch.initialize{value: msg.value}(_c,_v, msg.sender, _merchant, _W_jm, _W_jc, _S_id, _T_exp, _TD, _TR);
+        //Store address of the new channel
         channels.push(channelClone);
+        //Store owner address of the channel
         ownerChannels[msg.sender].push(channelClone);
         return channelAddr;
     }
@@ -86,27 +93,35 @@ contract channel{
     }
 
     function initialize(uint256 _c, uint256 _v, address _customer) external payable{
+        //isBase param to ensure that the base contract cannot be initialized more than once
         require(isBase == false);
-        customer = _customer;
-        c = _c;
-        v = _v;
+
+        //Storage of the channel variables
+        customer = _customer; //Customer address
+        c = _c; //Number of coins
+        v = _v; //Value of one coin
 
         if(msg.value != 0){
+            //Value send must be correct
             require(msg.value == _c*_v, 'balance error');
         }
     }
 
     function initialize(uint256 _c, uint256 _v, address _customer, address _merchant, bytes32 _W_jm, bytes32 _W_jc, string memory _S_id, 
     uint256 _T_exp, uint256 _TD, uint256 _TR) external payable{
+        //isBase param to ensure that the base contract cannot be initialized more than once
         require(isBase == false);
+        //Value send must be correct
         require(msg.value == _c*_v, 'balance error');
+        //Deadlines verification
         require((T_exp == 0 && TD == 0 && TR == 0 && (T_exp + TD) < block.timestamp) || ((T_exp + TD) < block.timestamp 
         && (block.timestamp < (T_exp + TD + TR))));
         
-        customer = _customer;
-        merchant = _merchant;
-        c = _c;
-        v = _v;
+        //Storage of the channel variables
+        customer = _customer; //Customer address
+        merchant = _merchant; //Merchant address
+        c = _c; //Number of coins
+        v = _v; //Value of one coin
 
         j = 0;
         
@@ -141,8 +156,11 @@ contract channel{
     //Function for transfer a determied number of microcoins from this SC to the merchant wallet ("Channel redeem"), 
     //or, to transfer the microcoins to a new channel ("Chanel transference").
     function transferDeposit(bytes memory _W_km, bytes memory _W_kc, uint256 k, address newChannelAddress) public {
+        //Channel transfer only available for merchant user
         require(msg.sender == merchant, "Caller address doesn't correspond to merchant address set");
-        require ((block.timestamp < (T_exp + TD)), "Time error"  );
+        //Deadline verification
+        require (block.timestamp < (T_exp + TD), "Time error"  );
+        //Check index (k) send higher than previous index used
         require (k > j, "k <= j");
             
         uint256 balance;
